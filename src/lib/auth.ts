@@ -1,3 +1,4 @@
+import "server-only";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
@@ -6,18 +7,20 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
+  pages: {
+    signIn: "/login",
+  },
   providers: [
     Credentials({
       async authorize(credentials) {
-        const parsed = z
-          .object({
-            email: z.string().email(),
-            password: z.string().min(8),
-          })
-          .safeParse(credentials);
-
+        const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
         const [user] = await db
@@ -27,6 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .limit(1);
 
         if (!user) return null;
+        if (user.deletedAt) return null;
 
         const valid = await bcrypt.compare(
           parsed.data.password,
@@ -34,17 +38,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
         if (!valid) return null;
 
-        return { id: user.id, email: user.email };
+        return {
+          id: user.id,
+          email: user.email,
+        };
       },
     }),
   ],
   callbacks: {
     jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+      }
       return token;
     },
     session({ session, token }) {
       if (token.id) session.user.id = token.id as string;
+      if (token.email) session.user.email = token.email as string;
       return session;
     },
   },
