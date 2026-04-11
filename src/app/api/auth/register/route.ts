@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
 
     const { email, password, ageGroup, copingStyle } = parsed.data;
 
-    // Check if user already exists
     const existing = await db
       .select()
       .from(users)
@@ -40,10 +39,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Insert user
     const [newUser] = await db
       .insert(users)
       .values({
