@@ -46,37 +46,6 @@ const BADGE_META: Record<string, { emoji: string; label: string }> = {
 };
 const ALL_BADGE_TYPES = Object.keys(BADGE_META);
 
-const FALLBACK_NEWS: NewsItem[] = [
-  {
-    headline: "Nicotine clears in 72 hours",
-    fact: "Nicotine is physically out of your system within 72 hours — after that it's entirely psychological.",
-    emoji: "⏱️",
-    source: "AIHW 2023",
-    color: "#e8f5ec",
-  },
-  {
-    headline: "21% of 18-24s in Australia vape",
-    fact: "Young Australians are the highest-risk group for nicotine dependency — and digital tools show the best early results.",
-    emoji: "📊",
-    source: "NDSHS 2022-23",
-    color: "#dff0fd",
-  },
-  {
-    headline: "Deep breathing cuts cravings by 40%",
-    fact: "4-7-8 breathing activates your parasympathetic system, cutting craving intensity almost in half within 2 minutes.",
-    emoji: "🌬️",
-    source: "Truth Initiative",
-    color: "#fff0c8",
-  },
-  {
-    headline: "21-day streaks rewire habit loops",
-    fact: "Consistent daily behaviour for 21+ days restructures neural reward pathways — you literally build a new loop.",
-    emoji: "🔥",
-    source: "Behavioural Science Review",
-    color: "#fdf0ea",
-  },
-];
-
 function SmokeCanvas({ opacity = 0.5 }: { opacity?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -595,16 +564,71 @@ function QuestRow({
   );
 }
 
+interface NewsItem {
+  headline: string;
+  fact: string;
+  emoji: string;
+  source: string;
+  color: string;
+}
+
+const FALLBACK_NEWS: NewsItem[] = [
+  {
+    headline: "Nicotine clears in 72 hours",
+    fact: "Nicotine is physically gone within 72 hours — after that cravings are entirely psychological.",
+    emoji: "⏱️",
+    source: "AIHW 2023",
+    color: "#e8f5ec",
+  },
+  {
+    headline: "21% of 18–24s in Australia vape",
+    fact: "Young Australians are the highest-risk group. Digital tools show the strongest early-intervention results.",
+    emoji: "📊",
+    source: "NDSHS 2022–23",
+    color: "#dff0fd",
+  },
+  {
+    headline: "Breathing cuts cravings ~40%",
+    fact: "4-7-8 breathing activates your parasympathetic system, cutting craving intensity almost in half.",
+    emoji: "🌬️",
+    source: "Truth Initiative",
+    color: "#fff0c8",
+  },
+  {
+    headline: "21-day streaks rewire your brain",
+    fact: "Consistent daily behaviour for 21+ days creates new neural reward pathways — you build a new loop.",
+    emoji: "🔥",
+    source: "Behavioural Sci",
+    color: "#fdf0ea",
+  },
+];
+
 function AINews() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [flipped, setFlipped] = useState<number | null>(null);
+
   useEffect(() => {
+    // Debounce — only call once even if component remounts
+    const key = "loopless_news_cache";
+    const cached = sessionStorage.getItem(key);
+    if (cached) {
+      try {
+        setNews(JSON.parse(cached));
+        setLoading(false);
+        return;
+      } catch {}
+    }
     (async () => {
       try {
         const r = await fetch("/api/ai/dashboard-news", { method: "POST" });
         const d = await r.json();
-        if (d.items) setNews(d.items);
+        if (d.items?.length) {
+          setNews(d.items);
+          sessionStorage.setItem(key, JSON.stringify(d.items));
+        } else {
+          setNews(FALLBACK_NEWS);
+        }
       } catch {
         setNews(FALLBACK_NEWS);
       } finally {
@@ -612,6 +636,7 @@ function AINews() {
       }
     })();
   }, []);
+
   return (
     <div style={{ marginBottom: 16 }}>
       <div
@@ -643,17 +668,23 @@ function AINews() {
             color: "#3d6b4f",
           }}
         >
-          Gemini · Tap to flip
+          Tap to flip
         </span>
       </div>
+
       {loading ? (
-        <div style={{ display: "flex", gap: 10 }}>
-          {[0, 1, 2].map((i) => (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2,1fr)",
+            gap: 10,
+          }}
+        >
+          {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
               style={{
-                flex: 1,
-                height: 130,
+                height: 110,
                 borderRadius: 18,
                 background: "#fde8c8",
                 border: "2px solid rgba(26,18,8,.07)",
@@ -666,7 +697,7 @@ function AINews() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))",
+            gridTemplateColumns: "repeat(2,1fr)",
             gap: 10,
           }}
         >
@@ -675,111 +706,127 @@ function AINews() {
               key={i}
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.08 + i * 0.1 }}
-              style={{ perspective: 800 }}
+              transition={{ delay: 0.08 + i * 0.08 }}
+              style={{ perspective: 1000, cursor: "pointer" }}
               onClick={() => setFlipped(flipped === i ? null : i)}
             >
               <motion.div
                 animate={{ rotateY: flipped === i ? 180 : 0 }}
-                transition={{ duration: 0.42, ease: "easeOut" }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
                 style={{
                   transformStyle: "preserve-3d",
                   position: "relative",
-                  minHeight: 130,
-                  cursor: "pointer",
+                  height: 120,
                 }}
               >
+                {/* Front */}
                 <div
                   style={{
                     backfaceVisibility: "hidden",
                     WebkitBackfaceVisibility: "hidden",
-                    background: item.color,
-                    border: "2.5px solid rgba(26,18,8,.1)",
-                    borderRadius: 18,
-                    padding: "16px",
-                    boxShadow: "4px 4px 0 rgba(26,18,8,.09)",
                     position: "absolute",
                     inset: 0,
+                    background: item.color,
+                    border: "2px solid rgba(26,18,8,.12)",
+                    borderRadius: 18,
+                    padding: "14px 12px",
+                    boxShadow: "3px 3px 0 rgba(26,18,8,.08)",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
                   }}
                 >
-                  <div style={{ fontSize: 30, marginBottom: 8 }}>
-                    {item.emoji}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <span
+                      style={{ fontSize: 22, flexShrink: 0, lineHeight: 1 }}
+                    >
+                      {item.emoji}
+                    </span>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 800,
+                        color: "#1a1208",
+                        lineHeight: 1.35,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {item.headline}
+                    </div>
                   </div>
                   <div
                     style={{
-                      fontSize: 13,
-                      fontWeight: 800,
-                      color: "#1a1208",
-                      lineHeight: 1.4,
-                      marginBottom: 4,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
                     }}
                   >
-                    {item.headline}
-                  </div>
-                  <div
-                    style={{ fontSize: 9.5, fontWeight: 700, color: "#a8936a" }}
-                  >
-                    {item.source}
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: 10,
-                      right: 12,
-                      fontSize: 9.5,
-                      fontWeight: 700,
-                      color: "rgba(26,18,8,.3)",
-                    }}
-                  >
-                    flip →
+                    <span
+                      style={{
+                        fontSize: 9.5,
+                        fontWeight: 700,
+                        color: "#a8936a",
+                      }}
+                    >
+                      {item.source}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        color: "rgba(26,18,8,.3)",
+                      }}
+                    >
+                      flip →
+                    </span>
                   </div>
                 </div>
+
+                {/* Back */}
                 <div
                   style={{
                     backfaceVisibility: "hidden",
                     WebkitBackfaceVisibility: "hidden",
                     transform: "rotateY(180deg)",
-                    background: "#1a3d28",
-                    border: "2.5px solid #5a8f6a",
-                    borderRadius: 18,
-                    padding: "16px",
-                    boxShadow: "4px 4px 0 rgba(26,18,8,.15)",
                     position: "absolute",
                     inset: 0,
+                    background: "#1a3d28",
+                    border: "2px solid #5a8f6a",
+                    borderRadius: 18,
+                    padding: "14px 12px",
+                    boxShadow: "3px 3px 0 rgba(26,18,8,.12)",
+                    overflow: "hidden",
                     display: "flex",
                     flexDirection: "column",
-                    justifyContent: "center",
+                    justifyContent: "space-between",
                   }}
                 >
                   <div
                     style={{
-                      fontSize: 10,
-                      fontWeight: 800,
-                      color: "rgba(255,255,255,.45)",
-                      textTransform: "uppercase",
-                      letterSpacing: ".06em",
-                      marginBottom: 6,
-                    }}
-                  >
-                    The fact
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 13,
+                      fontSize: 11.5,
                       fontWeight: 600,
                       color: "white",
-                      lineHeight: 1.6,
+                      lineHeight: 1.55,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 4,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
                     }}
                   >
                     {item.fact}
                   </div>
                   <div
-                    style={{
-                      marginTop: 8,
-                      fontSize: 9.5,
-                      fontWeight: 700,
-                      color: "#5ddba8",
-                    }}
+                    style={{ fontSize: 9.5, fontWeight: 700, color: "#5ddba8" }}
                   >
                     📚 {item.source}
                   </div>
