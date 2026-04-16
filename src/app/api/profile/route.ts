@@ -1,3 +1,4 @@
+// src/app/api/profile/route.ts
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
@@ -16,22 +17,29 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const data = await withDb(async (db) => {
-      const { users, stressTriggers, badges, streaks } =
+      const { users, stressTriggers, badges, streaks, checkins } =
         await import("@/lib/db/schema");
-      const { eq } = await import("drizzle-orm");
+      const { eq, desc } = await import("drizzle-orm");
 
-      const [user, triggers, earnedBadges, userStreaks] = await Promise.all([
-        db.query.users.findFirst({ where: eq(users.id, userId) }),
-        db
-          .select()
-          .from(stressTriggers)
-          .where(eq(stressTriggers.userId, userId)),
-        db.select().from(badges).where(eq(badges.userId, userId)),
-        db.select().from(streaks).where(eq(streaks.userId, userId)),
-      ]);
+      const [user, triggers, earnedBadges, userStreaks, recentCheckins] =
+        await Promise.all([
+          db.query.users.findFirst({ where: eq(users.id, userId) }),
+          db
+            .select()
+            .from(stressTriggers)
+            .where(eq(stressTriggers.userId, userId)),
+          db.select().from(badges).where(eq(badges.userId, userId)),
+          db.select().from(streaks).where(eq(streaks.userId, userId)),
+          db
+            .select()
+            .from(checkins)
+            .where(eq(checkins.userId, userId))
+            .orderBy(desc(checkins.checkedInAt))
+            .limit(30),
+        ]);
 
       if (!user) return null;
-      return { user, triggers, earnedBadges, userStreaks };
+      return { user, triggers, earnedBadges, userStreaks, recentCheckins };
     });
 
     if (!data)
@@ -57,7 +65,6 @@ export async function PATCH(req: Request) {
       const { users, stressTriggers } = await import("@/lib/db/schema");
       const { eq } = await import("drizzle-orm");
 
-      // Ensure user exists (guest may not have a row yet)
       const existing = await db.query.users.findFirst({
         where: eq(users.id, userId),
       });
