@@ -1,50 +1,43 @@
-import { NextRequest, NextResponse } from "next/server";
+// ─── src/app/api/auth/guest/route.ts ────────────────────────────────────────
+// Save/retrieve guest user. Generates a guestId, stores in DB, returns it.
+// The client stores this in localStorage as "loopless_guest_id".
+
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { users, stressTriggers } from "@/lib/db/schema";
-import { z } from "zod";
+import { users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { v4 as uuid } from "uuid";
 
-const guestSchema = z.object({
-  guestName: z.string().min(1).max(50),
-  ageGroup: z.enum(["18-20", "21-22", "23-24"]),
-  triggers: z.array(z.string()).min(1),
-});
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const parsed = guestSchema.safeParse(body);
+    const body = await req.json().catch(() => ({}));
+    const existingId: string | undefined = body.guestId;
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.flatten().fieldErrors },
-        { status: 422 },
-      );
+    // If client sends existing guestId, return it (idempotent)
+    if (existingId) {
+      const existing = await db.query.users.findFirst({
+        where: eq(users.id, existingId),
+      });
+      if (existing) return NextResponse.json({ guestId: existing.id });
     }
 
-    const { guestName, ageGroup, triggers } = parsed.data;
-
-    const [newUser] = await db
+    // Create new guest
+    const guestName = `Guest_${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+    const [guest] = await db
       .insert(users)
       .values({
+        id: uuid(),
         guestName,
-        ageGroup,
         isGuest: true,
         consentAt: new Date(),
       })
       .returning({ id: users.id });
 
-    await db
-      .insert(stressTriggers)
-      .values(triggers.map((t) => ({ userId: newUser.id, triggerType: t })));
-
+    return NextResponse.json({ guestId: guest.id });
+  } catch (err) {
+    console.error("Guest API error:", err);
     return NextResponse.json(
-      { message: "Guest account created", userId: newUser.id },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error("Guest error:", error);
-    return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
+      { error: "Failed to create guest" },
       { status: 500 },
     );
   }

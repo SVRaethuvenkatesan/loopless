@@ -197,7 +197,7 @@ function ChartTooltip({ active, payload, label }: any) {
       </p>
       {payload.map((p: any) => (
         <p key={p.dataKey} style={{ color: p.color, margin: "2px 0" }}>
-          {p.name}: <strong>{p.value ?? "—"}</strong>
+          {p.name}: <strong>{p.value ?? "-"}</strong>
         </p>
       ))}
     </div>
@@ -391,7 +391,7 @@ export default function DashboardClient({
               },
               {
                 label: "Avg stress",
-                value: avgStress !== null ? `${avgStress}/10` : "—",
+                value: avgStress !== null ? `${avgStress}/10` : "-",
                 sub: "–0.8 vs last wk",
                 icon: "bar",
                 accent: "#f59e0b",
@@ -407,7 +407,7 @@ export default function DashboardClient({
               <div key={label} className="metric-card">
                 <div className="metric-label">{label}</div>
                 <div className="metric-val" style={{ color: accent }}>
-                  {value ?? "—"}
+                  {value ?? "-"}
                 </div>
                 <div className="metric-sub">{sub}</div>
               </div>
