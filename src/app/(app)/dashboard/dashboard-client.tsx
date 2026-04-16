@@ -1,890 +1,1971 @@
 "use client";
-import React from "react";
+
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
 
-/* ── NAV CONFIG ── */
-const NAV_MAIN = [
-  { href: "/dashboard", label: "Dashboard", icon: "home" },
-  { href: "/insights", label: "Insights", icon: "bar", badge: "New" },
-  { href: "/urge", label: "Urge support", icon: "alert" },
-];
-const NAV_TOOLS = [
-  { href: "/coping", label: "Coping tools", icon: "wind" },
-  { href: "/journal", label: "Journal", icon: "book" },
-  { href: "/progress", label: "Progress", icon: "award" },
-];
-const NAV_ACCOUNT = [
-  { href: "/profile", label: "Profile", icon: "user" },
-  { href: "/settings", label: "Settings", icon: "settings" },
-];
-
-const COPING = [
-  {
-    id: "breathing",
-    label: "4-7-8 Breathing",
-    sub: "2 min · Calms your nervous system",
-    color: "rgba(45,212,191,0.12)",
-    accent: "#2dd4bf",
-  },
-  {
-    id: "grounding",
-    label: "5-4-3-2-1 Grounding",
-    sub: "5 min · Anchors you to the present",
-    color: "rgba(124,109,245,0.12)",
-    accent: "#a897ff",
-  },
-  {
-    id: "journal",
-    label: "Free journaling",
-    sub: "Open-ended",
-    color: "rgba(244,114,182,0.1)",
-    accent: "#f472b6",
-  },
-  {
-    id: "reset",
-    label: "Distraction reset",
-    sub: "3 min · Quick",
-    color: "rgba(245,158,11,0.1)",
-    accent: "#f59e0b",
-  },
-];
-
-/* ── ICONS (inline SVG, no extra dep) ── */
-function Icon({
-  name,
-  size = 16,
-  color = "currentColor",
-}: {
-  name: string;
-  size?: number;
-  color?: string;
-}) {
-  const s = { width: size, height: size, style: { flexShrink: 0 } };
-  const p = {
-    fill: "none",
-    stroke: color,
-    strokeWidth: 1.7,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-  switch (name) {
-    case "home":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <path {...p} d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline {...p} points="9,22 9,12 15,12 15,22" />
-        </svg>
-      );
-    case "bar":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <line {...p} x1="18" y1="20" x2="18" y2="10" />
-          <line {...p} x1="12" y1="20" x2="12" y2="4" />
-          <line {...p} x1="6" y1="20" x2="6" y2="14" />
-        </svg>
-      );
-    case "alert":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <circle {...p} cx="12" cy="12" r="10" />
-          <line {...p} x1="12" y1="8" x2="12" y2="12" />
-          <line {...p} x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-      );
-    case "wind":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <path
-            {...p}
-            d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"
-          />
-        </svg>
-      );
-    case "book":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <path {...p} d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-          <path
-            {...p}
-            d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
-          />
-        </svg>
-      );
-    case "award":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <circle {...p} cx="12" cy="8" r="6" />
-          <path {...p} d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-        </svg>
-      );
-    case "user":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <path {...p} d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle {...p} cx="12" cy="7" r="4" />
-        </svg>
-      );
-    case "settings":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <circle {...p} cx="12" cy="12" r="3" />
-          <path
-            {...p}
-            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
-          />
-        </svg>
-      );
-    case "zap":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <polygon {...p} points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </svg>
-      );
-    case "trend":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <polyline {...p} points="22 7 13.5 15.5 8.5 10.5 2 17" />
-          <polyline {...p} points="16 7 22 7 22 13" />
-        </svg>
-      );
-    case "cal":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <rect {...p} x="3" y="4" width="18" height="18" rx="2" />
-          <line {...p} x1="16" y1="2" x2="16" y2="6" />
-          <line {...p} x1="8" y1="2" x2="8" y2="6" />
-          <line {...p} x1="3" y1="10" x2="21" y2="10" />
-        </svg>
-      );
-    case "chevron":
-      return (
-        <svg {...s} viewBox="0 0 24 24">
-          <polyline {...p} points="9 18 15 12 9 6" />
-        </svg>
-      );
-    default:
-      return null;
-  }
+interface Checkin {
+  id: string;
+  stressLevel: number;
+  mood: string;
+  triggerType: string | null;
+  checkedInAt: string;
+}
+interface Badge {
+  id: string;
+  badgeType: string;
+  earnedAt: string;
+}
+interface NewsItem {
+  headline: string;
+  fact: string;
+  emoji: string;
+  source: string;
+  color: string;
+}
+interface Props {
+  userName: string;
+  userId: string;
+  recentCheckins: Checkin[];
+  checkInStreak: number;
+  checkedInToday: boolean;
+  todayEntry: Checkin | null;
+  earnedBadges: Badge[];
+  userTriggers: { triggerType: string }[];
 }
 
-/* ── CUSTOM TOOLTIP ── */
-function ChartTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
+const BADGE_META: Record<string, { emoji: string; label: string }> = {
+  first_checkin: { emoji: "🌱", label: "First Step" },
+  streak_7: { emoji: "🔥", label: "Week 1" },
+  streak_12: { emoji: "🦋", label: "12 Days" },
+  urge_blocker: { emoji: "🛡️", label: "Urge Blocker" },
+  journaller: { emoji: "✍️", label: "Journaller" },
+  streak_30: { emoji: "💪", label: "Month 1" },
+  loop_buster: { emoji: "🧠", label: "Loop Buster" },
+  streak_100: { emoji: "🏆", label: "100 Days" },
+};
+const ALL_BADGE_TYPES = Object.keys(BADGE_META);
+
+const FALLBACK_NEWS: NewsItem[] = [
+  {
+    headline: "Nicotine clears in 72 hours",
+    fact: "Nicotine is physically out of your system within 72 hours — after that it's entirely psychological.",
+    emoji: "⏱️",
+    source: "AIHW 2023",
+    color: "#e8f5ec",
+  },
+  {
+    headline: "21% of 18-24s in Australia vape",
+    fact: "Young Australians are the highest-risk group for nicotine dependency — and digital tools show the best early results.",
+    emoji: "📊",
+    source: "NDSHS 2022-23",
+    color: "#dff0fd",
+  },
+  {
+    headline: "Deep breathing cuts cravings by 40%",
+    fact: "4-7-8 breathing activates your parasympathetic system, cutting craving intensity almost in half within 2 minutes.",
+    emoji: "🌬️",
+    source: "Truth Initiative",
+    color: "#fff0c8",
+  },
+  {
+    headline: "21-day streaks rewire habit loops",
+    fact: "Consistent daily behaviour for 21+ days restructures neural reward pathways — you literally build a new loop.",
+    emoji: "🔥",
+    source: "Behavioural Science Review",
+    color: "#fdf0ea",
+  },
+];
+
+function SmokeCanvas({ opacity = 0.5 }: { opacity?: number }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    if (!c) return;
+    const ctx = c.getContext("2d")!;
+    c.width = c.offsetWidth;
+    c.height = c.offsetHeight;
+    const W = c.width,
+      H = c.height;
+    const puffs = Array.from({ length: 14 }, () => ({
+      x: Math.random() * W,
+      y: H + 20,
+      r: 15 + Math.random() * 35,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: -(0.25 + Math.random() * 0.4),
+      a: 0,
+      va: 0.003 + Math.random() * 0.004,
+    }));
+    let raf: number;
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      puffs.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.a += p.va;
+        if (p.y + p.r < -10) {
+          p.y = H + 20;
+          p.x = Math.random() * W;
+          p.a = 0;
+        }
+        const pk = p.a < 0.4 ? p.a / 0.4 : 1 - (p.a - 0.4) / 0.6;
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+        g.addColorStop(0, `rgba(90,143,106,${0.12 * pk * opacity})`);
+        g.addColorStop(0.5, `rgba(198,247,230,${0.06 * pk * opacity})`);
+        g.addColorStop(1, "transparent");
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      });
+      raf = requestAnimationFrame(draw);
+    }
+    draw();
+    return () => cancelAnimationFrame(raf);
+  }, [opacity]);
+  return (
+    <canvas
+      ref={ref}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
+
+function XPBar({ pct }: { pct: number }) {
   return (
     <div
       style={{
-        background: "var(--bg3)",
-        border: "1px solid var(--border2)",
-        borderRadius: "8px",
-        padding: "8px 12px",
-        fontSize: "12px",
+        height: 10,
+        background: "rgba(255,255,255,.1)",
+        borderRadius: 5,
+        overflow: "hidden",
+        border: "1px solid rgba(255,255,255,.12)",
       }}
     >
-      <p
-        style={{ color: "var(--text2)", marginBottom: "4px", fontWeight: 600 }}
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${pct}%` }}
+        transition={{ duration: 1.6, ease: "easeOut", delay: 0.5 }}
+        style={{
+          height: "100%",
+          background: "linear-gradient(90deg,#5ddba8,#3bc98e)",
+          borderRadius: 5,
+          position: "relative",
+        }}
       >
-        {label}
-      </p>
-      {payload.map((p: any) => (
-        <p key={p.dataKey} style={{ color: p.color, margin: "2px 0" }}>
-          {p.name}: <strong>{p.value ?? "-"}</strong>
-        </p>
-      ))}
+        <motion.div
+          animate={{ x: ["0%", "100%", "0%"] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent)",
+            borderRadius: 5,
+          }}
+        />
+      </motion.div>
     </div>
   );
 }
 
-/* ── SIDEBAR ── */
-function NavLink({ href, label, icon, badge, active }: any) {
+function CartoonChart({ checkins }: { checkins: Checkin[] }) {
+  const [hov, setHov] = useState<number | null>(null);
+  const labels = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+  const grid = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    d.setHours(0, 0, 0, 0);
+    const entry = checkins.find((c) => {
+      const cd = new Date(c.checkedInAt);
+      cd.setHours(0, 0, 0, 0);
+      return cd.getTime() === d.getTime();
+    });
+    const dow = d.getDay();
+    return {
+      day: labels[dow === 0 ? 6 : dow - 1],
+      stress: entry?.stressLevel ?? 0,
+      hasData: !!entry,
+      mood: entry?.mood,
+    };
+  });
+  const mx = Math.max(...grid.map((g) => g.stress), 1);
+  const sc = (s: number) =>
+    s <= 3 ? "#5a8f6a" : s <= 6 ? "#c9982a" : "#e07b5a";
+  const me = (m?: string) =>
+    ({
+      overwhelmed: "😫",
+      anxious: "😰",
+      flat: "😶",
+      okay: "😐",
+      good: "🙂",
+      energised: "😄",
+      grateful: "🥹",
+      proud: "😤",
+    })[m ?? ""] ?? "😐";
   return (
-    <Link
-      href={href}
-      className={`nav-item ${active ? "active" : ""}`}
-      style={{ textDecoration: "none" }}
-    >
-      <Icon
-        name={icon}
-        size={15}
-        color={active ? "var(--purple2)" : "var(--text2)"}
-      />
-      {label}
-      {badge && <span className="nav-badge">{badge}</span>}
-    </Link>
+    <div>
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          alignItems: "flex-end",
+          height: 80,
+          paddingBottom: 20,
+        }}
+      >
+        {grid.map((g, i) => (
+          <div
+            key={i}
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 0,
+              position: "relative",
+            }}
+            onMouseEnter={() => setHov(i)}
+            onMouseLeave={() => setHov(null)}
+          >
+            <AnimatePresence>
+              {hov === i && g.hasData && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.15 }}
+                  style={{
+                    position: "absolute",
+                    bottom: "100%",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    marginBottom: 5,
+                    background: "#1a1208",
+                    color: "white",
+                    borderRadius: 10,
+                    padding: "5px 10px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    whiteSpace: "nowrap",
+                    zIndex: 10,
+                    boxShadow: "2px 2px 0 rgba(26,18,8,.3)",
+                  }}
+                >
+                  {g.stress}/10 · {me(g.mood)}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 0,
+                      height: 0,
+                      borderLeft: "4px solid transparent",
+                      borderRight: "4px solid transparent",
+                      borderTop: "5px solid #1a1208",
+                    }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {g.hasData ? (
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${(g.stress / mx) * 60}px` }}
+                transition={{
+                  delay: 0.2 + i * 0.08,
+                  duration: 0.6,
+                  ease: "easeOut",
+                }}
+                whileHover={{ scaleX: 1.12 }}
+                style={{
+                  width: "100%",
+                  minHeight: 4,
+                  borderRadius: "6px 6px 0 0",
+                  background: `linear-gradient(180deg,${sc(g.stress)}bb,${sc(g.stress)})`,
+                  border: `2px solid ${sc(g.stress)}`,
+                  borderBottom: "none",
+                  cursor: "pointer",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: "15%",
+                    width: "28%",
+                    bottom: 0,
+                    background: "rgba(255,255,255,.22)",
+                    borderRadius: 4,
+                  }}
+                />
+              </motion.div>
+            ) : (
+              <div
+                style={{
+                  width: "100%",
+                  height: 4,
+                  borderRadius: "3px 3px 0 0",
+                  background: "#fde8c8",
+                  border: "1.5px solid rgba(26,18,8,.08)",
+                }}
+              />
+            )}
+            <div
+              style={{
+                width: "100%",
+                height: 3,
+                background: g.hasData ? sc(g.stress) : "#fde8c8",
+                borderRadius: "0 0 3px 3px",
+                border: `1.5px solid rgba(26,18,8,.1)`,
+                borderTop: "none",
+              }}
+            />
+            <div
+              style={{
+                fontSize: 9,
+                fontWeight: 800,
+                color: g.hasData ? "#6b5c3e" : "#d4c8b0",
+                marginTop: 4,
+              }}
+            >
+              {g.day}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 12 }}>
+        {[
+          { c: "#5a8f6a", l: "Low" },
+          { c: "#c9982a", l: "Med" },
+          { c: "#e07b5a", l: "High" },
+        ].map((x) => (
+          <div
+            key={x.l}
+            style={{ display: "flex", alignItems: "center", gap: 5 }}
+          >
+            <div
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 3,
+                background: x.c,
+                border: "1.5px solid rgba(26,18,8,.15)",
+              }}
+            />
+            <span style={{ fontSize: 10.5, fontWeight: 600, color: "#6b5c3e" }}>
+              {x.l}
+            </span>
+          </div>
+        ))}
+        {!checkins.length && (
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#a8936a" }}>
+            No check-ins yet — start below!
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 
-interface Props {
-  userName: string;
-  isGuest: boolean;
-  checkedInToday: boolean;
-  checkInStreak: number;
-  urgesResisted: number;
-  avgStress: number | null;
-  totalCheckins: number;
-  chartData: { day: string; stress: number | null; urges: number }[];
-  latestMood: string | null;
-  latestStress: number | null;
+function StatTile({
+  icon,
+  label,
+  value,
+  sub,
+  accent,
+  bg,
+  delay = 0,
+  pulse = false,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  sub: string;
+  accent: string;
+  bg: string;
+  delay?: number;
+  pulse?: boolean;
+}) {
+  const [pop, setPop] = useState(false);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.88 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay, duration: 0.5, type: "spring", bounce: 0.3 }}
+      whileHover={{ y: -4, boxShadow: `6px 8px 0 ${accent}55` }}
+      whileTap={{ scale: 0.95 }}
+      onClick={() => {
+        setPop(true);
+        setTimeout(() => setPop(false), 500);
+      }}
+      style={{
+        background: bg,
+        border: `2px solid ${accent}55`,
+        borderRadius: 22,
+        padding: "16px 14px",
+        boxShadow: `4px 4px 0 ${accent}44`,
+        position: "relative",
+        cursor: "pointer",
+        overflow: "hidden",
+      }}
+    >
+      <AnimatePresence>
+        {pop && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0.6 }}
+            animate={{ scale: 4, opacity: 0 }}
+            transition={{ duration: 0.45 }}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: accent,
+              marginLeft: -20,
+              marginTop: -20,
+            }}
+          />
+        )}
+      </AnimatePresence>
+      {pulse && (
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            width: 9,
+            height: 9,
+            borderRadius: "50%",
+            background: accent,
+            animation: "pulseDot 1.8s infinite",
+          }}
+        />
+      )}
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ fontSize: 28, marginBottom: 6, lineHeight: 1 }}>
+          {icon}
+        </div>
+        <div
+          style={{
+            fontFamily: "'Fredoka',sans-serif",
+            fontSize: 28,
+            fontWeight: 600,
+            color: "#1a1208",
+            lineHeight: 1,
+            marginBottom: 4,
+          }}
+        >
+          {value}
+        </div>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 800,
+            color: "#1a1208",
+            marginBottom: 2,
+          }}
+        >
+          {label}
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 500, color: "#6b5c3e" }}>
+          {sub}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function QuestRow({
+  icon,
+  title,
+  desc,
+  reward,
+  done,
+  accent,
+  bg,
+  href,
+  delay = 0,
+}: {
+  icon: string;
+  title: string;
+  desc: string;
+  reward: string;
+  done: boolean;
+  accent: string;
+  bg: string;
+  href: string;
+  delay?: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -18 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.38 }}
+      whileHover={!done ? { x: 3 } : {}}
+    >
+      <Link href={done ? "#" : href} style={{ textDecoration: "none" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            background: done ? "#f0f7f3" : "white",
+            border: `2px solid ${done ? "#5a8f6a44" : "rgba(26,18,8,.1)"}`,
+            borderRadius: 18,
+            padding: "13px 15px",
+            boxShadow: done
+              ? "3px 3px 0 rgba(61,107,79,.2)"
+              : "4px 4px 0 rgba(26,18,8,.07)",
+            opacity: done ? 0.73 : 1,
+            cursor: done ? "default" : "pointer",
+          }}
+        >
+          <motion.div
+            whileHover={!done ? { rotate: [-5, 5, -5, 0], scale: 1.15 } : {}}
+            transition={{ duration: 0.3 }}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 13,
+              flexShrink: 0,
+              background: bg,
+              border: `2px solid ${accent}55`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 20,
+              boxShadow: `2px 2px 0 ${accent}33`,
+            }}
+          >
+            {done ? "✅" : icon}
+          </motion.div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 13.5,
+                fontWeight: 800,
+                color: "#1a1208",
+                marginBottom: 2,
+                textDecoration: done ? "line-through" : "none",
+              }}
+            >
+              {title}
+            </div>
+            <div
+              style={{
+                fontSize: 11.5,
+                fontWeight: 500,
+                color: "#6b5c3e",
+                lineHeight: 1.4,
+              }}
+            >
+              {desc}
+            </div>
+          </div>
+          <div
+            style={{
+              background: done ? "#c6f7e6" : "#fffbef",
+              border: `1.5px solid ${done ? "#5a8f6a" : "#c9982a"}`,
+              borderRadius: 50,
+              padding: "4px 11px",
+              fontSize: 10.5,
+              fontWeight: 800,
+              color: done ? "#3d6b4f" : "#7a4a00",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            {reward}
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+function AINews() {
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [flipped, setFlipped] = useState<number | null>(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch("/api/ai/dashboard-news", { method: "POST" });
+        const d = await r.json();
+        if (d.items) setNews(d.items);
+      } catch {
+        setNews(FALLBACK_NEWS);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 12,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "'Fredoka',sans-serif",
+            fontSize: 19,
+            fontWeight: 600,
+            color: "#1a1208",
+          }}
+        >
+          🤖 AI Health Insights
+        </div>
+        <span
+          style={{
+            background: "#e8f5ec",
+            border: "1.5px solid #5a8f6a44",
+            borderRadius: 50,
+            padding: "3px 10px",
+            fontSize: 10,
+            fontWeight: 800,
+            color: "#3d6b4f",
+          }}
+        >
+          Gemini · Tap to flip
+        </span>
+      </div>
+      {loading ? (
+        <div style={{ display: "flex", gap: 10 }}>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                height: 130,
+                borderRadius: 18,
+                background: "#fde8c8",
+                border: "2px solid rgba(26,18,8,.07)",
+                animation: `shimmerPulse 1.5s ease-in-out ${i * 0.15}s infinite`,
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))",
+            gap: 10,
+          }}
+        >
+          {(news.length ? news : FALLBACK_NEWS).map((item, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 + i * 0.1 }}
+              style={{ perspective: 800 }}
+              onClick={() => setFlipped(flipped === i ? null : i)}
+            >
+              <motion.div
+                animate={{ rotateY: flipped === i ? 180 : 0 }}
+                transition={{ duration: 0.42, ease: "easeOut" }}
+                style={{
+                  transformStyle: "preserve-3d",
+                  position: "relative",
+                  minHeight: 130,
+                  cursor: "pointer",
+                }}
+              >
+                <div
+                  style={{
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                    background: item.color,
+                    border: "2.5px solid rgba(26,18,8,.1)",
+                    borderRadius: 18,
+                    padding: "16px",
+                    boxShadow: "4px 4px 0 rgba(26,18,8,.09)",
+                    position: "absolute",
+                    inset: 0,
+                  }}
+                >
+                  <div style={{ fontSize: 30, marginBottom: 8 }}>
+                    {item.emoji}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 800,
+                      color: "#1a1208",
+                      lineHeight: 1.4,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {item.headline}
+                  </div>
+                  <div
+                    style={{ fontSize: 9.5, fontWeight: 700, color: "#a8936a" }}
+                  >
+                    {item.source}
+                  </div>
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 10,
+                      right: 12,
+                      fontSize: 9.5,
+                      fontWeight: 700,
+                      color: "rgba(26,18,8,.3)",
+                    }}
+                  >
+                    flip →
+                  </div>
+                </div>
+                <div
+                  style={{
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                    transform: "rotateY(180deg)",
+                    background: "#1a3d28",
+                    border: "2.5px solid #5a8f6a",
+                    borderRadius: 18,
+                    padding: "16px",
+                    boxShadow: "4px 4px 0 rgba(26,18,8,.15)",
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      color: "rgba(255,255,255,.45)",
+                      textTransform: "uppercase",
+                      letterSpacing: ".06em",
+                      marginBottom: 6,
+                    }}
+                  >
+                    The fact
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "white",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {item.fact}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 8,
+                      fontSize: 9.5,
+                      fontWeight: 700,
+                      color: "#5ddba8",
+                    }}
+                  >
+                    📚 {item.source}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function DashboardClient({
   userName,
-  isGuest,
-  checkedInToday,
+  userId,
+  recentCheckins,
   checkInStreak,
-  urgesResisted,
-  avgStress,
-  totalCheckins,
-  chartData,
-  latestMood,
-  latestStress,
+  checkedInToday,
+  todayEntry,
+  earnedBadges,
+  userTriggers,
 }: Props) {
-  const path = usePathname();
-  const [greeting, setGreeting] = React.useState("Good morning");
-  const [today, setToday] = React.useState("");
+  const [timeOfDay, setTimeOfDay] = useState("morning");
+  const [guestName, setGuestName] = useState("");
+  const [quickStress, setQuickStress] = useState(5);
+  const [quickMood, setQuickMood] = useState("");
+  const [quickDone, setQuickDone] = useState(checkedInToday);
+  const [submitting, setSubmitting] = useState(false);
+  const [justDone, setJustDone] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const h = new Date().getHours();
-    setGreeting(
-      h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening",
-    );
-    setToday(
-      new Date().toLocaleDateString("en-AU", {
-        weekday: "long",
-        day: "numeric",
-        month: "short",
-      }),
-    );
-  }, []);
+    setTimeOfDay(h < 12 ? "morning" : h < 17 ? "afternoon" : "evening");
+    if (typeof window !== "undefined")
+      setGuestName(localStorage.getItem("loopless_guest_name") ?? "");
+    setQuickDone(checkedInToday);
+  }, [checkedInToday]);
 
-  /* ── MOODS ── */
-  const MOODS = ["😰", "😟", "😐", "🙂", "😊"];
-  const moodIdx = !latestStress
-    ? 2
-    : latestStress >= 9
-      ? 0
-      : latestStress >= 7
-        ? 1
-        : latestStress >= 5
-          ? 2
-          : latestStress >= 3
-            ? 3
-            : 4;
+  const firstName = (userName || guestName || "there").split(" ")[0];
+  const greet: Record<string, string> = {
+    morning: "Good morning",
+    afternoon: "Good afternoon",
+    evening: "Good evening",
+  };
+  const daysClean = checkInStreak;
+  const avgStress = recentCheckins.length
+    ? +(
+        recentCheckins.reduce((s, c) => s + c.stressLevel, 0) /
+        recentCheckins.length
+      ).toFixed(1)
+    : 0;
+  const urgesLogged = recentCheckins.filter(
+    (c) => c.triggerType && c.triggerType !== "none",
+  ).length;
+  const moneySaved = Math.round(daysClean * 2.5);
+  const earnedSet = new Set(earnedBadges.map((b) => b.badgeType));
+  const totalXP =
+    [...earnedSet].reduce(
+      (s, bt) =>
+        s +
+        (bt === "streak_100"
+          ? 500
+          : bt === "streak_30"
+            ? 300
+            : bt === "streak_12"
+              ? 150
+              : bt === "streak_7"
+                ? 100
+                : 75),
+      0,
+    ) +
+    daysClean * 10 +
+    recentCheckins.length * 20;
+  const level = Math.max(1, Math.floor(totalXP / 500) + 1);
+  const xpInLevel = totalXP % 500;
+  const sc = (s: number) =>
+    s <= 3 ? "#5a8f6a" : s <= 6 ? "#c9982a" : "#e07b5a";
+
+  async function submitQuick() {
+    if (!quickMood) return;
+    setSubmitting(true);
+    try {
+      const gid =
+        typeof window !== "undefined"
+          ? localStorage.getItem("loopless_guest_id")
+          : null;
+      const hdr: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (gid) hdr["x-guest-id"] = gid;
+      const r = await fetch("/api/checkin", {
+        method: "POST",
+        headers: hdr,
+        body: JSON.stringify({
+          stressLevel: quickStress,
+          mood: quickMood,
+          timezoneOffset: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
+      if (r.ok) {
+        setQuickDone(true);
+        setJustDone(true);
+        if (daysClean > 0) setShowCelebration(true);
+      }
+    } catch {}
+    setSubmitting(false);
+  }
+
+  const moodOpts = [
+    { val: "rough", emoji: "😫", color: "#e07b5a" },
+    { val: "meh", emoji: "😐", color: "#c9982a" },
+    { val: "okay", emoji: "🙂", color: "#5bb8f5" },
+    { val: "good", emoji: "😄", color: "#5a8f6a" },
+  ];
+
+  const QUESTS = [
+    {
+      icon: "📋",
+      title: "Daily check-in",
+      desc: "Log today's stress & mood",
+      reward: "+20 XP",
+      done: quickDone,
+      accent: "#5a8f6a",
+      bg: "#e8f5ec",
+      href: "/checkin",
+      delay: 0,
+    },
+    {
+      icon: "🌬️",
+      title: "Breathe 4-7-8",
+      desc: "2 min breathing session",
+      reward: "+15 XP",
+      done: false,
+      accent: "#5bb8f5",
+      bg: "#dff0fd",
+      href: "/coping/breathing",
+      delay: 0.07,
+    },
+    {
+      icon: "✍️",
+      title: "Urge journal",
+      desc: "Write about your last craving",
+      reward: "+25 XP",
+      done: false,
+      accent: "#c9982a",
+      bg: "#fffbef",
+      href: "/coping/journal",
+      delay: 0.14,
+    },
+    {
+      icon: "💡",
+      title: "Read myth card",
+      desc: "Bust a vaping myth today",
+      reward: "+10 XP",
+      done: false,
+      accent: "#7b6fa0",
+      bg: "#f0edf8",
+      href: "/myths",
+      delay: 0.21,
+    },
+  ];
+  const TOOLS = [
+    {
+      icon: "🌬️",
+      label: "4-7-8 Breathing",
+      sub: "2 min calm",
+      href: "/coping/breathing",
+      accent: "#5bb8f5",
+      bg: "#dff0fd",
+    },
+    {
+      icon: "🌀",
+      label: "5-4-3-2-1",
+      sub: "Grounding",
+      href: "/coping/grounding",
+      accent: "#7b6fa0",
+      bg: "#f0edf8",
+    },
+    {
+      icon: "✍️",
+      label: "Urge Journal",
+      sub: "Reflect",
+      href: "/coping/journal",
+      accent: "#c9982a",
+      bg: "#fffbef",
+    },
+    {
+      icon: "🆘",
+      label: "Crisis Card",
+      sub: "Emergency",
+      href: "/support",
+      accent: "#e07b5a",
+      bg: "#fdf0ea",
+    },
+  ];
 
   return (
-    <div className="app-shell">
-      {/* ══ SIDEBAR ══ */}
-      <aside className="sidebar">
-        <div className="sidebar-logo">
-          Loop<span>less</span>
-        </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'Nunito',sans-serif;background:#fef9f0;color:#1a1208;overflow-x:hidden;}
+        h1,h2,h3,h4{font-family:'Fredoka',sans-serif;}
+        a{color:inherit;text-decoration:none;}
+        @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.8);opacity:.5;}}
+        @keyframes shimmerPulse{0%,100%{opacity:.45;}50%{opacity:.9;}}
+        @keyframes confettiFall{0%{transform:translateY(-10px) rotate(0);opacity:1;}100%{transform:translateY(90px) rotate(360deg);opacity:0;}}
+        .dash{padding:24px;max-width:1200px;}
+        @media(max-width:640px){.dash{padding:12px 12px 100px;}}
+        .hero{border-radius:26px;padding:24px 22px;background:linear-gradient(135deg,#1a3d28 0%,#2d5a3d 55%,#1e4a32 100%);border:2.5px solid #1a1208;box-shadow:6px 6px 0 rgba(26,18,8,.22);position:relative;overflow:hidden;margin-bottom:14px;}
+        .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+        @media(max-width:640px){.stat-grid{grid-template-columns:1fr 1fr;}}
+        .dash-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+        @media(min-width:900px){.dash-grid{grid-template-columns:1fr 1fr;}}
+        .card{background:white;border:2px solid rgba(26,18,8,.1);border-radius:22px;padding:18px;box-shadow:4px 4px 0 rgba(26,18,8,.08);}
+        .sec-title{font-family:'Fredoka',sans-serif;font-size:19px;font-weight:600;color:#1a1208;}
+        .sec-link{font-size:12px;font-weight:800;color:#5a8f6a;}
+        .mood-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:16px;border:2.5px solid rgba(26,18,8,.1);background:white;cursor:pointer;transition:all .18s;box-shadow:3px 3px 0 rgba(26,18,8,.07);font-family:'Nunito',sans-serif;}
+        .mood-btn:hover{transform:translateY(-3px);box-shadow:3px 7px 0 rgba(26,18,8,.1);}
+        .mood-btn.sel{transform:translateY(-4px) scale(1.06);}
+        .slider{-webkit-appearance:none;appearance:none;width:100%;height:14px;border-radius:7px;outline:none;cursor:pointer;border:2px solid rgba(26,18,8,.12);box-shadow:inset 0 2px 4px rgba(0,0,0,.08),2px 2px 0 rgba(26,18,8,.06);}
+        .slider::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:white;border:2.5px solid #1a1208;box-shadow:0 3px 10px rgba(0,0,0,.18),2px 2px 0 rgba(26,18,8,.12);cursor:grab;}
+        .slider:active::-webkit-slider-thumb{cursor:grabbing;transform:scale(1.2);}
+        .sub-btn{width:100%;border:2.5px solid #1a1208;border-radius:14px;padding:13px;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:transform .12s,box-shadow .12s;display:flex;align-items:center;justify-content:center;gap:8px;}
+        .sub-btn:hover{transform:translate(-1px,-2px);}
+        .sub-btn:active{transform:translate(3px,3px);}
+        .sub-btn:disabled{opacity:.45;pointer-events:none;}
+        .badge-chip{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 8px;border-radius:16px;border:2px solid rgba(26,18,8,.1);background:white;box-shadow:3px 3px 0 rgba(26,18,8,.07);min-width:60px;flex-shrink:0;}
+        .badge-chip.earned{border-color:#5a8f6a44;background:linear-gradient(135deg,#f0f7f4,#e8f5ec);}
+        .badge-chip.locked{opacity:.35;filter:grayscale(.6);}
+      `}</style>
 
-        <div className="nav-group-label">Main</div>
-        {NAV_MAIN.map((n) => (
-          <NavLink key={n.href} {...n} active={path === n.href} />
-        ))}
-
-        <div className="nav-group-label">Tools</div>
-        {NAV_TOOLS.map((n) => (
-          <NavLink key={n.href} {...n} active={path === n.href} />
-        ))}
-
-        <div className="nav-group-label">Account</div>
-        {NAV_ACCOUNT.map((n) => (
-          <NavLink key={n.href} {...n} active={path === n.href} />
-        ))}
-
-        <div className="sidebar-user">
-          <div className="sidebar-avatar">
-            {userName.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div
+      {/* Celebration */}
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 900,
+              background: "linear-gradient(135deg,#1a3d28,#2d5a3d)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onClick={() => setShowCelebration(false)}
+          >
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0, opacity: 0.7 }}
+                animate={{ scale: 6, opacity: 0 }}
+                transition={{ duration: 1.5, delay: i * 0.2, ease: "easeOut" }}
+                style={{
+                  position: "absolute",
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  border: "2px solid #5ddba8",
+                }}
+              />
+            ))}
+            <motion.div
+              initial={{ scale: 0, rotate: -20 }}
+              animate={{ scale: [0, 1.4, 1.1], rotate: [-20, 8, -4, 0] }}
+              transition={{ duration: 0.8 }}
+              style={{ fontSize: 80, lineHeight: 1 }}
+            >
+              🔥
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
               style={{
-                fontSize: "12.5px",
-                fontWeight: 500,
-                color: "var(--text1)",
+                fontFamily: "'Fredoka',sans-serif",
+                fontSize: 36,
+                fontWeight: 600,
+                color: "white",
+                marginTop: 16,
               }}
             >
-              {userName}
-            </div>
-            <div style={{ fontSize: "10.5px", color: "var(--text3)" }}>
-              Day {checkInStreak} streak
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* ══ MAIN ══ */}
-      <main className="app-main">
-        {/* Page header */}
-        <div
-          className="page-header"
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-          }}
-        >
-          <div>
-            <p
+              Day {daysClean} streak! 🎉
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
               style={{
-                fontSize: "11.5px",
-                color: "var(--text3)",
-                marginBottom: "2px",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "rgba(255,255,255,.6)",
+                marginTop: 8,
               }}
             >
-              {today}
-            </p>
-            <h1 className="page-title">
-              {greeting}, {userName}
-            </h1>
-            <p className="page-sub">Here&apos;s your weekly overview</p>
-          </div>
-          <div style={{ marginTop: "4px" }}>
-            {isGuest && (
-              <Link
-                href="/register"
-                className="badge badge-amber"
-                style={{ textDecoration: "none" }}
-              >
-                Guest mode · Save progress →
-              </Link>
-            )}
-          </div>
-        </div>
+              Tap anywhere to continue
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        <div className="page-content" style={{ paddingTop: 0 }}>
-          {/* ── METRICS ROW ── */}
+      {/* Confetti */}
+      <AnimatePresence>
+        {justDone && (
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "10px",
-              marginBottom: "18px",
+              position: "fixed",
+              inset: 0,
+              pointerEvents: "none",
+              zIndex: 500,
             }}
-            className="animate-fade-up"
           >
-            {[
-              {
-                label: "Day streak",
-                value: checkInStreak,
-                sub: "+1 today",
-                icon: "zap",
-                accent: "var(--purple2)",
-              },
-              {
-                label: "Urges resisted",
-                value: urgesResisted,
-                sub: "this week",
-                icon: "trend",
-                accent: "var(--green)",
-              },
-              {
-                label: "Avg stress",
-                value: avgStress !== null ? `${avgStress}/10` : "-",
-                sub: "–0.8 vs last wk",
-                icon: "bar",
-                accent: "#f59e0b",
-              },
-              {
-                label: "Check-ins",
-                value: totalCheckins,
-                sub: "this month",
-                icon: "cal",
-                accent: "var(--purple2)",
-              },
-            ].map(({ label, value, sub, icon, accent }) => (
-              <div key={label} className="metric-card">
-                <div className="metric-label">{label}</div>
-                <div className="metric-val" style={{ color: accent }}>
-                  {value ?? "-"}
-                </div>
-                <div className="metric-sub">{sub}</div>
-              </div>
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  position: "absolute",
+                  left: `${Math.random() * 100}%`,
+                  top: "-5%",
+                  width: 10,
+                  height: 10,
+                  borderRadius: i % 3 === 0 ? "50%" : "3px",
+                  background: [
+                    "#5a8f6a",
+                    "#f5c842",
+                    "#e07b5a",
+                    "#5bb8f5",
+                    "#7b6fa0",
+                  ][i % 5],
+                  border: "1.5px solid rgba(26,18,8,.2)",
+                  animation: `confettiFall ${1.4 + Math.random() * 0.8}s ease-in ${Math.random() * 0.4}s forwards`,
+                }}
+              />
             ))}
           </div>
+        )}
+      </AnimatePresence>
 
-          {/* ── TWO COLUMN ── */}
-          <div
+      <div className="dash">
+        {/* HERO */}
+        <motion.div
+          className="hero"
+          initial={{ opacity: 0, y: -18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <SmokeCanvas />
+          <motion.div
+            animate={{ scale: [1, 1.1, 1], x: [0, 10, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "12px",
-              marginBottom: "12px",
+              position: "absolute",
+              top: "-20%",
+              right: "-5%",
+              width: 200,
+              height: 200,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle,rgba(93,219,168,.18) 0%,transparent 70%)",
+              pointerEvents: "none",
             }}
-          >
-            {/* Stress + urge chart */}
-            <div className="card card-md animate-fade-up anim-d1">
-              <div
+          />
+          <div style={{ position: "relative", zIndex: 2 }}>
+            <motion.div
+              initial={{ opacity: 0, x: -18 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "rgba(255,255,255,.12)",
+                border: "1.5px solid rgba(255,255,255,.2)",
+                borderRadius: 50,
+                padding: "6px 14px",
+                fontSize: 12,
+                fontWeight: 800,
+                color: "rgba(255,255,255,.9)",
+                marginBottom: 12,
+              }}
+            >
+              ⚔️ Level {level} Loop Breaker
+              <span
                 style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  marginBottom: "14px",
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: "#5ddba8",
+                  display: "inline-block",
+                  animation: "pulseDot 2s infinite",
                 }}
-              >
-                <div>
-                  <h3
-                    style={{
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      marginBottom: "2px",
-                    }}
-                  >
-                    Stress &amp; urge trend
-                  </h3>
-                  <p style={{ fontSize: "11px", color: "var(--text3)" }}>
-                    Last 14 days
-                  </p>
-                </div>
-                <Link
-                  href="/insights"
-                  style={{
-                    fontSize: "11.5px",
-                    color: "var(--purple2)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "3px",
-                  }}
-                >
-                  View all{" "}
-                  <Icon name="chevron" size={12} color="var(--purple2)" />
-                </Link>
-              </div>
-              <div
-                style={{ height: "160px", minHeight: "160px", width: "100%" }}
-              >
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                  <AreaChart
-                    data={chartData}
-                    margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
-                  >
-                    <defs>
-                      <linearGradient id="gStress" x1="0" y1="0" x2="0" y2="1">
-                        <stop
-                          offset="0%"
-                          stopColor="#7c6df5"
-                          stopOpacity={0.25}
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="#7c6df5"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                      <linearGradient id="gUrge" x1="0" y1="0" x2="0" y2="1">
-                        <stop
-                          offset="0%"
-                          stopColor="#f87171"
-                          stopOpacity={0.2}
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="#f87171"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="rgba(255,255,255,0.04)"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="day"
-                      tick={{
-                        fontSize: 10,
-                        fill: "var(--text3)",
-                        fontFamily: "var(--font-sans)",
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 10, fill: "var(--text3)" }}
-                      axisLine={false}
-                      tickLine={false}
-                      domain={[0, 10]}
-                    />
-                    <Tooltip content={<ChartTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="stress"
-                      stroke="#7c6df5"
-                      strokeWidth={2}
-                      fill="url(#gStress)"
-                      dot={{ fill: "#7c6df5", r: 3, strokeWidth: 0 }}
-                      connectNulls
-                      name="Stress"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="urges"
-                      stroke="#f87171"
-                      strokeWidth={1.5}
-                      fill="url(#gUrge)"
-                      dot={{ fill: "#f87171", r: 2, strokeWidth: 0 }}
-                      name="Urges"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-              <div style={{ display: "flex", gap: "14px", marginTop: "8px" }}>
-                {[
-                  ["#7c6df5", "Stress level"],
-                  ["#f87171", "Urge logged"],
-                ].map(([c, l]) => (
-                  <div
-                    key={l}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "5px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "8px",
-                        height: "8px",
-                        borderRadius: "50%",
-                        background: c,
-                      }}
-                    />
-                    <span style={{ fontSize: "10.5px", color: "var(--text3)" }}>
-                      {l}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Personalised insights */}
-            <div className="card card-md animate-fade-up anim-d2">
-              <h3
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  marginBottom: "2px",
-                }}
-              >
-                Personalised insights
-              </h3>
-              <p
-                style={{
-                  fontSize: "11px",
-                  color: "var(--text3)",
-                  marginBottom: "14px",
-                }}
-              >
-                Generated from your patterns
-              </p>
-              <ul
-                style={{
-                  listStyle: "none",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                {[
-                  {
-                    dot: "var(--red)",
-                    text: "Peak risk window: Urges occur most on Sunday evenings after 8pm. Consider pre-planning a coping activity.",
-                  },
-                  {
-                    dot: "var(--amber)",
-                    text: "Stress trigger: Study pressure precedes 71% of your logged urges. Exams approaching in 2 weeks.",
-                  },
-                  {
-                    dot: "var(--green)",
-                    text: "Coping success: Breathing exercises have a 94% calming rate for you. Keep using them.",
-                  },
-                  {
-                    dot: "var(--purple2)",
-                    text: "Positive trend: Average stress is down 19% compared to your first two weeks.",
-                  },
-                ].map(({ dot, text }) => (
-                  <li
-                    key={text}
-                    style={{
-                      display: "flex",
-                      gap: "10px",
-                      padding: "10px 0",
-                      borderBottom: "1px solid var(--border)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "8px",
-                        height: "8px",
-                        borderRadius: "50%",
-                        background: dot,
-                        marginTop: "4px",
-                        flexShrink: 0,
-                      }}
-                    />
-                    <p
-                      style={{
-                        fontSize: "12px",
-                        color: "var(--text2)",
-                        lineHeight: 1.55,
-                      }}
-                      dangerouslySetInnerHTML={{
-                        __html: text.replace(
-                          /(\d+%|Sunday evenings|Study pressure|Breathing exercises|down 19%)/g,
-                          '<strong style="color:var(--text1)">$1</strong>',
-                        ),
-                      }}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* ── CHECK-IN + URGE ROW ── */}
-          <div
-            style={{ marginBottom: "12px" }}
-            className="animate-fade-up anim-d3"
-          >
-            {!checkedInToday ? (
-              <Link
-                href="/checkin"
-                style={{ display: "block", textDecoration: "none" }}
-              >
-                <div
-                  className="card card-md card-purple"
-                  style={{ cursor: "pointer" }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    <div>
-                      <p
-                        style={{
-                          fontSize: "11px",
-                          color: "var(--purple2)",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.07em",
-                          fontWeight: 600,
-                          marginBottom: "3px",
-                        }}
-                      >
-                        How are you feeling?
-                      </p>
-                      <h3 style={{ fontSize: "15px", fontWeight: 600 }}>
-                        Log today&apos;s check-in
-                      </h3>
-                    </div>
-                    <Icon name="chevron" size={16} color="var(--purple2)" />
-                  </div>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    {MOODS.map((m, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          flex: 1,
-                          background: "var(--bg3)",
-                          border: "1px solid var(--border)",
-                          borderRadius: "8px",
-                          padding: "6px 2px",
-                          textAlign: "center",
-                          fontSize: "18px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {m}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Link>
-            ) : (
-              <div
-                className="card card-md"
-                style={{
-                  background: "rgba(74,222,128,0.06)",
-                  borderColor: "rgba(74,222,128,0.2)",
-                }}
-              >
+              />
+            </motion.div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+              }}
+            >
+              <div>
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "rgba(255,255,255,.5)",
+                    marginBottom: 3,
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                    }}
-                  >
-                    <span style={{ fontSize: "30px" }}>{MOODS[moodIdx]}</span>
-                    <div>
-                      <p
-                        style={{
-                          fontSize: "11px",
-                          color: "var(--green)",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.06em",
-                          fontWeight: 600,
-                          marginBottom: "2px",
-                        }}
-                      >
-                        Today&apos;s check-in
-                      </p>
-                      <p style={{ fontSize: "13px", color: "var(--text1)" }}>
-                        Stress <strong>{latestStress}/10</strong> ·{" "}
-                        <span style={{ textTransform: "capitalize" }}>
-                          {latestMood}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  <span className="badge badge-green">Done ✓</span>
+                  {greet[timeOfDay]} 👋
+                </div>
+                <div
+                  style={{
+                    fontFamily: "'Fredoka',sans-serif",
+                    fontSize: 34,
+                    fontWeight: 600,
+                    color: "white",
+                    lineHeight: 1.1,
+                    marginBottom: 12,
+                  }}
+                >
+                  {firstName}!
                 </div>
               </div>
-            )}
+              <div style={{ position: "relative", display: "inline-block" }}>
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1], rotate: [0, -3, 3, 0] }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  style={{ fontSize: 46, lineHeight: 1, display: "block" }}
+                >
+                  🔥
+                </motion.div>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.5, type: "spring", bounce: 0.6 }}
+                  style={{
+                    position: "absolute",
+                    bottom: -6,
+                    right: -12,
+                    background: "#e07b5a",
+                    color: "white",
+                    border: "2.5px solid #1a1208",
+                    borderRadius: 20,
+                    padding: "2px 9px",
+                    fontSize: 13,
+                    fontWeight: 900,
+                    boxShadow: "2px 2px 0 rgba(168,75,42,.45)",
+                  }}
+                >
+                  {daysClean}
+                </motion.div>
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 6,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 800,
+                  color: "rgba(255,255,255,.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: ".06em",
+                }}
+              >
+                XP to Level {level + 1}
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: "#5ddba8" }}>
+                {xpInLevel} / 500
+              </span>
+            </div>
+            <XPBar pct={(xpInLevel / 500) * 100} />
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "rgba(255,255,255,.38)",
+                marginTop: 5,
+              }}
+            >
+              {500 - xpInLevel} XP to next level · Complete daily quests ⚔️
+            </div>
           </div>
+        </motion.div>
 
-          {/* ── RECOMMENDED COPING ── */}
-          <div className="animate-fade-up anim-d4">
+        {/* CHECK-IN CARD */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", bounce: 0.25 }}
+          className="card"
+          style={{ marginBottom: 14, position: "relative", overflow: "hidden" }}
+        >
+          {!quickDone && (
+            <div style={{ position: "absolute", inset: 0, opacity: 0.3 }}>
+              <SmokeCanvas opacity={0.3} />
+            </div>
+          )}
+          <div style={{ position: "relative", zIndex: 1 }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: "10px",
+                marginBottom: 12,
               }}
             >
-              <h3 style={{ fontSize: "13px", fontWeight: 600 }}>
-                Recommended for you right now
-              </h3>
-              <Link
-                href="/coping"
-                style={{
-                  fontSize: "11.5px",
-                  color: "var(--purple2)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "3px",
-                }}
-              >
-                All tools{" "}
-                <Icon name="chevron" size={12} color="var(--purple2)" />
-              </Link>
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "10px",
-              }}
-            >
-              {COPING.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/coping/${c.id}`}
-                  style={{ textDecoration: "none" }}
+              <div>
+                <div
+                  style={{
+                    fontFamily: "'Fredoka',sans-serif",
+                    fontSize: 18,
+                    fontWeight: 600,
+                    color: "#1a1208",
+                  }}
                 >
-                  <div
-                    className="card card-sm"
+                  📋 Daily check-in
+                </div>
+                <div
+                  style={{ fontSize: 11, fontWeight: 600, color: "#a8936a" }}
+                >
+                  +20 XP · Under 60 seconds
+                </div>
+              </div>
+              {quickDone ? (
+                <span
+                  style={{
+                    background: "#e8f5ec",
+                    border: "1.5px solid #5a8f6a",
+                    borderRadius: 50,
+                    padding: "5px 12px",
+                    fontSize: 11.5,
+                    fontWeight: 800,
+                    color: "#1a4a2a",
+                  }}
+                >
+                  ✅ Done today
+                </span>
+              ) : (
+                <Link
+                  href="/checkin"
+                  style={{ fontSize: 12, fontWeight: 800, color: "#5a8f6a" }}
+                >
+                  Full check-in →
+                </Link>
+              )}
+            </div>
+            <AnimatePresence mode="wait">
+              {quickDone ? (
+                <motion.div
+                  key="done"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", bounce: 0.3 }}
+                >
+                  {justDone && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{
+                        background: "#e8f5ec",
+                        border: "1.5px solid #5a8f6a",
+                        borderRadius: 12,
+                        padding: "9px 14px",
+                        fontSize: 12.5,
+                        fontWeight: 700,
+                        color: "#1a4a2a",
+                        marginBottom: 10,
+                        textAlign: "center",
+                      }}
+                    >
+                      🎉 Check-in saved! +20 XP earned!
+                    </motion.div>
+                  )}
+                  {todayEntry && (
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {[
+                        {
+                          l: "Stress",
+                          v: `${todayEntry.stressLevel}/10`,
+                          c: sc(todayEntry.stressLevel),
+                        },
+                        { l: "Mood", v: todayEntry.mood, c: "#7b6fa0" },
+                      ].map((s, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            background: `${s.c}15`,
+                            border: `1.5px solid ${s.c}44`,
+                            borderRadius: 14,
+                            padding: "10px 14px",
+                            flex: 1,
+                            minWidth: 80,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 800,
+                              color: "#a8936a",
+                              textTransform: "uppercase",
+                              letterSpacing: ".05em",
+                              marginBottom: 3,
+                            }}
+                          >
+                            {s.l}
+                          </div>
+                          <div
+                            style={{
+                              fontFamily: "'Fredoka',sans-serif",
+                              fontSize: 18,
+                              fontWeight: 600,
+                              color: s.c,
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            {s.v}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <Link
+                    href="/checkin"
                     style={{
-                      cursor: "pointer",
-                      transition: "border-color 0.15s",
+                      display: "block",
+                      textAlign: "center",
+                      marginTop: 10,
+                      fontSize: 12.5,
+                      fontWeight: 800,
+                      color: "#5a8f6a",
                     }}
-                    onMouseEnter={(e) =>
-                      ((e.currentTarget as HTMLElement).style.borderColor =
-                        c.accent + "66")
-                    }
-                    onMouseLeave={(e) =>
-                      ((e.currentTarget as HTMLElement).style.borderColor =
-                        "var(--border)")
-                    }
                   >
+                    View history & trends →
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="pending"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div style={{ marginBottom: 14 }}>
                     <div
                       style={{
-                        width: "34px",
-                        height: "34px",
-                        borderRadius: "8px",
-                        background: c.color,
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: "10px",
+                        gap: 10,
+                        marginBottom: 8,
                       }}
                     >
-                      <div
-                        style={{
-                          width: "14px",
-                          height: "14px",
-                          borderRadius: "50%",
-                          background: c.accent + "33",
-                          border: `1.5px solid ${c.accent}`,
-                        }}
-                      />
+                      <motion.span
+                        key={quickStress}
+                        initial={{ scale: 0.6 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", bounce: 0.6 }}
+                        style={{ fontSize: 32, lineHeight: 1 }}
+                      >
+                        {quickStress <= 2
+                          ? "😌"
+                          : quickStress <= 4
+                            ? "🙂"
+                            : quickStress <= 6
+                              ? "😐"
+                              : quickStress <= 8
+                                ? "😰"
+                                : "😫"}
+                      </motion.span>
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 800,
+                            color: "#a8936a",
+                            textTransform: "uppercase",
+                            letterSpacing: ".05em",
+                          }}
+                        >
+                          Stress level
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: "'Fredoka',sans-serif",
+                            fontSize: 20,
+                            fontWeight: 600,
+                            color: sc(quickStress),
+                          }}
+                        >
+                          {quickStress}/10
+                        </div>
+                      </div>
                     </div>
-                    <p
+                    <input
+                      type="range"
+                      min={1}
+                      max={10}
+                      value={quickStress}
+                      onChange={(e) => setQuickStress(+e.target.value)}
+                      className="slider"
                       style={{
-                        fontSize: "12.5px",
-                        fontWeight: 600,
-                        color: "var(--text1)",
-                        marginBottom: "3px",
-                        fontFamily: "var(--font-display)",
+                        background: `linear-gradient(to right,${sc(quickStress)} 0%,${sc(quickStress)} ${((quickStress - 1) / 9) * 100}%,#fde8c8 ${((quickStress - 1) / 9) * 100}%,#fde8c8 100%)`,
+                      }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <div
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: 800,
+                        color: "#a8936a",
+                        textTransform: "uppercase",
+                        letterSpacing: ".05em",
+                        marginBottom: 8,
                       }}
                     >
-                      {c.label}
-                    </p>
-                    <p style={{ fontSize: "10.5px", color: "var(--text3)" }}>
-                      {c.sub}
-                    </p>
+                      How are you feeling?
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(4,1fr)",
+                        gap: 8,
+                      }}
+                    >
+                      {moodOpts.map((m) => {
+                        const sel = quickMood === m.val;
+                        return (
+                          <motion.button
+                            key={m.val}
+                            className={`mood-btn${sel ? " sel" : ""}`}
+                            onClick={() => setQuickMood(m.val)}
+                            whileTap={{ scale: 0.88 }}
+                            style={{
+                              background: sel ? `${m.color}18` : "white",
+                              borderColor: sel ? m.color : "rgba(26,18,8,.1)",
+                              boxShadow: sel
+                                ? `2px 2px 0 ${m.color}44`
+                                : "2px 2px 0 rgba(26,18,8,.06)",
+                            }}
+                          >
+                            <motion.span
+                              animate={
+                                sel
+                                  ? {
+                                      scale: [1, 1.5, 1.2],
+                                      rotate: [0, -12, 12, 0],
+                                    }
+                                  : {}
+                              }
+                              transition={{ duration: 0.4 }}
+                              style={{
+                                fontSize: sel ? 28 : 22,
+                                lineHeight: 1,
+                                display: "block",
+                              }}
+                            >
+                              {m.emoji}
+                            </motion.span>
+                            <span
+                              style={{
+                                fontSize: 9.5,
+                                fontWeight: 700,
+                                color: sel ? m.color : "#6b5c3e",
+                                textTransform: "capitalize",
+                              }}
+                            >
+                              {m.val}
+                            </span>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
                   </div>
+                  <button
+                    className="sub-btn"
+                    disabled={!quickMood || submitting}
+                    onClick={submitQuick}
+                    style={{
+                      background: quickMood ? sc(quickStress) : "#d4c8b0",
+                      color: "white",
+                      boxShadow: quickMood
+                        ? `4px 4px 0 rgba(26,18,8,.18)`
+                        : "none",
+                    }}
+                  >
+                    {submitting
+                      ? "⏳ Saving…"
+                      : quickMood
+                        ? "✅ Log check-in (+20 XP)"
+                        : "Pick a mood to continue"}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        {/* STATS */}
+        <div className="stat-grid">
+          <StatTile
+            icon="🌿"
+            label="Day streak"
+            value={`${daysClean}`}
+            sub="check-ins"
+            accent="#5a8f6a"
+            bg="#e8f5ec"
+            delay={0.1}
+            pulse={daysClean > 0}
+          />
+          <StatTile
+            icon="🛡️"
+            label="Urges logged"
+            value={`${urgesLogged}`}
+            sub="this week"
+            accent="#7b6fa0"
+            bg="#f0edf8"
+            delay={0.17}
+          />
+          <StatTile
+            icon="💰"
+            label="Money saved"
+            value={`$${moneySaved}`}
+            sub="est. savings"
+            accent="#c9982a"
+            bg="#fffbef"
+            delay={0.24}
+          />
+          <StatTile
+            icon="⏱️"
+            label="Time saved"
+            value={`${daysClean * 15}m`}
+            sub="no breaks"
+            accent="#e07b5a"
+            bg="#fdf0ea"
+            delay={0.31}
+          />
+        </div>
+
+        {/* TWO-COL */}
+        <div className="dash-grid">
+          <div>
+            <motion.div
+              className="card"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28 }}
+              style={{ marginBottom: 14 }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 14,
+                }}
+              >
+                <div className="sec-title">📊 Stress this week</div>
+                <Link href="/checkin" className="sec-link">
+                  History →
                 </Link>
-              ))}
+              </div>
+              <CartoonChart checkins={recentCheckins} />
+            </motion.div>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <div className="sec-title">⚔️ Today's quests</div>
+                <div
+                  style={{ fontSize: 12, fontWeight: 800, color: "#c9982a" }}
+                >
+                  {QUESTS.filter((q) => q.done).length}/{QUESTS.length} done
+                </div>
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+              >
+                {QUESTS.map((q, i) => (
+                  <QuestRow key={i} {...q} />
+                ))}
+              </div>
             </div>
           </div>
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.38 }}
+              style={{ marginBottom: 14 }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <div className="sec-title">🛠️ Coping tools</div>
+                <Link href="/coping" className="sec-link">
+                  All →
+                </Link>
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 10,
+                }}
+              >
+                {TOOLS.map((t, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{
+                      delay: 0.4 + i * 0.06,
+                      type: "spring",
+                      bounce: 0.3,
+                    }}
+                    whileHover={{ y: -3 }}
+                    whileTap={{ scale: 0.94 }}
+                  >
+                    <Link
+                      href={t.href}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 11,
+                        background: t.bg,
+                        border: `2px solid ${t.accent}55`,
+                        borderRadius: 18,
+                        padding: "13px",
+                        boxShadow: `3px 3px 0 ${t.accent}44`,
+                      }}
+                    >
+                      <motion.div
+                        whileHover={{ rotate: [-5, 5, -5, 0], scale: 1.1 }}
+                        transition={{ duration: 0.35 }}
+                        style={{
+                          width: 42,
+                          height: 42,
+                          borderRadius: 13,
+                          background: "white",
+                          border: `2px solid ${t.accent}66`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 22,
+                          flexShrink: 0,
+                          boxShadow: `2px 2px 0 ${t.accent}33`,
+                        }}
+                      >
+                        {t.icon}
+                      </motion.div>
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 800,
+                            color: "#1a1208",
+                          }}
+                        >
+                          {t.label}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 600,
+                            color: "#6b5c3e",
+                          }}
+                        >
+                          {t.sub}
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+            <motion.div
+              className="card"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.44 }}
+              style={{ marginBottom: 14 }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <div className="sec-title">🏅 Badges</div>
+                <Link href="/profile" className="sec-link">
+                  All →
+                </Link>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  overflowX: "auto",
+                  paddingBottom: 4,
+                }}
+              >
+                {ALL_BADGE_TYPES.map((bt, i) => {
+                  const e = earnedSet.has(bt);
+                  const m = BADGE_META[bt];
+                  return (
+                    <motion.div
+                      key={i}
+                      className={`badge-chip${e ? " earned" : " locked"}`}
+                      initial={{ opacity: 0, scale: 0.6 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{
+                        delay: 0.5 + i * 0.07,
+                        type: "spring",
+                        bounce: 0.45,
+                      }}
+                      whileHover={e ? { scale: 1.1, y: -3 } : {}}
+                      style={{ cursor: e ? "pointer" : "default" }}
+                    >
+                      <motion.span
+                        animate={e ? { rotate: [0, 10, -10, 0] } : {}}
+                        transition={{ delay: 0.6 + i * 0.07, duration: 0.5 }}
+                        style={{ fontSize: e ? 26 : 20, display: "block" }}
+                      >
+                        {e ? m.emoji : "🔒"}
+                      </motion.span>
+                      <span
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 800,
+                          color: e ? "#1a1208" : "#a8936a",
+                          textAlign: "center",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {m.label}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+              {earnedBadges.length === 0 && (
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#a8936a",
+                    marginTop: 8,
+                  }}
+                >
+                  Complete your first check-in to earn 🌱!
+                </div>
+              )}
+            </motion.div>
+            {userTriggers.length > 0 && (
+              <motion.div
+                className="card"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                style={{ marginBottom: 14 }}
+              >
+                <div
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: "#1a1208",
+                    marginBottom: 10,
+                  }}
+                >
+                  🎯 Your triggers
+                </div>
+                <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                  {userTriggers.map((t, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: i * 0.06, type: "spring" }}
+                      style={{
+                        background: "#e8f5ec",
+                        border: "1.5px solid #5a8f6a44",
+                        borderRadius: 50,
+                        padding: "6px 13px",
+                        fontSize: 12.5,
+                        fontWeight: 700,
+                        color: "#1a4a2a",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {t.triggerType}
+                    </motion.span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
-      </main>
 
-      {/* ══ MOBILE BOTTOM NAV ══ */}
-      <nav className="bottom-nav">
-        {[
-          { href: "/dashboard", icon: "home", label: "Home" },
-          { href: "/insights", icon: "bar", label: "Insights" },
-          { href: "/urge", icon: "alert", label: "Support" },
-          { href: "/coping", icon: "wind", label: "Tools" },
-          { href: "/profile", icon: "user", label: "Profile" },
-        ].map(({ href, icon, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`bnav-item ${path === href ? "active" : ""}`}
-          >
-            <Icon
-              name={icon}
-              size={20}
-              color={path === href ? "var(--purple2)" : "var(--text3)"}
-            />
-            {label}
+        {/* AI NEWS */}
+        <AINews />
+
+        {/* SOS FAB */}
+        <motion.div
+          style={{ position: "fixed", bottom: 84, right: 20, zIndex: 200 }}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 1.2, type: "spring", bounce: 0.5 }}
+        >
+          <Link href="/urge">
+            <motion.button
+              whileHover={{ scale: 1.12 }}
+              whileTap={{ scale: 0.9 }}
+              animate={{ rotate: [0, -8, 8, -6, 0] }}
+              transition={{
+                duration: 0.5,
+                delay: 6,
+                repeat: Infinity,
+                repeatDelay: 12,
+              }}
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                background: "#e07b5a",
+                color: "white",
+                border: "3px solid #1a1208",
+                fontSize: 26,
+                boxShadow:
+                  "4px 4px 0 rgba(168,75,42,.5),0 8px 24px rgba(224,123,90,.35)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              🆘
+            </motion.button>
           </Link>
-        ))}
-      </nav>
-    </div>
+          <div
+            style={{
+              position: "absolute",
+              top: -26,
+              right: 0,
+              background: "#1a1208",
+              color: "#c6f7e6",
+              borderRadius: 8,
+              padding: "4px 10px",
+              fontSize: 10,
+              fontWeight: 700,
+              whiteSpace: "nowrap",
+              boxShadow: "2px 2px 0 rgba(0,0,0,.2)",
+            }}
+          >
+            Urge SOS
+          </div>
+        </motion.div>
+      </div>
+    </>
   );
 }

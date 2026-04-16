@@ -1,81 +1,54 @@
-// src/app/api/auth/guest/route.ts
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { v4 as uuid } from "uuid";
-
-// Lazy-import db so a missing/broken DATABASE_URL doesn't crash the module
-async function tryDb() {
-  try {
-    const { db } = await import("@/lib/db");
-    const { users } = await import("@/lib/db/schema");
-    return { db, users };
-  } catch {
-    return null;
-  }
-}
+import { withDb } from "@/lib/db/with-db";
 
 export async function POST(req: Request) {
+  let bodyGuestId: string | undefined;
+
   try {
     const body = await req.json().catch(() => ({}));
-    const existingId: string | undefined = body.guestId;
-    const firstName: string | undefined = body.firstName;
-    const ageGroup: string | undefined = body.ageGroup;
+    bodyGuestId = body.guestId;
+    const firstName: string = body.firstName ?? "";
+    const ageGroup: string = body.ageGroup ?? "";
 
-    const dbCtx = await tryDb();
-
-    // ── DB available path ──────────────────────────────────────────
-    if (dbCtx) {
-      const { db, users } = dbCtx;
+    const guestId = await withDb(async (db) => {
+      const { users } = await import("@/lib/db/schema");
       const { eq } = await import("drizzle-orm");
 
-      // Return existing guest if valid
-      if (existingId) {
-        try {
-          const existing = await db.query.users.findFirst({
-            where: eq(users.id, existingId),
-          });
-          if (existing)
-            return NextResponse.json({ guestId: existing.id, mode: "db" });
-        } catch {
-          /* fall through to create */
-        }
+      // Verify existing ID is really in DB
+      if (bodyGuestId) {
+        const existing = await db.query.users.findFirst({
+          where: eq(users.id, bodyGuestId),
+        });
+        if (existing) return existing.id;
       }
 
-      // Create new guest in DB
-      const guestName = firstName
-        ? firstName.trim().slice(0, 40)
-        : `Guest_${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+      const newId = bodyGuestId ?? uuid();
+      const guestName =
+        firstName.trim() || `Guest_${newId.slice(0, 5).toUpperCase()}`;
 
-      try {
-        const [guest] = await db
-          .insert(users)
-          .values({
-            id: uuid(),
-            guestName,
-            isGuest: true,
-            ageGroup: ageGroup ?? null,
-            consentAt: new Date(),
-          })
-          .returning({ id: users.id });
+      await db
+        .insert(users)
+        .values({
+          id: newId,
+          guestName,
+          isGuest: true,
+          ageGroup: ageGroup || null,
+          consentAt: new Date(),
+        })
+        .onConflictDoNothing();
 
-        return NextResponse.json({ guestId: guest.id, mode: "db" });
-      } catch (dbErr) {
-        console.error(
-          "DB insert failed, falling back to local-only guest:",
-          dbErr,
-        );
-        // Fall through to offline-guest below
-      }
-    }
+      return newId;
+    });
 
-    // ── Offline / DB-unavailable fallback ─────────────────────────
-    // Generate a UUID client-side that won't be persisted server-side.
-    // The client should store this in localStorage; once DB is reachable
-    // a sync endpoint can persist it.
-    const offlineId = existingId ?? uuid();
-    return NextResponse.json({ guestId: offlineId, mode: "offline" });
-  } catch (err) {
-    console.error("Guest API unexpected error:", err);
-    // Last-resort: still give the client an ID so UX doesn't break
-    return NextResponse.json({ guestId: uuid(), mode: "offline" });
+    return NextResponse.json({ guestId, mode: "db" });
+  } catch (err: any) {
+    console.error("Guest route:", err?.message);
+    return NextResponse.json({
+      guestId: bodyGuestId ?? uuid(),
+      mode: "offline",
+    });
   }
 }

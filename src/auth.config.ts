@@ -1,10 +1,9 @@
-// src/auth.config.ts
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
-  providers: [],
+  providers: [], // providers added in src/lib/auth.ts only
 
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
@@ -22,24 +21,31 @@ export const authConfig = {
         "/myths",
         "/support",
         "/onboarding",
+        "/profile",
+        "/settings",
       ];
 
-      const isAppRoute = protectedPaths.some((p) => path.startsWith(p));
-      const isAuthRoute = ["/login", "/register", "/guest"].includes(path);
+      const authPaths = ["/login", "/register", "/guest"];
 
-      // Not logged in → bounce to login
-      if (isAppRoute && !isLoggedIn) return false;
+      const isProtected = protectedPaths.some((p) => path.startsWith(p));
+      const isAuthPage = authPaths.includes(path);
 
-      // Logged in + hitting auth page → go home
-      if (isLoggedIn && isAuthRoute) {
+      // Not logged in → send to login
+      if (isProtected && !isLoggedIn) {
+        return Response.redirect(new URL("/login", nextUrl));
+      }
+
+      // Logged in + on auth page → go to dashboard
+      if (isLoggedIn && isAuthPage) {
         return Response.redirect(new URL("/dashboard", nextUrl));
       }
 
-      // New Google user who hasn't done onboarding yet
-      // (token flag set by signIn callback in auth.ts)
+      // New Google user (no ageGroup set) → send to onboarding
+      // We check via token claim set in auth.ts jwt callback
+      const token = auth as any;
       if (
         isLoggedIn &&
-        (auth as any)?.user?.isNewGoogleUser &&
+        token?.isNewGoogleUser === true &&
         path !== "/onboarding"
       ) {
         return Response.redirect(new URL("/onboarding", nextUrl));
