@@ -12,7 +12,7 @@ const STEPS = [
     id: 0,
     emoji: "👋",
     title: "Hey! What should we call you?",
-    sub: "Nothing sensitive — just a first name so we can personalise things.",
+    sub: "Nothing sensitive - just a first name so we can personalise things.",
     accent: "#5a8f6a",
     shadow: "#3d6b4f",
     bg: "#e8f5ec",
@@ -32,7 +32,7 @@ const STEPS = [
     id: 2,
     emoji: "😤",
     title: "What usually triggers your urge to vape?",
-    sub: "Pick all that apply — we'll build your personal coping toolkit around these.",
+    sub: "Pick all that apply - we'll build your personal coping toolkit around these.",
     accent: "#e07b5a",
     shadow: "#a84f2a",
     bg: "#fdf0ea",
@@ -422,7 +422,7 @@ export default function GuestPage() {
                 </p>
               </div>
 
-              {/* Step 0 — Name */}
+              {/* Step 0 - Name */}
               {step === 0 && (
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 12 }}
@@ -444,12 +444,12 @@ export default function GuestPage() {
                       color: "#a8936a",
                     }}
                   >
-                    Only stored locally — never shared 🔒
+                    Only stored locally - never shared 🔒
                   </div>
                 </div>
               )}
 
-              {/* Step 1 — Age */}
+              {/* Step 1 - Age */}
               {step === 1 && (
                 <div
                   style={{
@@ -501,7 +501,7 @@ export default function GuestPage() {
                 </div>
               )}
 
-              {/* Step 2 — Triggers */}
+              {/* Step 2 - Triggers */}
               {step === 2 && (
                 <div
                   style={{

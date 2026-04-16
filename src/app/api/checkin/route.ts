@@ -65,7 +65,7 @@ export async function POST(req: Request) {
   } catch (err: any) {
     console.error("Checkin POST:", err?.message);
     return NextResponse.json(
-      { error: "DB unavailable — try again" },
+      { error: "DB unavailable - try again" },
       { status: 503 },
     );
   }

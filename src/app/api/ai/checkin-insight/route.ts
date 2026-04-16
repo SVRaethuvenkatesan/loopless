@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     if (!history?.length) {
       return NextResponse.json({
         insight:
-          "Keep checking in daily — after 5+ days I can start spotting your personal stress patterns. 📊",
+          "Keep checking in daily - after 5+ days I can start spotting your personal stress patterns. 📊",
       });
     }
 
@@ -40,16 +40,16 @@ export async function POST(req: Request) {
         : "stable";
 
     if (!apiKey) {
-      // Fallback — rule-based insight
+      // Fallback - rule-based insight
       let insight = "";
       if (history.length < 5) {
-        insight = `You've checked in ${history.length} times. Great start! Your average stress so far is ${avgStress}/10. Keep going — patterns emerge after 7+ days. 🌱`;
+        insight = `You've checked in ${history.length} times. Great start! Your average stress so far is ${avgStress}/10. Keep going - patterns emerge after 7+ days. 🌱`;
       } else if (avgStress >= 7) {
-        insight = `Your average stress is ${avgStress}/10 — that's consistently high. Your most common trigger is "${topTrigger}". I'd recommend adding a 2-minute breathing session after work. Your trend is ${trending}. 💪`;
+        insight = `Your average stress is ${avgStress}/10 - that's consistently high. Your most common trigger is "${topTrigger}". I'd recommend adding a 2-minute breathing session after work. Your trend is ${trending}. 💪`;
       } else if (trending === "improving") {
-        insight = `Your stress has been dropping recently — from ${recentTrend[recentTrend.length - 1]} to ${recentTrend[0]}/10! Whatever you're doing is working. "${topTrigger}" is still your main trigger to watch. 🌱`;
+        insight = `Your stress has been dropping recently - from ${recentTrend[recentTrend.length - 1]} to ${recentTrend[0]}/10! Whatever you're doing is working. "${topTrigger}" is still your main trigger to watch. 🌱`;
       } else {
-        insight = `You've logged ${history.length} check-ins. Average stress: ${avgStress}/10. High-stress days: ${highDays}. "${topTrigger}" is your most common trigger. Keep checking in — your pattern is getting clearer! 📊`;
+        insight = `You've logged ${history.length} check-ins. Average stress: ${avgStress}/10. High-stress days: ${highDays}. "${topTrigger}" is your most common trigger. Keep checking in - your pattern is getting clearer! 📊`;
       }
       return NextResponse.json({ insight });
     }
@@ -92,13 +92,13 @@ Use 1 emoji naturally. Do NOT use bullet points. Respond with ONLY the insight t
     return NextResponse.json({
       insight:
         insight ||
-        `You've logged ${history.length} check-ins with an average stress of ${avgStress}/10. Your top trigger is "${topTrigger}". Keep going — patterns get clearer every day! 📊`,
+        `You've logged ${history.length} check-ins with an average stress of ${avgStress}/10. Your top trigger is "${topTrigger}". Keep going - patterns get clearer every day! 📊`,
     });
   } catch (err) {
     console.error("AI insight error:", err);
     return NextResponse.json({
       insight:
-        "Keep checking in daily — your AI coach is building your personal stress profile. 📊",
+        "Keep checking in daily - your AI coach is building your personal stress profile. 📊",
     });
   }
 }

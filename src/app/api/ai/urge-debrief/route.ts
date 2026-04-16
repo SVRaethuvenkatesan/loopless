@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       )
       .join(", ");
 
-    const fallback = `You just proved that you're stronger than this urge. You used ${toolNames || "coping tools"} against a level ${stress}/10 craving triggered by ${trigger || "stress"} — and you won. Each battle like this literally rewires your brain's reward loop. Keep going. 💪`;
+    const fallback = `You just proved that you're stronger than this urge. You used ${toolNames || "coping tools"} against a level ${stress}/10 craving triggered by ${trigger || "stress"} - and you won. Each battle like this literally rewires your brain's reward loop. Keep going. 💪`;
 
     if (!apiKey) return NextResponse.json({ message: fallback });
 

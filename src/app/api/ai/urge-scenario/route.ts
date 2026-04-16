@@ -15,7 +15,7 @@ interface Scenario {
   flavorText: string;
 }
 
-// Scenario bank keyed by trigger — used as fallback
+// Scenario bank keyed by trigger - used as fallback
 const SCENARIOS: Record<string, Scenario> = {
   stress: {
     name: "The Deadline Demon",
@@ -31,7 +31,7 @@ const SCENARIOS: Record<string, Scenario> = {
       "Just one hit. You deserve it after today. 💨",
     ],
     flavorText:
-      "The Deadline Demon dissolves. Stress is real — but so is your ability to face it without nicotine.",
+      "The Deadline Demon dissolves. Stress is real - but so is your ability to face it without nicotine.",
   },
   anxiety: {
     name: "The Anxiety Wraith",
@@ -47,7 +47,7 @@ const SCENARIOS: Record<string, Scenario> = {
       "Anxiety spikes. Reach for me. 🌀",
     ],
     flavorText:
-      "The Wraith fades. Anxiety lied — nicotine was creating the very panic you feared.",
+      "The Wraith fades. Anxiety lied - nicotine was creating the very panic you feared.",
   },
   boredom: {
     name: "The Void Beast",
@@ -62,7 +62,7 @@ const SCENARIOS: Record<string, Scenario> = {
       "Boredom is unbearable without me. 🌀",
       "Just something to do… 💨",
     ],
-    flavorText: "The Void Beast collapses. Boredom passes — it always does.",
+    flavorText: "The Void Beast collapses. Boredom passes - it always does.",
   },
   social: {
     name: "The Peer Phantom",
@@ -75,7 +75,7 @@ const SCENARIOS: Record<string, Scenario> = {
     taunts: [
       "Everyone else is doing it. Join in. 🎉",
       "You'll be left out without me. 😈",
-      "It's just social — doesn't count! 🌀",
+      "It's just social - doesn't count! 🌀",
     ],
     flavorText:
       "The Peer Phantom vanishes. Real connection doesn't need nicotine as a bridge.",
@@ -112,7 +112,7 @@ const DEFAULT: Scenario = {
     "Your willpower always breaks. 💨",
   ],
   flavorText:
-    "The Chrome Dragon shatters. Its scales scatter like broken promises — and you're free.",
+    "The Chrome Dragon shatters. Its scales scatter like broken promises - and you're free.",
 };
 
 export async function POST(req: Request) {
@@ -128,12 +128,12 @@ export async function POST(req: Request) {
     // Scale difficulty label
     const difficulty =
       stress <= 3
-        ? "Easy — mild craving"
+        ? "Easy - mild craving"
         : stress <= 6
-          ? "Medium — moderate urge"
+          ? "Medium - moderate urge"
           : stress <= 8
-            ? "Hard — strong craving"
-            : "NIGHTMARE — overwhelming urge";
+            ? "Hard - strong craving"
+            : "NIGHTMARE - overwhelming urge";
 
     const prompt = `You are creating a battle scenario for a quit-vaping game. 
 Generate a JSON object for a boss monster based on this urge:

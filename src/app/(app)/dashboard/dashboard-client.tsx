@@ -338,7 +338,7 @@ function CartoonChart({ checkins }: { checkins: Checkin[] }) {
         ))}
         {!checkins.length && (
           <span style={{ fontSize: 11, fontWeight: 600, color: "#a8936a" }}>
-            No check-ins yet — start below!
+            No check-ins yet - start below!
           </span>
         )}
       </div>
@@ -575,7 +575,7 @@ interface NewsItem {
 const FALLBACK_NEWS: NewsItem[] = [
   {
     headline: "Nicotine clears in 72 hours",
-    fact: "Nicotine is physically gone within 72 hours — after that cravings are entirely psychological.",
+    fact: "Nicotine is physically gone within 72 hours - after that cravings are entirely psychological.",
     emoji: "⏱️",
     source: "AIHW 2023",
     color: "#e8f5ec",
@@ -596,7 +596,7 @@ const FALLBACK_NEWS: NewsItem[] = [
   },
   {
     headline: "21-day streaks rewire your brain",
-    fact: "Consistent daily behaviour for 21+ days creates new neural reward pathways — you build a new loop.",
+    fact: "Consistent daily behaviour for 21+ days creates new neural reward pathways - you build a new loop.",
     emoji: "🔥",
     source: "Behavioural Sci",
     color: "#fdf0ea",
@@ -609,7 +609,7 @@ function AINews() {
   const [flipped, setFlipped] = useState<number | null>(null);
 
   useEffect(() => {
-    // Debounce — only call once even if component remounts
+    // Debounce - only call once even if component remounts
     const key = "loopless_news_cache";
     const cached = sessionStorage.getItem(key);
     if (cached) {

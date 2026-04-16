@@ -3,15 +3,15 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 
 const FALLBACKS: Record<number, string> = {
-  1: "Barely any stress — that rare green day. Savour it. 🌱",
+  1: "Barely any stress - that rare green day. Savour it. 🌱",
   2: "Low stress. Your nervous system is thanking you right now.",
   3: "Nice and calm. This is what we're building toward every day.",
   4: "Manageable stress. You're handling things well.",
-  5: "Right in the middle. That's normal — life has texture.",
+  5: "Right in the middle. That's normal - life has texture.",
   6: "Feeling the pressure a little. Your tools are right here when you need them.",
   7: "That's real pressure you're carrying. Checking in was the right move. Let's breathe.",
-  8: "High stress day. Your brain is in threat mode — that's biology, not weakness. Shall we try 4-7-8?",
-  9: "This sounds genuinely hard. You showed up anyway — that takes courage. I'm surfacing your strongest tools.",
+  8: "High stress day. Your brain is in threat mode - that's biology, not weakness. Shall we try 4-7-8?",
+  9: "This sounds genuinely hard. You showed up anyway - that takes courage. I'm surfacing your strongest tools.",
   10: "That's a crisis-level day. Please know: you are not your stress. Let's get you some immediate support.",
 };
 
@@ -37,7 +37,7 @@ Their check-in data:
 - Mood: ${mood}
 - Today's trigger: ${trigger || "none"}
 
-Respond with ONLY the message — no labels, no quotes.`;
+Respond with ONLY the message - no labels, no quotes.`;
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,

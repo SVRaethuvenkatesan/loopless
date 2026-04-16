@@ -17,29 +17,67 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const data = await withDb(async (db) => {
-      const { users, stressTriggers, badges, streaks, checkins } =
+      const { users, stressTriggers, badges, streaks } =
         await import("@/lib/db/schema");
-      const { eq, desc } = await import("drizzle-orm");
+      const { eq } = await import("drizzle-orm");
+      const { v4: uuid } = await import("uuid");
 
-      const [user, triggers, earnedBadges, userStreaks, recentCheckins] =
-        await Promise.all([
-          db.query.users.findFirst({ where: eq(users.id, userId) }),
-          db
-            .select()
-            .from(stressTriggers)
-            .where(eq(stressTriggers.userId, userId)),
-          db.select().from(badges).where(eq(badges.userId, userId)),
-          db.select().from(streaks).where(eq(streaks.userId, userId)),
-          db
-            .select()
-            .from(checkins)
-            .where(eq(checkins.userId, userId))
-            .orderBy(desc(checkins.checkedInAt))
-            .limit(30),
-        ]);
+      let user = await db.query.users.findFirst({
+        where: eq(users.id, userId),
+      });
 
-      if (!user) return null;
-      return { user, triggers, earnedBadges, userStreaks, recentCheckins };
+      // Auto-create user row if it doesn't exist yet
+      // This handles the race condition where Google auth creates the session
+      // before the DB insert completes, or the insert failed silently
+      if (!user) {
+        const email = session?.user?.email ?? null;
+        const name = session?.user?.name ?? null;
+
+        // Check if there's already a row with this email (different id)
+        if (email) {
+          const { eq: eqOp } = await import("drizzle-orm");
+          const byEmail = await db.query.users.findFirst({
+            where: eqOp(users.email, email),
+          });
+
+          if (byEmail) {
+            // Row exists but with different id - this is the id mismatch bug
+            // Update nothing, just return the existing row
+            user = byEmail;
+          }
+        }
+
+        if (!user) {
+          // Truly new user - create the row
+          const [created] = await db
+            .insert(users)
+            .values({
+              id: userId,
+              email: email ?? undefined,
+              guestName: name ?? undefined,
+              isGuest: false,
+              consentAt: new Date(),
+            })
+            .onConflictDoNothing()
+            .returning();
+          user = created;
+        }
+
+        if (!user) {
+          return null;
+        }
+      }
+
+      const [triggers, earnedBadges, userStreaks] = await Promise.all([
+        db
+          .select()
+          .from(stressTriggers)
+          .where(eq(stressTriggers.userId, user.id)),
+        db.select().from(badges).where(eq(badges.userId, user.id)),
+        db.select().from(streaks).where(eq(streaks.userId, user.id)),
+      ]);
+
+      return { user, triggers, earnedBadges, userStreaks };
     });
 
     if (!data)
@@ -65,18 +103,31 @@ export async function PATCH(req: Request) {
       const { users, stressTriggers } = await import("@/lib/db/schema");
       const { eq } = await import("drizzle-orm");
 
-      const existing = await db.query.users.findFirst({
+      // Check by session id first
+      let existing = await db.query.users.findFirst({
         where: eq(users.id, userId),
       });
+
+      // Fallback: check by email (handles id mismatch)
+      if (!existing && session?.user?.email) {
+        existing = await db.query.users.findFirst({
+          where: eq(users.email, session.user.email),
+        });
+      }
+
+      const targetId = existing?.id ?? userId;
+
       if (!existing) {
         await db
           .insert(users)
           .values({
-            id: userId,
-            guestName: `Guest_${userId.slice(0, 5)}`,
-            isGuest: true,
+            id: targetId,
+            email: session?.user?.email ?? undefined,
+            guestName: session?.user?.name ?? undefined,
+            isGuest: false,
             ageGroup: ageGroup ?? null,
             copingStyle: copingStyle ?? null,
+            notifPrefs: notifPrefs ?? [],
             consentAt: new Date(),
           })
           .onConflictDoNothing();
@@ -85,17 +136,17 @@ export async function PATCH(req: Request) {
         if (ageGroup !== undefined) update.ageGroup = ageGroup;
         if (copingStyle !== undefined) update.copingStyle = copingStyle;
         if (notifPrefs !== undefined) update.notifPrefs = notifPrefs;
-        await db.update(users).set(update).where(eq(users.id, userId));
+        await db.update(users).set(update).where(eq(users.id, targetId));
       }
 
       if (triggers !== undefined) {
         await db
           .delete(stressTriggers)
-          .where(eq(stressTriggers.userId, userId));
+          .where(eq(stressTriggers.userId, targetId));
         if ((triggers as string[]).length) {
           await db.insert(stressTriggers).values(
             (triggers as string[]).map((t: string) => ({
-              userId,
+              userId: targetId,
               triggerType: t,
             })),
           );

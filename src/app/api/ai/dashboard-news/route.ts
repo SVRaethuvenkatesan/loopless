@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 
-// Server-side cache — reuse for 30 minutes between cold starts
+// Server-side cache - reuse for 30 minutes between cold starts
 let _cache: { items: NewsItem[]; ts: number } | null = null;
 const CACHE_MS = 30 * 60 * 1000; // 30 min
 
@@ -18,7 +18,7 @@ interface NewsItem {
 const FALLBACK: NewsItem[] = [
   {
     headline: "Nicotine clears in 72 hours",
-    fact: "Nicotine is physically gone within 72 hours — after that, cravings are entirely psychological. You can outlast them.",
+    fact: "Nicotine is physically gone within 72 hours - after that, cravings are entirely psychological. You can outlast them.",
     emoji: "⏱️",
     source: "AIHW 2023",
     color: "#e8f5ec",
@@ -39,7 +39,7 @@ const FALLBACK: NewsItem[] = [
   },
   {
     headline: "21-day streaks rewire habit loops",
-    fact: "Consistent daily behaviour for 21+ days creates new neural reward pathways — you literally build a different loop in your brain.",
+    fact: "Consistent daily behaviour for 21+ days creates new neural reward pathways - you literally build a different loop in your brain.",
     emoji: "🔥",
     source: "Behavioural Science",
     color: "#fdf0ea",
@@ -64,7 +64,7 @@ Generate exactly 4 health insight cards as a JSON array. Each object must have:
 - "source": real citation like "AIHW 2023", "WHO 2022", "Truth Initiative"
 - "color": one of these hex strings in rotation: "#e8f5ec", "#dff0fd", "#fff0c8", "#fdf0ea"
 
-Rules: accurate, warm tone, no moralising. Respond with ONLY a valid JSON array — no markdown, no extra text.`;
+Rules: accurate, warm tone, no moralising. Respond with ONLY a valid JSON array - no markdown, no extra text.`;
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
@@ -79,7 +79,7 @@ Rules: accurate, warm tone, no moralising. Respond with ONLY a valid JSON array 
     );
 
     if (res.status === 429) {
-      // Rate limited — return fallback and cache it so we don't retry immediately
+      // Rate limited - return fallback and cache it so we don't retry immediately
       _cache = { items: FALLBACK, ts: Date.now() };
       return NextResponse.json({ items: FALLBACK });
     }
