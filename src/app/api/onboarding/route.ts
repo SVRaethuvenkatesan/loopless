@@ -1,4 +1,4 @@
-// src/app/api/onboarding/route.ts
+export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 

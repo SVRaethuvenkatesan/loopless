@@ -1,4 +1,4 @@
-// src/app/api/auth/register/route.ts
+export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 

@@ -1,4 +1,4 @@
-// src/app/api/auth/guest/route.ts
+export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { v4 as uuid } from "uuid";
 

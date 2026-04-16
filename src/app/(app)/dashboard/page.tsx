@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import CheckInWidget from "@/components/checkin-widget";
 
 function XPBar({ current, max }: { current: number; max: number }) {
   return (
@@ -590,71 +591,7 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
-        {/* ── CHECK-IN CTA ── */}
-        {!checkedInToday && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", bounce: 0.3 }}
-            style={{ marginBottom: 14 }}
-          >
-            <Link href="/checkin" className="checkin-cta">
-              <div
-                style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 14,
-                  background: "rgba(255,255,255,.15)",
-                  border: "2px solid rgba(255,255,255,.22)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 24,
-                  flexShrink: 0,
-                }}
-              >
-                📋
-              </div>
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 800,
-                    color: "rgba(255,255,255,.55)",
-                    textTransform: "uppercase",
-                    letterSpacing: ".06em",
-                    marginBottom: 3,
-                  }}
-                >
-                  Daily quest · +20 XP
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Fredoka',sans-serif",
-                    fontSize: 19,
-                    fontWeight: 600,
-                    color: "white",
-                    marginBottom: 2,
-                  }}
-                >
-                  How are you feeling today?
-                </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "rgba(255,255,255,.6)",
-                  }}
-                >
-                  Log stress & mood · Under 60 seconds
-                </div>
-              </div>
-              <span style={{ fontSize: 20, color: "rgba(255,255,255,.4)" }}>
-                →
-              </span>
-            </Link>
-          </motion.div>
-        )}
+        <CheckInWidget />
 
         {/* ── STAT GRID ── */}
         <div className="stat-grid" style={{ marginBottom: 14 }}>

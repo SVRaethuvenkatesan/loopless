@@ -1,4 +1,3 @@
-// src/app/(app)/layout.tsx
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import AppShell from "@/components/app-shell";
