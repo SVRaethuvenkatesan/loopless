@@ -1,65 +1,53 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+// src/app/api/auth/register/route.ts
+import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { z } from "zod";
 
-const registerSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  ageGroup: z.string().optional(),
-  copingStyle: z.string().optional(),
-});
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const parsed = registerSchema.safeParse(body);
+    const { email, password } = await req.json();
 
-    if (!parsed.success) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: parsed.error.flatten().fieldErrors },
-        { status: 422 },
+        { error: "Email and password are required." },
+        { status: 400 },
+      );
+    }
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: "Password must be at least 8 characters." },
+        { status: 400 },
       );
     }
 
-    const { email, password, ageGroup, copingStyle } = parsed.data;
+    const { db } = await import("@/lib/db");
+    const { users } = await import("@/lib/db/schema");
+    const { eq } = await import("drizzle-orm");
 
-    const existing = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
-
-    if (existing.length > 0) {
+    // Check duplicate
+    const existing = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+    if (existing) {
       return NextResponse.json(
-        { error: "An account with this email already exists" },
+        { error: "An account with that email already exists." },
         { status: 409 },
       );
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        email,
-        passwordHash,
-        ageGroup: ageGroup ?? null,
-        copingStyle: copingStyle ?? null,
-        consentAt: new Date(),
-      })
-      .returning({ id: users.id, email: users.email });
+    await db.insert(users).values({
+      email,
+      passwordHash,
+      isGuest: false,
+      consentAt: new Date(),
+    });
 
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Register error:", err);
     return NextResponse.json(
-      { message: "Account created successfully", userId: newUser.id },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error("Register error:", error);
-    return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
+      { error: "Registration failed. Please try again." },
       { status: 500 },
     );
   }

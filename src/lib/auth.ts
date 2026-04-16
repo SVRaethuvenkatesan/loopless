@@ -1,88 +1,94 @@
-import "server-only";
 import NextAuth from "next-auth";
+import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "@/auth.config";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { z } from "zod";
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-const guestSchema = z.object({
-  guestId: z.string().uuid(),
-});
+async function getUser(email: string) {
+  try {
+    const { db } = await import("@/lib/db");
+    const { users } = await import("@/lib/db/schema");
+    const { eq } = await import("drizzle-orm");
+    return db.query.users.findFirst({ where: eq(users.email, email) });
+  } catch {
+    return null;
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
-    Credentials({
-      id: "credentials",
-      async authorize(credentials) {
-        const parsed = loginSchema.safeParse(credentials);
-        if (!parsed.success) return null;
-
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, parsed.data.email))
-          .limit(1);
-
-        if (!user || user.deletedAt) return null;
-
-        const valid = await bcrypt.compare(
-          parsed.data.password,
-          user.passwordHash!,
-        );
-        if (!valid) return null;
-
-        return { id: user.id, email: user.email!, isGuest: false };
-      },
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     Credentials({
-      id: "guest",
       async authorize(credentials) {
-        const parsed = guestSchema.safeParse(credentials);
-        if (!parsed.success) return null;
-
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, parsed.data.guestId))
-          .limit(1);
-
-        if (!user || !user.isGuest) return null;
-
+        const email = credentials?.email as string | undefined;
+        const password = credentials?.password as string | undefined;
+        if (!email || !password) return null;
+        const user = await getUser(email);
+        if (!user?.passwordHash) return null;
+        const ok = await bcrypt.compare(password, user.passwordHash);
+        if (!ok) return null;
         return {
           id: user.id,
-          email: null,
-          name: user.guestName,
-          isGuest: true,
+          email: user.email ?? "",
+          name: user.guestName ?? "",
         };
       },
     }),
   ],
+
   callbacks: {
     ...authConfig.callbacks,
-    jwt({ token, user }) {
+
+    async signIn({ user, account }) {
+      if (account?.provider === "google" && user.email) {
+        try {
+          const { db } = await import("@/lib/db");
+          const { users } = await import("@/lib/db/schema");
+          const { eq } = await import("drizzle-orm");
+
+          const existing = await db.query.users.findFirst({
+            where: eq(users.email, user.email),
+          });
+
+          if (!existing) {
+            // Brand-new Google user → insert and mark needsOnboarding
+            await db.insert(users).values({
+              email: user.email,
+              guestName: user.name ?? undefined,
+              isGuest: false,
+              consentAt: new Date(),
+              // ageGroup null = hasn't completed onboarding
+            });
+            // Signal to jwt callback
+            (user as any).isNewGoogleUser = true;
+          }
+          // Pass db id into next-auth user object
+          const row = await db.query.users.findFirst({
+            where: eq(users.email, user.email),
+          });
+          if (row) user.id = row.id;
+        } catch (err) {
+          console.error("Google sign-in DB upsert failed:", err);
+        }
+      }
+      return true;
+    },
+
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
-        token.email = user.email;
-        token.isGuest = (user as any).isGuest;
-        token.name = user.name;
+        token.isNewGoogleUser = (user as any).isNewGoogleUser ?? false;
       }
       return token;
     },
-    session({ session, token }) {
+
+    async session({ session, token }) {
       if (token.id) session.user.id = token.id as string;
-      if (token.email) session.user.email = token.email as string;
-      if (token.isGuest !== undefined)
-        (session.user as any).isGuest = token.isGuest;
-      if (token.name) session.user.name = token.name as string;
+      if (token.isNewGoogleUser) session.user.isNewGoogleUser = true;
       return session;
     },
   },
