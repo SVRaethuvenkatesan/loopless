@@ -3,7 +3,7 @@ import type { NextAuthConfig } from "next-auth";
 export const authConfig = {
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
-  providers: [], // providers added in src/lib/auth.ts only
+  providers: [], // providers are added in src/lib/auth.ts only
 
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
@@ -11,43 +11,28 @@ export const authConfig = {
       const path = nextUrl.pathname;
 
       const protectedPaths = [
-        "/dashboard",
-        "/checkin",
-        "/loop",
-        "/urge",
-        "/coping",
-        "/insights",
-        "/progress",
-        "/myths",
-        "/support",
-        "/onboarding",
-        "/profile",
-        "/settings",
+        "/dashboard", "/checkin", "/loop", "/urge", "/coping",
+        "/insights", "/progress", "/myths", "/support", "/onboarding",
+        "/profile", "/settings",
       ];
-
-      const authPaths = ["/login", "/register", "/guest"];
+      const authPaths = ["/login", "/register"];
 
       const isProtected = protectedPaths.some((p) => path.startsWith(p));
-      const isAuthPage = authPaths.includes(path);
+      const isAuthPage = authPaths.some((p) => path === p);
 
-      // Not logged in → send to login
+      // Redirect unauthenticated users away from protected routes
       if (isProtected && !isLoggedIn) {
         return Response.redirect(new URL("/login", nextUrl));
       }
 
-      // Logged in + on auth page → go to dashboard
+      // Redirect authenticated users away from auth pages
       if (isLoggedIn && isAuthPage) {
         return Response.redirect(new URL("/dashboard", nextUrl));
       }
 
-      // New Google user (no ageGroup set) → send to onboarding
-      // We check via token claim set in auth.ts jwt callback
+      // Send new Google users to onboarding (flag set in jwt callback)
       const token = auth as any;
-      if (
-        isLoggedIn &&
-        token?.isNewGoogleUser === true &&
-        path !== "/onboarding"
-      ) {
+      if (isLoggedIn && token?.isNewGoogleUser === true && path !== "/onboarding") {
         return Response.redirect(new URL("/onboarding", nextUrl));
       }
 

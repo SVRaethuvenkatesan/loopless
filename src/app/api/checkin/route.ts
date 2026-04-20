@@ -16,58 +16,103 @@ export async function POST(req: Request) {
     const { stressLevel, mood, triggerType, timezoneOffset } = body;
 
     if (typeof stressLevel !== "number" || stressLevel < 1 || stressLevel > 10)
-      return NextResponse.json(
-        { error: "stress must be 1–10" },
-        { status: 422 },
-      );
+      return NextResponse.json({ error: "stress must be 1–10" }, { status: 422 });
     if (!mood)
       return NextResponse.json({ error: "mood required" }, { status: 422 });
 
     const result = await withDb(async (db) => {
-      const { checkins } = await import("@/lib/db/schema");
-      const { eq, and, gte } = await import("drizzle-orm");
+      const { checkins, streaks, badges } = await import("@/lib/db/schema");
+      const { eq, and, gte, lt, desc } = await import("drizzle-orm");
 
-      const todayUTC = new Date();
+      const now = new Date();
+      const todayUTC = new Date(now);
       todayUTC.setUTCHours(0, 0, 0, 0);
-      const existing = await db.query.checkins.findFirst({
-        where: and(
-          eq(checkins.userId, userId),
-          gte(checkins.checkedInAt, todayUTC),
-        ),
-      });
-      if (existing) return { duplicate: true };
+      const yesterdayUTC = new Date(todayUTC);
+      yesterdayUTC.setDate(yesterdayUTC.getDate() - 1);
 
+      // Prevent duplicate checkin today
+      const existing = await db.query.checkins.findFirst({
+        where: and(eq(checkins.userId, userId), gte(checkins.checkedInAt, todayUTC)),
+      });
+      // Upsert: update today's entry if it already exists
+      if (existing) {
+        await db
+          .update(checkins)
+          .set({ stressLevel, mood, triggerType: triggerType ?? null, timezoneOffset: timezoneOffset ?? null })
+          .where(eq(checkins.id, existing.id));
+        const streakRow = await db.query.streaks.findFirst({
+          where: and(eq(streaks.userId, userId), eq(streaks.streakType, "checkin")),
+        });
+        return { updated: true, id: existing.id, streak: streakRow?.count ?? 0 };
+      }
+
+      // New entry: insert and update streak
       const [entry] = await db
         .insert(checkins)
-        .values({
-          userId,
-          stressLevel,
-          mood,
-          triggerType: triggerType ?? null,
-          timezoneOffset: timezoneOffset ?? null,
-          checkedInAt: new Date(),
-        })
+        .values({ userId, stressLevel, mood, triggerType: triggerType ?? null, timezoneOffset: timezoneOffset ?? null, checkedInAt: now })
         .returning({ id: checkins.id });
 
-      return { duplicate: false, id: entry.id };
+      // ── Streak logic ────────────────────────────────────────────────
+      // Check if user checked in yesterday (streak continues) or not (reset)
+      const checkinYesterday = await db.query.checkins.findFirst({
+        where: and(
+          eq(checkins.userId, userId),
+          gte(checkins.checkedInAt, yesterdayUTC),
+          lt(checkins.checkedInAt, todayUTC),
+        ),
+      });
+
+      const streakRow = await db.query.streaks.findFirst({
+        where: and(eq(streaks.userId, userId), eq(streaks.streakType, "checkin")),
+      });
+
+      // Increment if yesterday had checkin, else start fresh at 1
+      const newCount = checkinYesterday ? (streakRow?.count ?? 0) + 1 : 1;
+
+      if (streakRow) {
+        await db
+          .update(streaks)
+          .set({ count: newCount, lastUpdated: now })
+          .where(and(eq(streaks.userId, userId), eq(streaks.streakType, "checkin")));
+      } else {
+        await db
+          .insert(streaks)
+          .values({ userId, streakType: "checkin", count: newCount, lastUpdated: now });
+      }
+
+      // ── Award badges based on streak ────────────────────────────────
+      const badgesToCheck: { type: string; threshold: number }[] = [
+        { type: "first_checkin", threshold: 1 },
+        { type: "streak_7",      threshold: 7 },
+        { type: "streak_12",     threshold: 12 },
+        { type: "streak_30",     threshold: 30 },
+        { type: "streak_100",    threshold: 100 },
+      ];
+
+      for (const { type, threshold } of badgesToCheck) {
+        if (newCount >= threshold) {
+          const alreadyHas = await db.query.badges.findFirst({
+            where: and(eq(badges.userId, userId), eq(badges.badgeType, type)),
+          });
+          if (!alreadyHas) {
+            await db.insert(badges).values({ userId, badgeType: type, earnedAt: now });
+          }
+        }
+      }
+
+      return { updated: false, id: entry.id, streak: newCount };
     });
 
-    if (result.duplicate)
-      return NextResponse.json(
-        { error: "Already checked in today", code: "DUPLICATE" },
-        { status: 409 },
-      );
     return NextResponse.json({
       success: true,
+      updated: result.updated ?? false,
       id: result.id,
-      xpEarned: 20 + (stressLevel >= 7 ? 10 : 0),
+      streak: result.streak,
+      xpEarned: result.updated ? 0 : 20 + (stressLevel >= 7 ? 10 : 0),
     });
   } catch (err: any) {
     console.error("Checkin POST:", err?.message);
-    return NextResponse.json(
-      { error: "DB unavailable - try again" },
-      { status: 503 },
-    );
+    return NextResponse.json({ error: "DB unavailable - try again" }, { status: 503 });
   }
 }
 
@@ -84,10 +129,7 @@ export async function GET(req: Request) {
       const todayUTC = new Date();
       todayUTC.setUTCHours(0, 0, 0, 0);
       return db.query.checkins.findFirst({
-        where: and(
-          eq(checkins.userId, userId),
-          gte(checkins.checkedInAt, todayUTC),
-        ),
+        where: and(eq(checkins.userId, userId), gte(checkins.checkedInAt, todayUTC)),
       });
     });
     return NextResponse.json({ exists: !!result, checkin: result ?? null });

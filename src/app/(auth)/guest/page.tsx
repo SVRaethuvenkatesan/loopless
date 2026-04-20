@@ -1,61 +1,58 @@
 "use client";
 
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 
-/* ── Steps config ─────────────────────── */
+// Inline SVG icons for step headers
+const WaveIcon = () => <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7.5 4C5 4 3 6 3 8.5S5 13 7.5 13s4.5-2 4.5-4.5S10 4 7.5 4z"/><path d="M16.5 11C14 11 12 13 12 15.5s2 4.5 4.5 4.5 4.5-2 4.5-4.5-2-4.5-4.5-4.5z"/><path d="M3 21l18-18"/></svg>;
+const CalendarIcon = () => <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+const ZapIcon = () => <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
+
+// Step icon map by step id
+const STEP_ICONS: Record<number, React.ComponentType> = { 0: WaveIcon, 1: CalendarIcon, 2: ZapIcon };
+
 const STEPS = [
-  {
-    id: 0,
-    emoji: "👋",
-    title: "Hey! What should we call you?",
-    sub: "Nothing sensitive - just a first name so we can personalise things.",
-    accent: "#5a8f6a",
-    shadow: "#3d6b4f",
-    bg: "#e8f5ec",
-    borderCol: "#5a8f6a66",
-  },
-  {
-    id: 1,
-    emoji: "🎂",
-    title: "How old are you?",
-    sub: "Helps us tailor your experience to what works for your age group.",
-    accent: "#c9982a",
-    shadow: "#8c6400",
-    bg: "#fffbef",
-    borderCol: "#c9982a66",
-  },
-  {
-    id: 2,
-    emoji: "😤",
-    title: "What usually triggers your urge to vape?",
-    sub: "Pick all that apply - we'll build your personal coping toolkit around these.",
-    accent: "#e07b5a",
-    shadow: "#a84f2a",
-    bg: "#fdf0ea",
-    borderCol: "#e07b5a66",
-  },
+  { id: 0, title: "Hey! What should we call you?", sub: "Nothing sensitive - just a first name so we can personalise things.", accent: "#5a8f6a", shadow: "#3d6b4f", bg: "#e8f5ec", borderCol: "#5a8f6a66" },
+  { id: 1, title: "How old are you?", sub: "Helps us tailor your experience to what works for your age group.", accent: "#c9982a", shadow: "#8c6400", bg: "#fffbef", borderCol: "#c9982a66" },
+  { id: 2, title: "What usually triggers your urge to vape?", sub: "Pick all that apply - we'll build your personal coping toolkit around these.", accent: "#e07b5a", shadow: "#a84f2a", bg: "#fdf0ea", borderCol: "#e07b5a66" },
 ];
+
+// Age range SVG icons
+const Age1Icon = () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>;
+const Age2Icon = () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
+const Age3Icon = () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-7 10 7-10 7z"/></svg>;
+const Age4Icon = () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 
 const AGE_OPTIONS = [
-  { val: "18-20", label: "18–20", emoji: "🙋" },
-  { val: "21-22", label: "21–22", emoji: "💼" },
-  { val: "23-24", label: "23–24", emoji: "🎓" },
-  { val: "25+", label: "25+", emoji: "🌳" },
+  { val: "18-20", label: "18–20", Icon: Age1Icon },
+  { val: "21-22", label: "21–22", Icon: Age2Icon },
+  { val: "23-24", label: "23–24", Icon: Age3Icon },
+  { val: "25+",   label: "25+",   Icon: Age4Icon },
 ];
 
+// Trigger SVG icons
+const StressIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>;
+const BoredomIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
+const SocialIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const AnxietyIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+const RoutineIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+const AlcoholIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 22V10"/><path d="M7 2h10l-2 8H9L7 2z"/></svg>;
+const BreakIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>;
+const EmotionsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>;
+
 const TRIGGER_OPTIONS = [
-  { val: "stress", label: "Work/study stress", emoji: "😤" },
-  { val: "boredom", label: "Boredom", emoji: "😴" },
-  { val: "social", label: "Social situations", emoji: "🎉" },
-  { val: "anxiety", label: "Anxiety", emoji: "😰" },
-  { val: "routine", label: "Daily routine", emoji: "⏰" },
-  { val: "alcohol", label: "Drinking", emoji: "🍺" },
-  { val: "break", label: "Work breaks", emoji: "☕" },
-  { val: "emotions", label: "Big feelings", emoji: "💔" },
+  { val: "stress",   label: "Work/study stress",  Icon: StressIcon },
+  { val: "boredom",  label: "Boredom",             Icon: BoredomIcon },
+  { val: "social",   label: "Social situations",   Icon: SocialIcon },
+  { val: "anxiety",  label: "Anxiety",             Icon: AnxietyIcon },
+  { val: "routine",  label: "Daily routine",        Icon: RoutineIcon },
+  { val: "alcohol",  label: "Drinking",             Icon: AlcoholIcon },
+  { val: "break",    label: "Work breaks",          Icon: BreakIcon },
+  { val: "emotions", label: "Big feelings",         Icon: EmotionsIcon },
 ];
 
 const SMOKE_PUFFS = [
@@ -94,30 +91,37 @@ export default function GuestPage() {
           ? (localStorage.getItem("loopless_guest_id") ?? undefined)
           : undefined;
 
+      // Create or verify guest record in DB
       const res = await fetch("/api/auth/guest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          guestId: existingId,
-          firstName: name,
-          ageGroup: age,
-        }),
+        body: JSON.stringify({ guestId: existingId, firstName: name, ageGroup: age }),
       });
-
       const data = await res.json();
 
-      if (data.guestId) {
-        localStorage.setItem("loopless_guest_id", data.guestId);
-        localStorage.setItem("loopless_guest_name", name);
-        localStorage.setItem(
-          "loopless_guest_triggers",
-          JSON.stringify(triggers),
-        );
-        localStorage.setItem("loopless_guest_age", age);
-        router.push("/onboarding");
-      } else {
+      if (!data.guestId) {
         setError("Something went wrong. Please try again.");
+        return;
       }
+
+      // Persist guest meta locally
+      localStorage.setItem("loopless_guest_id", data.guestId);
+      localStorage.setItem("loopless_guest_name", name);
+      localStorage.setItem("loopless_guest_triggers", JSON.stringify(triggers));
+      localStorage.setItem("loopless_guest_age", age);
+
+      // Sign in with guestId so NextAuth creates a real session
+      const signInRes = await signIn("credentials", {
+        guestId: data.guestId,
+        redirect: false,
+      });
+
+      if (signInRes?.error) {
+        setError("Account created but sign-in failed. Please try again.");
+        return;
+      }
+
+      router.push("/onboarding");
     } catch {
       setError("Connection error. Please check your internet and try again.");
     } finally {
@@ -391,13 +395,12 @@ export default function GuestPage() {
               <div style={{ textAlign: "center", marginBottom: 28 }}>
                 <div
                   style={{
-                    fontSize: 52,
-                    marginBottom: 10,
-                    animation:
-                      "bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both",
+                    marginBottom: 10, display: "flex", justifyContent: "center",
+                    animation: "bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both",
+                    color: cur.accent,
                   }}
                 >
-                  {cur.emoji}
+                  {React.createElement(STEP_ICONS[cur.id])}
                 </div>
                 <h2
                   style={{
@@ -436,15 +439,8 @@ export default function GuestPage() {
                     autoFocus
                     maxLength={40}
                   />
-                  <div
-                    style={{
-                      textAlign: "center",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#a8936a",
-                    }}
-                  >
-                    Only stored locally - never shared 🔒
+                  <div style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: "#a8936a" }}>
+                    Only stored locally — never shared
                   </div>
                 </div>
               )}
@@ -468,33 +464,16 @@ export default function GuestPage() {
                         style={{
                           background: sel ? cur.bg : "white",
                           borderColor: sel ? cur.accent : "rgba(26,18,8,0.12)",
-                          boxShadow: sel
-                            ? `3px 3px 0px ${cur.shadow}44`
-                            : "3px 3px 0px rgba(26,18,8,0.07)",
+                          boxShadow: sel ? `3px 3px 0px ${cur.shadow}44` : "3px 3px 0px rgba(26,18,8,0.07)",
                           transform: sel ? "translate(-1px,-1px)" : "",
+                          color: sel ? cur.accent : "#6b5c3e",
                         }}
                       >
-                        <span style={{ fontSize: 28 }}>{a.emoji}</span>
-                        <span
-                          style={{
-                            fontSize: 15,
-                            fontWeight: 800,
-                            color: "#1a1208",
-                          }}
-                        >
+                        <a.Icon />
+                        <span style={{ fontSize: 15, fontWeight: 800, color: "#1a1208" }}>
                           {a.label}
                         </span>
-                        {sel && (
-                          <span
-                            style={{
-                              fontSize: 12,
-                              color: cur.accent,
-                              fontWeight: 700,
-                            }}
-                          >
-                            ✓ Selected
-                          </span>
-                        )}
+                        {sel && <span style={{ fontSize: 12, color: cur.accent, fontWeight: 700 }}>Selected</span>}
                       </button>
                     );
                   })}
@@ -520,36 +499,16 @@ export default function GuestPage() {
                         style={{
                           background: sel ? cur.bg : "white",
                           borderColor: sel ? cur.accent : "rgba(26,18,8,0.12)",
-                          boxShadow: sel
-                            ? `3px 3px 0px ${cur.shadow}44`
-                            : "3px 3px 0px rgba(26,18,8,0.07)",
+                          boxShadow: sel ? `3px 3px 0px ${cur.shadow}44` : "3px 3px 0px rgba(26,18,8,0.07)",
                           transform: sel ? "translate(-1px,-1px)" : "",
+                          color: sel ? cur.accent : "#6b5c3e",
                         }}
                       >
-                        <span style={{ fontSize: 22, flexShrink: 0 }}>
-                          {t.emoji}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 700,
-                            color: "#1a1208",
-                            lineHeight: 1.3,
-                          }}
-                        >
+                        <span style={{ flexShrink: 0 }}><t.Icon /></span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#1a1208", lineHeight: 1.3 }}>
                           {t.label}
                         </span>
-                        {sel && (
-                          <span
-                            style={{
-                              marginLeft: "auto",
-                              fontSize: 16,
-                              color: cur.accent,
-                            }}
-                          >
-                            ✓
-                          </span>
-                        )}
+                        {sel && <span style={{ marginLeft: "auto", fontWeight: 800, color: cur.accent }}>✓</span>}
                       </button>
                     );
                   })}
@@ -589,7 +548,7 @@ export default function GuestPage() {
               alignItems: "center",
             }}
           >
-            ⚠️ {error}
+            {error}
           </div>
         )}
 
@@ -619,10 +578,10 @@ export default function GuestPage() {
             }}
           >
             {loading
-              ? "⏳ Setting up..."
+              ? "Setting up..."
               : step < STEPS.length - 1
-                ? `Continue →`
-                : `🚀 Start my journey`}
+                ? "Continue →"
+                : "Start my journey →"}
           </button>
         </div>
 
