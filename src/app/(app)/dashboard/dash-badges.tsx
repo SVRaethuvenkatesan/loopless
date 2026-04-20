@@ -1,6 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import React, { JSX, useState } from "react";
 import { IcoBadge, IcoLung, IcoFire, IcoShield, IcoLeaf, IcoZap, IcoTrophy, IcoLock, IcoX, IcoClock, IcoStar } from "./dash-icons";
 
 export interface Badge { id: string; badgeType: string; earnedAt: string; }
@@ -9,18 +9,18 @@ export const BADGE_META: Record<string, {
   label: string; xp: number; desc: string; Icon: () => JSX.Element;
   color: string; bg: string; nextBadge?: string;
 }> = {
-  first_checkin: { label: "First Breath",  xp: 50,  desc: "Completed your very first check-in. Your lungs thank you.", Icon: IcoLeaf, color: "#5a8f6a", bg: "#e8f5ec", nextBadge: "streak_7" },
-  streak_7:      { label: "Deep Breath",   xp: 100, desc: "7-day streak. After one week, your lung cilia start recovering.", Icon: IcoLung, color: "#5bb8f5", bg: "#dff0fd", nextBadge: "streak_12" },
-  streak_12:     { label: "Clear Airways", xp: 150, desc: "12-day streak. Airways are less inflamed — breathing is easier.", Icon: IcoClearWind, color: "#7b6fa0", bg: "#f0edf8", nextBadge: "streak_30" },
-  streak_30:     { label: "Lung Warrior",  xp: 300, desc: "30-day streak. Lung function improves up to 30% in the first month.", Icon: IcoShield, color: "#c9982a", bg: "#fffbef", nextBadge: "streak_100" },
-  streak_100:    { label: "Lung Champion", xp: 500, desc: "100 days clean. Your lung cancer risk has already started dropping.", Icon: IcoTrophy, color: "#e07b5a", bg: "#fdf0ea", nextBadge: undefined },
-  urge_blocker:  { label: "Urge Blocker", xp: 75,  desc: "Logged and beat an urge using a coping tool. Neural rewiring in progress.", Icon: IcoZap, color: "#e07b5a", bg: "#fdf0ea", nextBadge: undefined },
-  journaller:    { label: "Journaller",   xp: 60,  desc: "Used the urge journal to process a craving. Writing rewires the brain.", Icon: IcoStar, color: "#c9982a", bg: "#fffbef", nextBadge: undefined },
-  loop_buster:   { label: "Loop Buster",  xp: 80,  desc: "Completed a full Loop analysis session. You understand your cycle.", Icon: IcoFire, color: "#5a8f6a", bg: "#e8f5ec", nextBadge: undefined },
+  first_checkin: { label: "First Breath", xp: 50, desc: "Completed your very first check-in. Your lungs thank you.", Icon: IcoLeaf, color: "#5a8f6a", bg: "#e8f5ec", nextBadge: "streak_7" },
+  streak_7: { label: "Deep Breath", xp: 100, desc: "7-day streak. After one week, your lung cilia start recovering.", Icon: IcoLung, color: "#5bb8f5", bg: "#dff0fd", nextBadge: "streak_12" },
+  streak_12: { label: "Clear Airways", xp: 150, desc: "12-day streak. Airways are less inflamed — breathing is easier.", Icon: IcoClearWind, color: "#7b6fa0", bg: "#f0edf8", nextBadge: "streak_30" },
+  streak_30: { label: "Lung Warrior", xp: 300, desc: "30-day streak. Lung function improves up to 30% in the first month.", Icon: IcoShield, color: "#c9982a", bg: "#fffbef", nextBadge: "streak_100" },
+  streak_100: { label: "Lung Champion", xp: 500, desc: "100 days clean. Your lung cancer risk has already started dropping.", Icon: IcoTrophy, color: "#e07b5a", bg: "#fdf0ea", nextBadge: undefined },
+  urge_blocker: { label: "Urge Blocker", xp: 75, desc: "Logged and beat an urge using a coping tool. Neural rewiring in progress.", Icon: IcoZap, color: "#e07b5a", bg: "#fdf0ea", nextBadge: undefined },
+  journaller: { label: "Journaller", xp: 60, desc: "Used the urge journal to process a craving. Writing rewires the brain.", Icon: IcoStar, color: "#c9982a", bg: "#fffbef", nextBadge: undefined },
+  loop_buster: { label: "Loop Buster", xp: 80, desc: "Completed a full Loop analysis session. You understand your cycle.", Icon: IcoFire, color: "#5a8f6a", bg: "#e8f5ec", nextBadge: undefined },
 };
 
 // Local wind icon (used only in this file for streak_12 badge)
-function IcoClearWind() { return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2"/><path d="M12.59 19.41A2 2 0 1 0 14 16H2"/><path d="M17.59 11.41A2 2 0 1 1 19 8H2"/></svg>; }
+function IcoClearWind() { return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2" /><path d="M12.59 19.41A2 2 0 1 0 14 16H2" /><path d="M17.59 11.41A2 2 0 1 1 19 8H2" /></svg>; }
 
 const ALL_BADGE_TYPES = Object.keys(BADGE_META);
 

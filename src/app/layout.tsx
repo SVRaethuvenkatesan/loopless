@@ -1,5 +1,5 @@
 // src/app/layout.tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SessionProviderWrapper from "@/components/session-provider";
 
@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description:
     "Science-backed tools to help you quit smoking and break the habit loop.",
   manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
   themeColor: "#fef9f0",
 };
 
