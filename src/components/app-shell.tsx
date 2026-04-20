@@ -110,7 +110,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           setCheckedToday(!!c.exists);
         }
       } catch {
-        /* silently fail — show zeros */
+        /* silently fail - show zeros */
       } finally {
         setDataReady(true);
       }
@@ -299,7 +299,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="logo-tag">Break the cycle 🌱</div>
           </div>
 
-          {/* XP card — real data */}
+          {/* XP card - real data */}
           <div className="sidebar-xp">
             <div
               style={{
@@ -311,7 +311,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 marginBottom: 4,
               }}
             >
-              ⚔️ Level {dataReady ? level : "—"} Loop Breaker
+              ⚔️ Level {dataReady ? level : "-"} Loop Breaker
             </div>
             <div className="xp-row">
               <span
@@ -353,7 +353,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   color: "#fca5a5",
                 }}
               >
-                🔥 {dataReady ? streak : "—"} streak
+                🔥 {dataReady ? streak : "-"} streak
               </span>
               {dataReady && checkedToday && (
                 <span
@@ -447,7 +447,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {/* Streak pill — real */}
+              {/* Streak pill - real */}
               <div className="streak-pill">
                 <motion.span
                   animate={{ scale: [1, 1.1, 1] }}
@@ -472,7 +472,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </span>
               </div>
 
-              {/* Level pill — real */}
+              {/* Level pill - real */}
               <div className="level-pill">
                 <span>⚔️</span>
                 <span>Lv.{dataReady ? level : "…"}</span>

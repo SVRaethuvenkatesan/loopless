@@ -11,7 +11,7 @@ type DB = NodePgDatabase<typeof schema>;
 function buildConfig() {
   let url = process.env.DATABASE_URL ?? "";
 
-  // Strip any sslmode param from the URL — we handle SSL via the ssl object below
+  // Strip any sslmode param from the URL - we handle SSL via the ssl object below
   url = url.replace(/[?&]sslmode=[^&]*/g, "");
   url = url.replace(/[?&]uselibpqcompat=[^&]*/g, "");
 
@@ -29,7 +29,7 @@ function buildConfig() {
 export async function withDb<T>(fn: (db: DB) => Promise<T>): Promise<T> {
   const pool = new Pool({
     connectionString: buildConfig(),
-    // Pass SSL as an object — this bypasses pg-connection-string entirely
+    // Pass SSL as an object - this bypasses pg-connection-string entirely
     // and avoids the sslmode warning
     ssl: {
       rejectUnauthorized: false,
@@ -37,7 +37,7 @@ export async function withDb<T>(fn: (db: DB) => Promise<T>): Promise<T> {
     },
     max: 1,
     connectionTimeoutMillis: 10_000,
-    // TCP keepalives at the socket level — no URL params needed
+    // TCP keepalives at the socket level - no URL params needed
     keepAlive: true,
     keepAliveInitialDelayMillis: 10_000,
   });

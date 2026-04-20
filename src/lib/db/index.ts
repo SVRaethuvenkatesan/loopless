@@ -1,5 +1,5 @@
 // src/lib/db/index.ts
-// Uses ssl object directly — avoids pg-connection-string SSL warning
+// Uses ssl object directly - avoids pg-connection-string SSL warning
 
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -7,7 +7,7 @@ import * as schema from "./schema";
 
 function getBaseUrl(): string {
   let url = process.env.DATABASE_URL ?? "";
-  // Strip sslmode from URL — handled via ssl object below
+  // Strip sslmode from URL - handled via ssl object below
   url = url.replace(/[?&]sslmode=[^&]*/g, "").replace(/[?&]$/, "");
   return url;
 }

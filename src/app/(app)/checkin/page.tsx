@@ -33,7 +33,7 @@ const MOODS: Mood[] = [
     label: "Overwhelmed",
     color: "#e07b5a",
     bg: "#fdf0ea",
-    roar: "Hold on — you're carrying a lot right now. That's real, and you showed up anyway. 💪",
+    roar: "Hold on - you're carrying a lot right now. That's real, and you showed up anyway. 💪",
   },
   {
     val: "anxious",
@@ -49,7 +49,7 @@ const MOODS: Mood[] = [
     label: "Flat / Numb",
     color: "#7b6fa0",
     bg: "#f0edf8",
-    roar: "Feeling flat is valid. Rest is data too. You still showed up — that counts. ✨",
+    roar: "Feeling flat is valid. Rest is data too. You still showed up - that counts. ✨",
   },
   {
     val: "okay",
@@ -575,7 +575,7 @@ function MiniChart({ history }: { history: CheckInRecord[] }) {
               }}
             />
             <div style={{ fontSize: 8, fontWeight: 700, color: "#d4c8b0" }}>
-              —
+              -
             </div>
           </div>
         ))}
@@ -628,7 +628,7 @@ export default function CheckInPage() {
   const [stressHint, setStressHint] = useState("");
   const STRESS_HINTS: Record<number, string> = {
     1: "Barely any stress 🌱",
-    2: "Really low — nice.",
+    2: "Really low - nice.",
     3: "Pretty calm today.",
     4: "Light load.",
     5: "Middle ground.",
@@ -726,7 +726,7 @@ export default function CheckInPage() {
       const d = await r.json();
       if (d.message) setAiText(d.message);
     } catch {
-      setAiText("You showed up today — that's the whole game. 💪");
+      setAiText("You showed up today - that's the whole game. 💪");
     }
     setAiLoading(false);
   }
@@ -1112,7 +1112,7 @@ export default function CheckInPage() {
               </motion.div>
             )}
 
-            {/* Step 0 — Stress */}
+            {/* Step 0 - Stress */}
             {!alreadyDone && step === 0 && (
               <motion.div
                 key="s0"
@@ -1238,7 +1238,7 @@ export default function CheckInPage() {
               </motion.div>
             )}
 
-            {/* Step 1 — Mood */}
+            {/* Step 1 - Mood */}
             {!alreadyDone && step === 1 && (
               <motion.div
                 key="s1"
@@ -1268,7 +1268,7 @@ export default function CheckInPage() {
                       marginBottom: 16,
                     }}
                   >
-                    Tap any emoji — something dramatic will happen 👀
+                    Tap any emoji - something dramatic will happen 👀
                   </p>
                   <div
                     style={{
@@ -1333,7 +1333,7 @@ export default function CheckInPage() {
               </motion.div>
             )}
 
-            {/* Step 2 — Trigger */}
+            {/* Step 2 - Trigger */}
             {!alreadyDone && step === 2 && (
               <motion.div
                 key="s2"
@@ -1363,7 +1363,7 @@ export default function CheckInPage() {
                       marginBottom: 14,
                     }}
                   >
-                    Pick what's most true — no judgment here
+                    Pick what's most true - no judgment here
                   </p>
                   <div
                     style={{
@@ -1421,7 +1421,7 @@ export default function CheckInPage() {
               </motion.div>
             )}
 
-            {/* Step 3 — Note + AI */}
+            {/* Step 3 - Note + AI */}
             {!alreadyDone && step === 3 && (
               <motion.div
                 key="s3"
@@ -1449,7 +1449,7 @@ export default function CheckInPage() {
                       marginBottom: 10,
                     }}
                   >
-                    Optional note — builds faster pattern awareness
+                    Optional note - builds faster pattern awareness
                   </p>
                   <textarea
                     className="note-input"
@@ -1562,7 +1562,7 @@ export default function CheckInPage() {
                         color: "#6b5c3e",
                       }}
                     >
-                      High stress — I'll surface coping tools after you submit.
+                      High stress - I'll surface coping tools after you submit.
                     </div>
                   </motion.div>
                 )}
@@ -1583,7 +1583,7 @@ export default function CheckInPage() {
               </motion.div>
             )}
 
-            {/* Step 4 — Success */}
+            {/* Step 4 - Success */}
             {step === 4 && submitted && (
               <motion.div
                 key="s4"
@@ -1663,7 +1663,7 @@ export default function CheckInPage() {
                         letterSpacing: ".05em",
                       }}
                     >
-                      ⚠️ High stress — try a coping tool
+                      ⚠️ High stress - try a coping tool
                     </div>
                     <div
                       style={{
@@ -1871,7 +1871,7 @@ export default function CheckInPage() {
                   <AnalyticsTile
                     emoji={topTrigger?.emoji ?? "🔍"}
                     label="Top trigger"
-                    value={topTrigger?.label ?? "—"}
+                    value={topTrigger?.label ?? "-"}
                     sub="most common"
                     color="#c9982a"
                     bg="#fffbef"

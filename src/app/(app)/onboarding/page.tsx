@@ -30,7 +30,7 @@ const COPING_STYLES = [
     val: "breathwork",
     label: "Breathe through it",
     emoji: "🌬️",
-    desc: "Calm the body first — 4-7-8 breathing.",
+    desc: "Calm the body first - 4-7-8 breathing.",
   },
   {
     val: "active",
@@ -92,7 +92,7 @@ const STEPS = [
   {
     id: 1,
     title: "What triggers your urge?",
-    sub: "Pick all that apply — we'll build your toolkit around these.",
+    sub: "Pick all that apply - we'll build your toolkit around these.",
     emoji: "😤",
     accent: "#e07b5a",
     shadow: "#a84f2a",
@@ -110,7 +110,7 @@ const STEPS = [
   {
     id: 3,
     title: "Notification preferences",
-    sub: "Choose what feels comfortable — you can always change this later.",
+    sub: "Choose what feels comfortable - you can always change this later.",
     emoji: "🔔",
     accent: "#7b6fa0",
     shadow: "#4e4478",
@@ -485,7 +485,7 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              {/* Step 0 — Age */}
+              {/* Step 0 - Age */}
               {step === 0 && (
                 <div
                   style={{
@@ -553,7 +553,7 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 1 — Triggers */}
+              {/* Step 1 - Triggers */}
               {step === 1 && (
                 <div
                   style={{
@@ -620,7 +620,7 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 2 — Coping Style */}
+              {/* Step 2 - Coping Style */}
               {step === 2 && (
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 12 }}
@@ -681,7 +681,7 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 3 — Notifications */}
+              {/* Step 3 - Notifications */}
               {step === 3 && (
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 10 }}
@@ -736,7 +736,7 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 4 — Done */}
+              {/* Step 4 - Done */}
               {step === 4 && (
                 <div style={{ textAlign: "center", padding: "10px 0" }}>
                   <div
@@ -769,7 +769,7 @@ export default function OnboardingPage() {
                       marginBottom: 24,
                     }}
                   >
-                    Your loop profile is set. Time to start breaking it — one
+                    Your loop profile is set. Time to start breaking it - one
                     day at a time.
                   </p>
                   {/* Summary chips */}
@@ -832,7 +832,7 @@ export default function OnboardingPage() {
                         marginBottom: 12,
                       }}
                     >
-                      ⚠️ {error} — taking you to the dashboard now.
+                      ⚠️ {error} - taking you to the dashboard now.
                     </div>
                   )}
                 </div>

@@ -1,9 +1,9 @@
+// src/app/api/onboarding/route.ts
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { withDb } from "@/lib/db/with-db";
-import { v4 as uuid } from "uuid";
 
 export async function POST(req: Request) {
   try {
@@ -21,19 +21,27 @@ export async function POST(req: Request) {
       const { users, stressTriggers } = await import("@/lib/db/schema");
       const { eq } = await import("drizzle-orm");
 
-      // CRITICAL: ensure user row exists before inserting triggers (FK constraint)
-      const existing = await db.query.users.findFirst({
+      // Look up by id first, then by email as fallback
+      let existing = await db.query.users.findFirst({
         where: eq(users.id, userId),
       });
 
+      if (!existing && session?.user?.email) {
+        existing = await db.query.users.findFirst({
+          where: eq(users.email, session.user.email),
+        });
+      }
+
+      const targetId = existing?.id ?? userId;
+
       if (!existing) {
-        // Guest whose DB row was never created — create it now
         await db
           .insert(users)
           .values({
-            id: userId,
-            guestName: `Guest_${userId.slice(0, 5).toUpperCase()}`,
-            isGuest: true,
+            id: targetId,
+            email: session?.user?.email ?? undefined,
+            guestName: session?.user?.name ?? undefined,
+            isGuest: !!guestId && !session?.user,
             ageGroup,
             copingStyle: copingStyle ?? null,
             notifPrefs: notifPrefs ?? [],
@@ -41,7 +49,6 @@ export async function POST(req: Request) {
           })
           .onConflictDoNothing();
       } else {
-        // Update existing user
         await db
           .update(users)
           .set({
@@ -50,17 +57,20 @@ export async function POST(req: Request) {
             notifPrefs: notifPrefs ?? [],
             updatedAt: new Date(),
           })
-          .where(eq(users.id, userId));
+          .where(eq(users.id, targetId));
       }
 
-      // Safe to insert triggers now that user row is guaranteed
-      await db.delete(stressTriggers).where(eq(stressTriggers.userId, userId));
+      // Re-insert triggers using the correct targetId
+      await db
+        .delete(stressTriggers)
+        .where(eq(stressTriggers.userId, targetId));
       if (triggers?.length) {
-        await db
-          .insert(stressTriggers)
-          .values(
-            (triggers as string[]).map((t) => ({ userId, triggerType: t })),
-          );
+        await db.insert(stressTriggers).values(
+          (triggers as string[]).map((t) => ({
+            userId: targetId,
+            triggerType: t,
+          })),
+        );
       }
     });
 

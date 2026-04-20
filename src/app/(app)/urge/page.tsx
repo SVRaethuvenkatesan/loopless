@@ -39,7 +39,7 @@ const TOOLS: Tool[] = [
     damage: 35,
     color: "#5bb8f5",
     bg: "#dff0fd",
-    desc: "Sync your breath — calm the storm",
+    desc: "Sync your breath - calm the storm",
     time: 32,
   },
   {
@@ -49,7 +49,7 @@ const TOOLS: Tool[] = [
     damage: 25,
     color: "#5a8f6a",
     bg: "#e8f5ec",
-    desc: "Tap 30 steps — break the pattern",
+    desc: "Tap 30 steps - break the pattern",
     time: 20,
   },
   {
@@ -59,7 +59,7 @@ const TOOLS: Tool[] = [
     damage: 30,
     color: "#7b6fa0",
     bg: "#f0edf8",
-    desc: "Hold — shock the craving away",
+    desc: "Hold - shock the craving away",
     time: 15,
   },
   {
@@ -69,7 +69,7 @@ const TOOLS: Tool[] = [
     damage: 20,
     color: "#c9982a",
     bg: "#fffbef",
-    desc: "Write it out — externalise the urge",
+    desc: "Write it out - externalise the urge",
     time: 0,
   },
 ];
@@ -334,7 +334,7 @@ function DragonBoss({
         <circle cx="78" cy="33" r="2" fill="white" opacity=".9" />
         <circle cx="106" cy="33" r="2" fill="white" opacity=".9" />
 
-        {/* Pupils — slitted */}
+        {/* Pupils - slitted */}
         <ellipse cx="76" cy="35" rx="1.5" ry="4" fill="#0a0a14" />
         <ellipse cx="104" cy="35" rx="1.5" ry="4" fill="#0a0a14" />
 
@@ -961,7 +961,7 @@ function JournalGame({ onDone }: { onDone: (s: number, t: string) => void }) {
           lineHeight: 1.6,
         }}
       >
-        Write what you're feeling. Don't edit — just dump it out. Externalising
+        Write what you're feeling. Don't edit - just dump it out. Externalising
         defuses the urge.
       </p>
       <textarea
@@ -1856,7 +1856,7 @@ export default function UrgePage() {
                             color: "#6b5c3e",
                           }}
                         >
-                          All tools used. Hang in there — cravings always pass.
+                          All tools used. Hang in there - cravings always pass.
                           ⏱
                         </div>
                       )}

@@ -220,9 +220,9 @@ export default function ProfilePage() {
   const level = Math.max(1, Math.floor(totalXP / 500) + 1);
   const xpInLevel = totalXP % 500;
 
-  const displayAge = data?.user.ageGroup ?? "—";
+  const displayAge = data?.user.ageGroup ?? "-";
   const displayCoping =
-    COPING_OPTIONS.find((c) => c.val === data?.user.copingStyle)?.label ?? "—";
+    COPING_OPTIONS.find((c) => c.val === data?.user.copingStyle)?.label ?? "-";
   const displayTriggers = data?.triggers ?? [];
 
   return (
@@ -801,7 +801,7 @@ export default function ProfilePage() {
                               fontWeight: 600,
                             }}
                           >
-                            No triggers set —{" "}
+                            No triggers set -{" "}
                             <button
                               onClick={() => setEditing(true)}
                               style={{
@@ -1022,17 +1022,17 @@ export default function ProfilePage() {
                       val:
                         COPING_OPTIONS.find(
                           (c) => c.val === data?.user.copingStyle,
-                        )?.label ?? "—",
+                        )?.label ?? "-",
                     },
                     {
                       icon: "💰",
                       label: "Est. money saved",
-                      val: streak ? `$${Math.round(streak * 2.5)}` : "—",
+                      val: streak ? `$${Math.round(streak * 2.5)}` : "-",
                     },
                     {
                       icon: "⏱️",
                       label: "Time reclaimed",
-                      val: streak ? `${streak * 15} min` : "—",
+                      val: streak ? `${streak * 15} min` : "-",
                     },
                   ].map((row, i) => (
                     <motion.div
