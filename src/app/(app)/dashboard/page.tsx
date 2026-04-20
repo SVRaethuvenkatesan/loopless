@@ -1,80 +1,58 @@
-// src/app/(app)/dashboard/page.tsx
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import DashboardClient from "./dashboard-client";
 import { withDb } from "@/lib/db/with-db";
 
-interface CheckinRow {
-  id: string;
-  userId: string;
-  stressLevel: number;
-  mood: string;
-  triggerType: string | null;
-  checkedInAt: Date | null;
-  timezoneOffset: string | null;
-}
-interface StreakRow {
-  streakType: string;
-  count: number | null;
-}
-interface BadgeRow {
-  id: string;
-  badgeType: string;
-  earnedAt: Date | null;
-}
-interface TriggerRow {
-  id: string;
-  userId: string;
-  triggerType: string;
-}
-
 async function getDashboardData(userId: string) {
   try {
     return await withDb(async (db) => {
-      const { checkins, streaks, badges, stressTriggers } =
+      const { checkins, streaks, badges, stressTriggers, urgeEvents, copingSessions } =
         await import("@/lib/db/schema");
-      const { eq, and, gte, desc } = await import("drizzle-orm");
+      const { eq, and, gte, desc, count } = await import("drizzle-orm");
 
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const todayUTC = new Date();
       todayUTC.setUTCHours(0, 0, 0, 0);
 
-      const [recentCheckins, userStreaks, userBadges, userTriggers] =
+      const [recentCheckins, allCheckins30, userStreaks, userBadges, userTriggers, recentUrges, recentCoping] =
         await Promise.all([
-          db
-            .select()
-            .from(checkins)
-            .where(
-              and(
-                eq(checkins.userId, userId),
-                gte(checkins.checkedInAt, sevenDaysAgo),
-              ),
-            )
-            .orderBy(desc(checkins.checkedInAt))
-            .limit(7) as Promise<CheckinRow[]>,
-          db
-            .select()
-            .from(streaks)
-            .where(eq(streaks.userId, userId)) as Promise<StreakRow[]>,
-          db.select().from(badges).where(eq(badges.userId, userId)) as Promise<
-            BadgeRow[]
-          >,
-          db
-            .select()
-            .from(stressTriggers)
-            .where(eq(stressTriggers.userId, userId)) as Promise<TriggerRow[]>,
+          db.select().from(checkins)
+            .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, sevenDaysAgo)))
+            .orderBy(desc(checkins.checkedInAt)).limit(7),
+          db.select().from(checkins)
+            .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, thirtyDaysAgo)))
+            .orderBy(desc(checkins.checkedInAt)).limit(30),
+          db.select().from(streaks).where(eq(streaks.userId, userId)),
+          db.select().from(badges).where(eq(badges.userId, userId)).orderBy(desc(badges.earnedAt)),
+          db.select().from(stressTriggers).where(eq(stressTriggers.userId, userId)),
+          db.select().from(urgeEvents)
+            .where(and(eq(urgeEvents.userId, userId), gte(urgeEvents.occurredAt, sevenDaysAgo)))
+            .orderBy(desc(urgeEvents.occurredAt)).limit(10),
+          db.select().from(copingSessions)
+            .where(and(eq(copingSessions.userId, userId), gte(copingSessions.completedAt, sevenDaysAgo)))
+            .limit(10),
         ]);
 
-      const todayEntry =
-        recentCheckins.find(
-          (c: CheckinRow) =>
-            c.checkedInAt && new Date(c.checkedInAt) >= todayUTC,
-        ) ?? null;
+      const todayEntry = recentCheckins.find(
+        (c) => c.checkedInAt && new Date(c.checkedInAt) >= todayUTC
+      ) ?? null;
 
-      const checkInStreak =
-        userStreaks.find((s: StreakRow) => s.streakType === "checkin")?.count ??
-        0;
+      // Use DB streak, fallback to computing from history
+      let checkInStreak = userStreaks.find((s) => s.streakType === "checkin")?.count ?? 0;
+      if (checkInStreak === 0 && allCheckins30.length > 0) {
+        let streak = 0;
+        let expected = new Date(todayUTC);
+        for (const c of allCheckins30) {
+          if (!c.checkedInAt) break;
+          const d = new Date(c.checkedInAt); d.setUTCHours(0, 0, 0, 0);
+          if (d.getTime() === expected.getTime()) { streak++; expected.setDate(expected.getDate() - 1); }
+          else if (d.getTime() < expected.getTime()) break;
+        }
+        checkInStreak = streak;
+      }
 
       return {
         recentCheckins,
@@ -83,10 +61,12 @@ async function getDashboardData(userId: string) {
         todayEntry,
         userBadges,
         userTriggers,
+        urgesThisWeek: recentUrges.length,
+        copingSessionsThisWeek: recentCoping.length,
       };
     });
   } catch (err: any) {
-    console.error("Dashboard:", err?.message);
+    console.error("Dashboard data error:", err?.message);
     return {
       recentCheckins: [],
       checkInStreak: 0,
@@ -94,6 +74,8 @@ async function getDashboardData(userId: string) {
       todayEntry: null,
       userBadges: [],
       userTriggers: [],
+      urgesThisWeek: 0,
+      copingSessionsThisWeek: 0,
     };
   }
 }
@@ -112,6 +94,8 @@ export default async function DashboardPage() {
       todayEntry={data.todayEntry as any}
       earnedBadges={data.userBadges as any[]}
       userTriggers={data.userTriggers as any[]}
+      urgesThisWeek={data.urgesThisWeek}
+      copingSessionsThisWeek={data.copingSessionsThisWeek}
     />
   );
 }

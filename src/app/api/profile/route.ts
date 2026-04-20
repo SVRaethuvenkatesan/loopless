@@ -4,6 +4,7 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { withDb } from "@/lib/db/with-db";
+import { computeXP, computeLevel } from "@/lib/xp";
 
 function getUserId(session: any, req: Request): string | null {
   return session?.user?.id ?? req.headers.get("x-guest-id") ?? null;
@@ -17,9 +18,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const data = await withDb(async (db) => {
-      const { users, stressTriggers, badges, streaks } =
+      const { users, stressTriggers, badges, streaks, checkins } =
         await import("@/lib/db/schema");
-      const { eq } = await import("drizzle-orm");
+      const { eq, and, gte, desc } = await import("drizzle-orm");
       const { v4: uuid } = await import("uuid");
 
       let user = await db.query.users.findFirst({
@@ -68,16 +69,40 @@ export async function GET(req: Request) {
         }
       }
 
-      const [triggers, earnedBadges, userStreaks] = await Promise.all([
-        db
-          .select()
-          .from(stressTriggers)
-          .where(eq(stressTriggers.userId, user.id)),
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const [triggers, earnedBadges, userStreaks, recentCheckins] = await Promise.all([
+        db.select().from(stressTriggers).where(eq(stressTriggers.userId, user.id)),
         db.select().from(badges).where(eq(badges.userId, user.id)),
         db.select().from(streaks).where(eq(streaks.userId, user.id)),
+        db.select().from(checkins)
+          .where(and(eq(checkins.userId, user.id), gte(checkins.checkedInAt, thirtyDaysAgo)))
+          .orderBy(desc(checkins.checkedInAt))
+          .limit(30),
       ]);
 
-      return { user, triggers, earnedBadges, userStreaks };
+      // Compute streak from history if streaks table is empty or zero
+      let computedStreaks = userStreaks;
+      const dbStreak = userStreaks.find(s => s.streakType === "checkin");
+      if (!dbStreak || (dbStreak.count ?? 0) === 0) {
+        let streak = 0;
+        const todayUTC = new Date(); todayUTC.setUTCHours(0, 0, 0, 0);
+        let expected = new Date(todayUTC);
+        for (const c of recentCheckins) {
+          if (!c.checkedInAt) break;
+          const d = new Date(c.checkedInAt); d.setUTCHours(0, 0, 0, 0);
+          if (d.getTime() === expected.getTime()) { streak++; expected.setDate(expected.getDate() - 1); }
+          else if (d.getTime() < expected.getTime()) break;
+        }
+        if (streak > 0) computedStreaks = [{ streakType: "checkin", count: streak } as any];
+      }
+
+      const streakCount = computedStreaks.find(s => s.streakType === "checkin")?.count ?? 0;
+      const xp = computeXP(earnedBadges, streakCount, recentCheckins.length);
+      const { level, xpInLevel, xpToNext } = computeLevel(xp);
+
+      return { user, triggers, earnedBadges, userStreaks: computedStreaks, recentCheckins, xp, level, xpInLevel, xpToNext };
     });
 
     if (!data)
