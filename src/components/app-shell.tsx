@@ -31,7 +31,7 @@ const NAV = [
   { href: "/checkin", Icon: CheckinIcon, label: "Check-in", implemented: true },
   { href: "/loop", Icon: LoopIcon, label: "Loop", implemented: false },
   { href: "/progress", Icon: ProgressIcon, label: "Progress", implemented: false },
-  { href: "/insights", Icon: InsightsIcon, label: "Insights", implemented: false },
+  { href: "/awareness", Icon: SparkleIcon, label: "Awareness", implemented: true },
   { href: "/coping", Icon: ToolkitIcon, label: "Toolkit", implemented: false },
   { href: "/myths", Icon: MythsIcon, label: "Myth Cards", implemented: false },
   { href: "/support", Icon: SupportIcon, label: "Support", implemented: false },
@@ -39,8 +39,8 @@ const NAV = [
 const BOTTOM_NAV = [
   { href: "/dashboard", Icon: HomeIcon, label: "Home", implemented: true },
   { href: "/checkin", Icon: CheckinIcon, label: "Check-in", implemented: true },
+  { href: "/awareness", Icon: SparkleIcon, label: "Awareness", implemented: true },
   { href: "/progress", Icon: ProgressIcon, label: "Progress", implemented: false },
-  { href: "/insights", Icon: InsightsIcon, label: "Insights", implemented: false },
   { href: "/support", Icon: SupportIcon, label: "More", implemented: false },
 ];
 
