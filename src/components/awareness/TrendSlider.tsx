@@ -63,7 +63,7 @@ export function TrendSlider({ data }: TrendSliderProps) {
                 color: "var(--text1)",
               }}
               itemStyle={{ color: "var(--amber)" }}
-              formatter={(value: number) => [`${value}%`, "Vaping Rate"]}
+              formatter={(value: unknown) => [`${value}%`, "Vaping Rate"]}
               labelStyle={{ color: "var(--text3)", marginBottom: "4px" }}
             />
             <Line
