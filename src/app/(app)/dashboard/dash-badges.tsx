@@ -1,8 +1,8 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { JSX, useState } from "react";
+import { JSX } from "react";
 import { IcoBadge, IcoLung, IcoFire, IcoShield, IcoLeaf, IcoZap, IcoTrophy, IcoLock, IcoX, IcoClock, IcoStar } from "./dash-icons";
-
+import { useState } from "react";
 export interface Badge { id: string; badgeType: string; earnedAt: string; }
 
 export const BADGE_META: Record<string, {
