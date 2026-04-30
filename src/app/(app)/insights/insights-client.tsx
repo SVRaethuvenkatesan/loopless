@@ -455,7 +455,7 @@ export default function InsightsClient({ data: initialData }: { data: Correlatio
   ].filter(Boolean).length;
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg0)", paddingBottom: 40 }}>
+    <div style={{ paddingBottom: 24 }}>
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "24px 16px 0" }}>
 
         {/* Page header */}

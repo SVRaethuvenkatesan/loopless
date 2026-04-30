@@ -112,6 +112,7 @@ export const dailyInsights = pgTable("daily_insights", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   insightText: text("insight_text").notNull(),
+  patternType: text("pattern_type").default("stress_peak"),
   source: text("source").default("rule_based"), // "rule_based" or "llm"
   insightDate: timestamp("insight_date", { withTimezone: true }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),

@@ -4,19 +4,10 @@ import { db } from "@/lib/db";
 import { mlInsights, riskPredictions, checkins, urgeEvents, dailyInsights, nudgeLogs } from "@/lib/db/schema";
 import { eq, desc, and, gte } from "drizzle-orm";
 import { getOrComputeInsights } from "@/lib/insights-engine";
-import InsightsClient from "./insights-client";
-
-// Components (E7)
-import RiskAlertBanner from "@/components/insights/RiskAlertBanner";
-import DailyInsightCard from "@/components/insights/DailyInsightCard";
-import StressJourneyChart from "@/components/insights/StressJourneyChart";
-import TriggerBreakdown from "@/components/insights/TriggerBreakdown";
-import SleepEnergyCard from "@/components/insights/SleepEnergyCard";
-import PatternFactorsGrid from "@/components/insights/PatternFactorsGrid";
-import ModelAccuracyCard from "@/components/insights/ModelAccuracyCard";
-import RelapsePatternCard from "@/components/insights/RelapsePatternCard";
-import PrivacyPledge from "@/components/insights/PrivacyPledge";
-import InsightsEmptyState from "@/components/insights/InsightsEmptyState";
+import { getOrComputeDailyInsight } from "@/lib/daily-insight-engine";
+import { getOrComputeRiskPrediction } from "@/lib/risk-predictor";
+import { checkRelapsePatterns } from "@/lib/relapse-detector";
+import InsightsDashboard from "./insights-dashboard";
 import DevDataToolbar from "@/components/insights/DevDataToolbar";
 
 export const dynamic = "force-dynamic";
@@ -26,64 +17,48 @@ export default async function InsightsPage() {
   const userId = session?.user?.id;
   if (!userId) redirect("/dashboard");
 
-  // --- E5: Correlation engine data ---
-  let correlationData;
-  try {
-    correlationData = await getOrComputeInsights(userId);
-  } catch {
-    correlationData = {
-      checkinDays: 0,
-      urgeEventCount: 0,
-      spearmanCoef: null,
-      pValue: null,
-      highStressUrgePct: null,
-      stressUrgeSentence: null,
-      triggerRanking: [],
-      topTriggerSentence: null,
-      timeOfDayRisk: null,
-      topTimeSentence: null,
-      computedAt: new Date().toISOString(),
-    };
-  }
+  // Run all engines in parallel (each is a no-op if cache is fresh)
+  const [correlationData] = await Promise.all([
+    getOrComputeInsights(userId).catch(() => ({
+      checkinDays: 0, urgeEventCount: 0,
+      spearmanCoef: null, pValue: null, highStressUrgePct: null,
+      stressUrgeSentence: null, triggerRanking: [], topTriggerSentence: null,
+      timeOfDayRisk: null, topTimeSentence: null, computedAt: new Date().toISOString(),
+    })),
+    getOrComputeDailyInsight(userId).catch(() => null),
+    getOrComputeRiskPrediction(userId).catch(() => {}),
+    checkRelapsePatterns(userId).catch(() => {}),
+  ]);
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  // --- Parallel data fetch ---
   const [checkinHistory, urgeHistory, latestInsight, latestDailyInsight, activeRisk, recentNudges, relapseInsights] = await Promise.all([
-    // AC 7.1.1 — need ≥7 days
     db.select().from(checkins)
       .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, thirtyDaysAgo)))
       .orderBy(desc(checkins.checkedInAt))
       .limit(30),
 
-    // Urge events for trigger breakdown
     db.select().from(urgeEvents)
       .where(and(eq(urgeEvents.userId, userId), gte(urgeEvents.occurredAt, thirtyDaysAgo)))
       .orderBy(desc(urgeEvents.occurredAt))
       .limit(50),
 
-    // ML Insights (stress_peak, sleep_urge_link, etc.)
     db.select().from(mlInsights)
       .where(eq(mlInsights.userId, userId))
       .orderBy(desc(mlInsights.generatedAt))
       .limit(5),
 
-    // Daily insight (AC 7.1.1 — most recent)
     db.select().from(dailyInsights)
       .where(eq(dailyInsights.userId, userId))
       .orderBy(desc(dailyInsights.insightDate))
       .limit(1),
 
-    // Active risk prediction (AC 7.2.1)
     db.select().from(riskPredictions)
       .where(and(eq(riskPredictions.userId, userId), eq(riskPredictions.status, "pending")))
       .orderBy(desc(riskPredictions.createdAt))
       .limit(1),
 
-    // AC 7.2.2 — Nudge cap: how many nudges sent today?
     db.select().from(nudgeLogs)
       .where(and(
         eq(nudgeLogs.userId, userId),
@@ -91,19 +66,16 @@ export default async function InsightsPage() {
       ))
       .limit(10),
 
-    // AC 7.3.1 — Relapse pattern insights
     db.select().from(mlInsights)
       .where(and(eq(mlInsights.userId, userId), eq(mlInsights.patternType, "relapse_trigger")))
       .orderBy(desc(mlInsights.generatedAt))
       .limit(1),
   ]);
 
-  // --- Derived data ---
-  const hasEnoughData = checkinHistory.length >= 7; // AC 7.1.1 gate
-  const todayNudgeCount = recentNudges.length;
-  const canSendNudge = todayNudgeCount < 2; // AC 7.2.2 cap
+  // ── Derived data ────────────────────────────────────────────────────────────
+  const hasEnoughData = checkinHistory.length >= 7;
+  const canSendNudge = recentNudges.length < 2;
 
-  // Trigger counts for breakdown chart
   const triggerCounts: Record<string, number> = {};
   urgeHistory.forEach((u) => {
     (u.triggers || []).forEach((t) => {
@@ -111,7 +83,6 @@ export default async function InsightsPage() {
     });
   });
 
-  // Sleep & Energy averages
   const avgSleep = checkinHistory.length > 0
     ? checkinHistory.reduce((s, c) => s + (c.sleepQuality || 3), 0) / checkinHistory.length
     : 3;
@@ -119,21 +90,53 @@ export default async function InsightsPage() {
     ? checkinHistory.reduce((s, c) => s + (c.energyLevel || 3), 0) / checkinHistory.length
     : 3;
 
-  // Trend calculation (last 7 vs prior 7)
   const last7 = checkinHistory.slice(0, 7);
   const prior7 = checkinHistory.slice(7, 14);
-  const calcTrend = (key: "sleepQuality" | "energyLevel") => {
+  const calcTrend = (key: "sleepQuality" | "energyLevel"): "improving" | "declining" | "stable" => {
     const l = last7.length > 0 ? last7.reduce((s, c) => s + (c[key] || 3), 0) / last7.length : 3;
     const p = prior7.length > 0 ? prior7.reduce((s, c) => s + (c[key] || 3), 0) / prior7.length : 3;
     return l > p + 0.3 ? "improving" : l < p - 0.3 ? "declining" : "stable";
   };
 
-  // Active risk
-  const risk = activeRisk[0];
-  const relapseInsight = relapseInsights[0];
-  const primaryInsight = latestDailyInsight[0] || latestInsight[0];
+  // ── Normalise primaryInsight ─────────────────────────────────────────────────
+  const rawPrimary = latestDailyInsight[0] || latestInsight[0] || null;
+  const primaryInsight = rawPrimary ? (() => {
+    const isDailyInsight = "insightDate" in rawPrimary;
+    return {
+      insightText: rawPrimary.insightText,
+      insightDate: isDailyInsight
+        ? (rawPrimary as { insightDate: Date | null }).insightDate?.toString()
+        : (rawPrimary as { generatedAt: Date | null }).generatedAt?.toString(),
+      patternType: isDailyInsight
+        ? ((rawPrimary as { patternType?: string | null }).patternType ?? "stress_peak")
+        : (rawPrimary as { patternType: string }).patternType,
+    };
+  })() : null;
 
-  // Data points for "Show me the data" (AC 7.1.2)
+  // ── Normalise relapseInsight ─────────────────────────────────────────────────
+  const rawRelapse = relapseInsights[0] || null;
+  const relapseInsight = rawRelapse ? (() => {
+    const urgeMatch = rawRelapse.insightText.match(/logged (\d+)\+? urges/);
+    const urgesIn48h = urgeMatch ? parseInt(urgeMatch[1]) : 3;
+    const toolMatch = rawRelapse.insightText.match(/Box breathing|journal|walk/i);
+    const toolMap: Record<string, string> = { "Box breathing": "breathe", "journal": "journal", "walk": "walk" };
+    return {
+      patternText: rawRelapse.insightText,
+      topTrigger: "stress",
+      urgesIn48h,
+      suggestedTool: toolMatch ? (toolMap[toolMatch[0]] ?? "breathe") : "breathe",
+      confidence: rawRelapse.confidence || 0.75,
+    };
+  })() : null;
+
+  // ── Normalise risk ───────────────────────────────────────────────────────────
+  const rawRisk = activeRisk[0] || null;
+  const risk = rawRisk ? {
+    id: rawRisk.id,
+    confidence: rawRisk.confidence || 0,
+    predictedWindowEnd: rawRisk.predictedWindowEnd?.toString() || new Date().toString(),
+  } : null;
+
   const top3HighStress = checkinHistory
     .filter((c) => c.stressLevel >= 7)
     .slice(0, 3)
@@ -143,7 +146,6 @@ export default async function InsightsPage() {
       date: c.checkedInAt ? new Date(c.checkedInAt).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" }) : "",
     }));
 
-  // Map checkins for chart
   const chartData = checkinHistory.map((c) => ({
     date: c.checkedInAt?.toString() || new Date().toString(),
     stressLevel: c.stressLevel,
@@ -154,16 +156,15 @@ export default async function InsightsPage() {
 
   return (
     <div className="relative min-h-[100vh] pb-28 overflow-hidden">
-      {/* === Animated Background === */}
+      {/* Animated background blobs */}
       <div className="absolute top-10 left-10 w-64 h-64 bg-[var(--mint-glow)] rounded-full blur-3xl animate-blob opacity-50 pointer-events-none" />
       <div className="absolute top-60 right-10 w-72 h-72 bg-[var(--coral-glow)] rounded-full blur-3xl animate-blob anim-d2 opacity-40 pointer-events-none" />
       <div className="absolute bottom-40 left-1/3 w-80 h-80 bg-[var(--amber-glow)] rounded-full blur-3xl animate-blob anim-d4 opacity-40 pointer-events-none" />
 
-      {/* === Page Header === */}
+      {/* Page header */}
       <div className="page-header relative z-10">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            {/* Animated SVG brain */}
             <div className="flex items-center gap-3 mb-1">
               <div className="relative">
                 <svg viewBox="0 0 40 40" width={36} height={36} style={{ filter: "drop-shadow(0 2px 4px rgba(59,201,142,0.3))" }}>
@@ -178,7 +179,6 @@ export default async function InsightsPage() {
             <p className="page-sub">What your data says about you — in plain English</p>
           </div>
 
-          {/* Status badge */}
           <div className="metric-card !py-2 !px-4 flex items-center gap-3 backdrop-blur" style={{ background: "var(--bg2)" }}>
             <div>
               <div className="metric-label !mb-0 text-[10px]">Days tracked</div>
@@ -193,90 +193,28 @@ export default async function InsightsPage() {
         </div>
       </div>
 
-      {/* === Page Content === */}
+      {/* Dashboard with tabs */}
       <div className="page-content relative z-10">
-        {/* Seed data CTA — shown when not enough data */}
-        {!hasEnoughData && (
-          <InsightsEmptyState checkinCount={checkinHistory.length} />
-        )}
-
-        {/* === AC 7.2.1 — Risk Alert === */}
-        {risk && canSendNudge && (
-          <RiskAlertBanner
-            riskId={risk.id}
-            confidence={risk.confidence || 0}
-            windowEnd={risk.predictedWindowEnd?.toString() || new Date().toString()}
-          />
-        )}
-
-        {/* === AC 7.3.1 — Relapse Pattern (shown before daily insight if present) === */}
-        {relapseInsight && (
-          <RelapsePatternCard
-            patternText={relapseInsight.insightText}
-            topTrigger="stress"
-            urgesIn48h={3}
-            suggestedTool="breathe"
-            confidence={relapseInsight.confidence || 0.75}
-          />
-        )}
-
-        {/* === AC 7.1.1 + 7.1.2 + 7.3.3 — Daily Insight Card === */}
-        {hasEnoughData && primaryInsight && (() => {
-          const isDailyInsight = "insightDate" in primaryInsight;
-          const dateStr = isDailyInsight
-            ? (primaryInsight as { insightDate: Date | null }).insightDate?.toString()
-            : (primaryInsight as { generatedAt: Date | null }).generatedAt?.toString();
-          const pType = !isDailyInsight
-            ? (primaryInsight as { patternType: string }).patternType
-            : "stress_peak";
-          return (
-            <DailyInsightCard
-              insightText={primaryInsight.insightText}
-              dataPoints={top3HighStress}
-              insightDate={dateStr}
-              patternType={pType}
-            />
-          );
-        })()}
-
-        {/* === 30-Day Stress Chart === */}
-        {hasEnoughData && chartData.length > 0 && (
-          <StressJourneyChart checkins={chartData} />
-        )}
-
-        {/* === Trigger Breakdown === */}
-        {Object.keys(triggerCounts).length > 0 && (
-          <TriggerBreakdown triggerCounts={triggerCounts} />
-        )}
-
-        {/* === Sleep & Energy === */}
-        {hasEnoughData && (
-          <SleepEnergyCard
-            avgSleep={avgSleep}
-            avgEnergy={avgEnergy}
-            sleepTrend={calcTrend("sleepQuality")}
-            energyTrend={calcTrend("energyLevel")}
-          />
-        )}
-
-        {/* === What Shapes Your Patterns (Factors Grid) === */}
-        <PatternFactorsGrid />
-
-        {/* === AC 7.3.2 — Model Accuracy Simulator === */}
-        <ModelAccuracyCard
+        <InsightsDashboard
+          correlationData={correlationData}
+          hasEnoughData={hasEnoughData}
           checkinCount={checkinHistory.length}
           urgeCount={urgeHistory.length}
+          risk={risk}
+          canSendNudge={canSendNudge}
+          primaryInsight={primaryInsight}
+          top3HighStress={top3HighStress}
+          relapseInsight={relapseInsight}
+          chartData={chartData}
+          triggerCounts={triggerCounts}
+          avgSleep={avgSleep}
+          avgEnergy={avgEnergy}
+          sleepTrend={calcTrend("sleepQuality")}
+          energyTrend={calcTrend("energyLevel")}
         />
-
-        {/* === Privacy Pledge / Disclaimer === */}
-        <PrivacyPledge />
       </div>
 
-      {/* Dev-only floating toolbar for seed/clear */}
       {process.env.NODE_ENV !== "production" && <DevDataToolbar />}
-
-      {/* === E5: Correlation Engine === */}
-      <InsightsClient data={correlationData} />
     </div>
   );
 }
