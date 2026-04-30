@@ -106,6 +106,7 @@ export async function POST(req: Request) {
         { type: "streak_100",    threshold: 100 },
       ];
 
+      const newBadges: string[] = [];
       for (const { type, threshold } of badgesToCheck) {
         if (newCount >= threshold) {
           const alreadyHas = await db.query.badges.findFirst({
@@ -113,11 +114,12 @@ export async function POST(req: Request) {
           });
           if (!alreadyHas) {
             await db.insert(badges).values({ userId, badgeType: type, earnedAt: now });
+            newBadges.push(type);
           }
         }
       }
 
-      return { updated: false, id: entry.id, streak: newCount };
+      return { updated: false, id: entry.id, streak: newCount, newBadges };
     });
 
     // Invalidate cached insights so next visit recomputes with fresh data
@@ -129,6 +131,7 @@ export async function POST(req: Request) {
       updated: result.updated ?? false,
       id: result.id,
       streak: result.streak,
+      newBadges: result.newBadges ?? [],
       xpEarned: result.updated ? 0 : 20 + (stressLevel >= 7 ? 10 : 0) + bonusXp,
     });
   } catch (err: any) {

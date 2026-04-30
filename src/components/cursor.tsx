@@ -1,8 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
-/* Cute mouse (animal) SVG cursor — follows the pointer with smooth lag */
-function MouseSVG({ flipped, clicked }: { flipped: boolean; clicked: boolean }) {
+/* Cute mouse (animal) SVG cursor - follows the pointer with smooth lag */
+function MouseSVG({
+  flipped,
+  clicked,
+}: {
+  flipped: boolean;
+  clicked: boolean;
+}) {
   return (
     <svg
       width={clicked ? 28 : 34}
@@ -38,18 +44,62 @@ function MouseSVG({ flipped, clicked }: { flipped: boolean; clicked: boolean }) 
       <ellipse cx="20" cy="22.5" rx="2.5" ry="1.8" fill="#e8192c" />
 
       {/* Mouth */}
-      <path d="M17.5 24.5 Q20 26.5 22.5 24.5" stroke="#1a0a24" strokeWidth="1" strokeLinecap="round" fill="none" />
+      <path
+        d="M17.5 24.5 Q20 26.5 22.5 24.5"
+        stroke="#1a0a24"
+        strokeWidth="1"
+        strokeLinecap="round"
+        fill="none"
+      />
 
       {/* Whiskers left */}
-      <line x1="5" y1="21" x2="16" y2="22.5" stroke="#8a7090" strokeWidth="0.9" strokeLinecap="round" />
-      <line x1="5" y1="23.5" x2="16" y2="23.5" stroke="#8a7090" strokeWidth="0.9" strokeLinecap="round" />
+      <line
+        x1="5"
+        y1="21"
+        x2="16"
+        y2="22.5"
+        stroke="#8a7090"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
+      <line
+        x1="5"
+        y1="23.5"
+        x2="16"
+        y2="23.5"
+        stroke="#8a7090"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
 
       {/* Whiskers right */}
-      <line x1="35" y1="21" x2="24" y2="22.5" stroke="#8a7090" strokeWidth="0.9" strokeLinecap="round" />
-      <line x1="35" y1="23.5" x2="24" y2="23.5" stroke="#8a7090" strokeWidth="0.9" strokeLinecap="round" />
+      <line
+        x1="35"
+        y1="21"
+        x2="24"
+        y2="22.5"
+        stroke="#8a7090"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
+      <line
+        x1="35"
+        y1="23.5"
+        x2="24"
+        y2="23.5"
+        stroke="#8a7090"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
 
       {/* Tail (curved, bottom-right) */}
-      <path d="M30 30 Q38 32 36 38" stroke="#c8a0b8" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <path
+        d="M30 30 Q38 32 36 38"
+        stroke="#c8a0b8"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+      />
     </svg>
   );
 }
@@ -57,14 +107,14 @@ function MouseSVG({ flipped, clicked }: { flipped: boolean; clicked: boolean }) 
 export function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
-  const [clicked,  setClicked]  = useState(false);
-  const [hidden,   setHidden]   = useState(true);
-  const [flipped,  setFlipped]  = useState(false);
+  const [clicked, setClicked] = useState(false);
+  const [hidden, setHidden] = useState(true);
+  const [flipped, setFlipped] = useState(false);
 
-  const pos  = useRef({ x: 0, y: 0 });
-  const cur  = useRef({ x: 0, y: 0 });
+  const pos = useRef({ x: 0, y: 0 });
+  const cur = useRef({ x: 0, y: 0 });
   const prev = useRef({ x: 0, y: 0 });
-  const raf  = useRef<number>(0);
+  const raf = useRef<number>(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -90,30 +140,38 @@ export function CustomCursor() {
     raf.current = requestAnimationFrame(animate);
 
     const onDown = () => setClicked(true);
-    const onUp   = () => setClicked(false);
+    const onUp = () => setClicked(false);
 
     const onEnter = (e: MouseEvent) => {
-      if ((e.target as HTMLElement).matches("a, button, [role=button], input, textarea, select, label, [tabindex]"))
+      if (
+        (e.target as HTMLElement).matches(
+          "a, button, [role=button], input, textarea, select, label, [tabindex]",
+        )
+      )
         setHovered(true);
     };
     const onLeave = (e: MouseEvent) => {
-      if ((e.target as HTMLElement).matches("a, button, [role=button], input, textarea, select, label, [tabindex]"))
+      if (
+        (e.target as HTMLElement).matches(
+          "a, button, [role=button], input, textarea, select, label, [tabindex]",
+        )
+      )
         setHovered(false);
     };
 
-    window.addEventListener("mousemove",  onMove);
-    window.addEventListener("mousedown",  onDown);
-    window.addEventListener("mouseup",    onUp);
-    window.addEventListener("mouseover",  onEnter);
-    window.addEventListener("mouseout",   onLeave);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("mouseover", onEnter);
+    window.addEventListener("mouseout", onLeave);
 
     return () => {
       cancelAnimationFrame(raf.current);
-      window.removeEventListener("mousemove",  onMove);
-      window.removeEventListener("mousedown",  onDown);
-      window.removeEventListener("mouseup",    onUp);
-      window.removeEventListener("mouseover",  onEnter);
-      window.removeEventListener("mouseout",   onLeave);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("mouseover", onEnter);
+      window.removeEventListener("mouseout", onLeave);
     };
   }, []);
 

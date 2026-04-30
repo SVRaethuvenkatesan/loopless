@@ -106,7 +106,6 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   subscribedAt: timestamp("subscribed_at", { withTimezone: true }).defaultNow(),
 });
 
-// --- Epic 7: Adaptive AI & Predictive Resilience Engine ---
 
 export const dailyInsights = pgTable("daily_insights", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -137,7 +136,6 @@ export const nudgeLogs = pgTable("nudge_logs", {
   sentAt: timestamp("sent_at", { withTimezone: true }).defaultNow(),
 });
 
-// --- Epic 5: Nicotine–Stress Correlation Engine ---
 
 export const correlationInsights = pgTable("correlation_insights", {
   id: uuid("id").defaultRandom().primaryKey(),

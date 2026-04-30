@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SessionProviderWrapper from "@/components/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
-import { CustomCursor } from "@/components/cursor";
 import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistration";
 import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
 
@@ -39,7 +38,6 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <CustomCursor />
           <SessionProviderWrapper>{children}</SessionProviderWrapper>
           <ServiceWorkerRegistration />
           <PwaInstallPrompt />

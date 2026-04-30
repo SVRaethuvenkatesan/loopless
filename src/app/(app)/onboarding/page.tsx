@@ -73,8 +73,8 @@ const NOTIF_OPTIONS = [
   },
   {
     val: "smart_nudges",
-    label: "Smart nudges (ML-based)",
-    emoji: "🤖",
+    label: "Smart nudges",
+    emoji: "🎯",
     desc: "Heads-up before your high-risk windows.",
   },
 ];
@@ -140,6 +140,7 @@ export default function OnboardingPage() {
   const { data: sess } = useSession();
 
   const [step, setStep] = useState(0);
+  const [startStep, setStartStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [ageGroup, setAgeGroup] = useState("");
   const [triggers, setTriggers] = useState<string[]>([]);
@@ -155,15 +156,21 @@ export default function OnboardingPage() {
     setUserName(sess?.user?.name ?? guestName ?? "");
   }, [sess]);
 
-  // If guest already has data in localStorage, pre-fill
+  // Pre-fill from localStorage; skip age+triggers steps if guest already provided them
   useEffect(() => {
+    const guestId = localStorage.getItem("loopless_guest_id");
     const gt = localStorage.getItem("loopless_guest_triggers");
     const ga = localStorage.getItem("loopless_guest_age");
+    if (ga) setAgeGroup(ga);
     if (gt)
       try {
         setTriggers(JSON.parse(gt));
       } catch {}
-    if (ga) setAgeGroup(ga);
+    // Guest already answered age + triggers - start at coping step
+    if (guestId && ga) {
+      setStep(2);
+      setStartStep(2);
+    }
   }, []);
 
   function toggleTrigger(v: string) {
@@ -234,7 +241,7 @@ export default function OnboardingPage() {
   }
   function back() {
     setDir(-1);
-    setStep((s) => Math.max(s - 1, 0));
+    setStep((s) => Math.max(s - 1, startStep));
   }
 
   const cur = STEPS[step];
@@ -410,21 +417,28 @@ export default function OnboardingPage() {
 
         {/* Progress */}
         <div style={{ display: "flex", gap: 5, marginBottom: 24 }}>
-          {STEPS.map((_, i) => (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                height: 6,
-                borderRadius: 3,
-                border: "1.5px solid rgba(26,18,8,.1)",
-                background:
-                  i < step ? cur.accent : i === step ? cur.accent : "#fde8c8",
-                opacity: i < step ? 0.55 : i === step ? 1 : 0.4,
-                transition: "background .4s",
-              }}
-            />
-          ))}
+          {STEPS.slice(startStep).map((_, i) => {
+            const absI = i + startStep;
+            return (
+              <div
+                key={absI}
+                style={{
+                  flex: 1,
+                  height: 6,
+                  borderRadius: 3,
+                  border: "1.5px solid rgba(26,18,8,.1)",
+                  background:
+                    absI < step
+                      ? cur.accent
+                      : absI === step
+                        ? cur.accent
+                        : "#fde8c8",
+                  opacity: absI < step ? 0.55 : absI === step ? 1 : 0.4,
+                  transition: "background .4s",
+                }}
+              />
+            );
+          })}
         </div>
 
         {/* Card */}
@@ -850,7 +864,7 @@ export default function OnboardingPage() {
             alignItems: "center",
           }}
         >
-          {step > 0 && (
+          {step > startStep && (
             <button className="back-btn" onClick={back}>
               ← Back
             </button>
@@ -883,7 +897,8 @@ export default function OnboardingPage() {
             color: "#a8936a",
           }}
         >
-          Step {step + 1} of {STEPS.length} · Your data stays private 🔒
+          Step {step - startStep + 1} of {STEPS.length - startStep} · Your data
+          stays private 🔒
         </div>
       </div>
     </>
