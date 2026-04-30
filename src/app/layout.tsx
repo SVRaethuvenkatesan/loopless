@@ -4,6 +4,8 @@ import "./globals.css";
 import SessionProviderWrapper from "@/components/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CustomCursor } from "@/components/cursor";
+import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistration";
+import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
 
 export const metadata: Metadata = {
   title: "Loopless - Break Free From Nicotine",
@@ -39,6 +41,8 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <CustomCursor />
           <SessionProviderWrapper>{children}</SessionProviderWrapper>
+          <ServiceWorkerRegistration />
+          <PwaInstallPrompt />
         </ThemeProvider>
       </body>
     </html>

@@ -30,11 +30,11 @@ const SparkleIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="
 const NAV = [
   { href: "/dashboard", Icon: HomeIcon, label: "Home", implemented: true },
   { href: "/checkin", Icon: CheckinIcon, label: "Check-in", implemented: true },
-  { href: "/loop", Icon: LoopIcon, label: "Loop", implemented: false },
-  { href: "/progress", Icon: ProgressIcon, label: "Progress", implemented: false },
   { href: "/awareness", Icon: SparkleIcon, label: "Awareness", implemented: true },
   { href: "/insights", Icon: InsightsIcon, label: "Insights", implemented: true },
-  { href: "/coping", Icon: ToolkitIcon, label: "Toolkit", implemented: false },
+  { href: "/loop", Icon: LoopIcon, label: "Loop", implemented: false },
+  { href: "/progress", Icon: ProgressIcon, label: "Progress", implemented: false },
+  { href: "/coping", Icon: ToolkitIcon, label: "Toolkit", implemented: true },
   { href: "/myths", Icon: MythsIcon, label: "Myth Cards", implemented: false },
   { href: "/support", Icon: SupportIcon, label: "Support", implemented: false },
 ];
@@ -166,6 +166,7 @@ export default function AppShell({ children, session: serverSession }: { childre
         a{color:inherit;text-decoration:none;}
 
         @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.8);opacity:.5;}}
+        @keyframes pulseFire{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
         @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-40px) scale(.4);}}
         @keyframes xpSlide{from{background-position:-200% 0;}to{background-position:200% 0;}}
         @keyframes sideGlow{0%,100%{box-shadow:4px 0 0 rgba(26,18,8,.06);}50%{box-shadow:4px 0 24px rgba(90,143,106,.14);}}
@@ -459,12 +460,9 @@ export default function AppShell({ children, session: serverSession }: { childre
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {/* Streak pill - real */}
               <div className="streak-pill">
-                <motion.span
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
+                <span style={{ display: "inline-flex", animation: "pulseFire 2s ease-in-out infinite" }}>
                   <FireIcon />
-                </motion.span>
+                </span>
                 <span>
                   {dataReady ? (
                     streak

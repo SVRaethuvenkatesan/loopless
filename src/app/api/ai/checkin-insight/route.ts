@@ -85,6 +85,7 @@ Use 1 emoji naturally. Do NOT use bullet points. Respond with ONLY the insight t
       },
     );
 
+    if (res.status === 429) return NextResponse.json({ insight: `You've logged ${history.length} check-ins with an average stress of ${avgStress}/10. Keep going — patterns get clearer every day!` });
     if (!res.ok) throw new Error(`Gemini ${res.status}`);
     const data = await res.json();
     const insight = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();

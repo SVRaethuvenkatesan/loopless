@@ -112,6 +112,7 @@ export const dailyInsights = pgTable("daily_insights", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   insightText: text("insight_text").notNull(),
+  patternType: text("pattern_type").default("stress_peak"),
   source: text("source").default("rule_based"), // "rule_based" or "llm"
   insightDate: timestamp("insight_date", { withTimezone: true }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -136,3 +137,20 @@ export const nudgeLogs = pgTable("nudge_logs", {
   sentAt: timestamp("sent_at", { withTimezone: true }).defaultNow(),
 });
 
+// --- Epic 5: Nicotine–Stress Correlation Engine ---
+
+export const correlationInsights = pgTable("correlation_insights", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  checkinDays: integer("checkin_days").notNull().default(0),
+  urgeEventCount: integer("urge_event_count").notNull().default(0),
+  spearmanCoef: real("spearman_coef"),
+  pValue: real("p_value"),
+  highStressUrgePct: real("high_stress_urge_pct"),
+  stressUrgeSentence: text("stress_urge_sentence"),
+  triggerRanking: jsonb("trigger_ranking"),
+  topTriggerSentence: text("top_trigger_sentence"),
+  timeOfDayRisk: jsonb("time_of_day_risk"),
+  topTimeSentence: text("top_time_sentence"),
+  computedAt: timestamp("computed_at", { withTimezone: true }).defaultNow().notNull(),
+});
