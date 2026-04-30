@@ -13,6 +13,7 @@ function getBaseUrl(): string {
 }
 
 let _pool: Pool | null = null;
+let _db: NodePgDatabase<typeof schema> | null = null;
 
 function getPool(): Pool {
   if (!_pool || (_pool as any).ending) {
@@ -26,18 +27,27 @@ function getPool(): Pool {
       keepAlive: true,
       keepAliveInitialDelayMillis: 10_000,
     });
+    _db = null;
     _pool.on("error", () => {
       _pool = null;
+      _db = null;
     });
   }
   return _pool;
+}
+
+function getDb(): NodePgDatabase<typeof schema> {
+  if (!_db) {
+    _db = drizzle(getPool(), { schema });
+  }
+  return _db;
 }
 
 export const db: NodePgDatabase<typeof schema> = new Proxy(
   {} as NodePgDatabase<typeof schema>,
   {
     get(_, prop: string) {
-      return (drizzle(getPool(), { schema }) as any)[prop];
+      return (getDb() as any)[prop];
     },
   },
 );

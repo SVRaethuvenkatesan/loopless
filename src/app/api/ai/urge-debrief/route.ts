@@ -45,6 +45,7 @@ Be specific to their data. Warm, energetic, shame-free. Reference the science br
         }),
       },
     );
+    if (res.status === 429) return NextResponse.json({ message: fallback });
     if (!res.ok) throw new Error(`Gemini ${res.status}`);
     const data = await res.json();
     const message = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();

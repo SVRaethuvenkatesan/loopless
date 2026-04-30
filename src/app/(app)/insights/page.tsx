@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { mlInsights, riskPredictions, checkins, urgeEvents, dailyInsights, nudgeLogs } from "@/lib/db/schema";
 import { eq, desc, and, gte } from "drizzle-orm";
+import { getOrComputeInsights } from "@/lib/insights-engine";
+import InsightsClient from "./insights-client";
 
-// Components
+// Components (E7)
 import RiskAlertBanner from "@/components/insights/RiskAlertBanner";
 import DailyInsightCard from "@/components/insights/DailyInsightCard";
 import StressJourneyChart from "@/components/insights/StressJourneyChart";
@@ -23,6 +25,26 @@ export default async function InsightsPage() {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) redirect("/dashboard");
+
+  // --- E5: Correlation engine data ---
+  let correlationData;
+  try {
+    correlationData = await getOrComputeInsights(userId);
+  } catch {
+    correlationData = {
+      checkinDays: 0,
+      urgeEventCount: 0,
+      spearmanCoef: null,
+      pValue: null,
+      highStressUrgePct: null,
+      stressUrgeSentence: null,
+      triggerRanking: [],
+      topTriggerSentence: null,
+      timeOfDayRisk: null,
+      topTimeSentence: null,
+      computedAt: new Date().toISOString(),
+    };
+  }
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -252,6 +274,9 @@ export default async function InsightsPage() {
 
       {/* Dev-only floating toolbar for seed/clear */}
       {process.env.NODE_ENV !== "production" && <DevDataToolbar />}
+
+      {/* === E5: Correlation Engine === */}
+      <InsightsClient data={correlationData} />
     </div>
   );
 }

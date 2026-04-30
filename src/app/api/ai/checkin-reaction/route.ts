@@ -16,8 +16,9 @@ const FALLBACKS: Record<number, string> = {
 };
 
 export async function POST(req: Request) {
+  let stress = 5, mood = "", trigger = "";
   try {
-    const { stress, mood, trigger } = await req.json();
+    ({ stress, mood, trigger } = await req.json());
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -63,6 +64,7 @@ Respond with ONLY the message - no labels, no quotes.`;
       },
     );
 
+    if (res.status === 429) return NextResponse.json({ message: FALLBACKS[stress] ?? FALLBACKS[5] });
     if (!res.ok) throw new Error(`Gemini ${res.status}`);
 
     const data = await res.json();
@@ -70,8 +72,7 @@ Respond with ONLY the message - no labels, no quotes.`;
 
     return NextResponse.json({ message: message || FALLBACKS[stress] });
   } catch (err) {
-    console.error("Gemini AI error:", err);
-    const { stress } = await req.json().catch(() => ({ stress: 5 }));
+    console.error("Gemini reaction error:", err);
     return NextResponse.json({ message: FALLBACKS[stress] ?? FALLBACKS[5] });
   }
 }

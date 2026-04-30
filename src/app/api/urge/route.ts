@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { withDb } from "@/lib/db/with-db";
+import { invalidateInsightsCache } from "@/lib/insights-engine";
 
 export async function POST(req: Request) {
   try {
@@ -54,6 +55,7 @@ export async function POST(req: Request) {
       }
     }
 
+    invalidateInsightsCache(userId).catch(() => {});
     return NextResponse.json({ success: true, id: result.id, bonusXp });
   } catch (err: any) {
     console.error("Urge POST:", err?.message);

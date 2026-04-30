@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { withDb } from "@/lib/db/with-db";
+import { invalidateInsightsCache } from "@/lib/insights-engine";
 
 export async function POST(req: Request) {
   try {
@@ -118,6 +119,9 @@ export async function POST(req: Request) {
 
       return { updated: false, id: entry.id, streak: newCount };
     });
+
+    // Invalidate cached insights so next visit recomputes with fresh data
+    invalidateInsightsCache(userId).catch(() => {});
 
     const bonusXp = (sleepQuality ? 10 : 0) + (energyLevel ? 10 : 0);
     return NextResponse.json({
