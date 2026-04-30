@@ -157,7 +157,7 @@ export default async function InsightsPage() {
           </div>
 
           {/* Status badge */}
-          <div className="metric-card !py-2 !px-4 flex items-center gap-3 bg-white/80 backdrop-blur">
+          <div className="metric-card !py-2 !px-4 flex items-center gap-3 backdrop-blur" style={{ background: "var(--bg2)" }}>
             <div>
               <div className="metric-label !mb-0 text-[10px]">Days tracked</div>
               <div className="font-display font-bold text-xl text-[var(--mint2)]">{checkinHistory.length}</div>

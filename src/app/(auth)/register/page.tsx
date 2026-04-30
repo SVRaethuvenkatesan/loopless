@@ -150,7 +150,7 @@ export default function RegisterPage() {
           70% { transform:translate(-14px,16px) scale(0.97); }
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Nunito', sans-serif; background: #fef9f0; }
+        body { font-family: 'Nunito', sans-serif; background: var(--bg0); color: var(--text1); }
         h1,h2,h3 { font-family: 'Fredoka', sans-serif; }
 
         .auth-layout { display:grid; grid-template-columns:1fr 1fr; min-height:100vh; }
@@ -167,22 +167,22 @@ export default function RegisterPage() {
           padding:48px 40px; color:white;
         }
         .auth-right {
-          background:#fef9f0;
+          background: var(--bg0);
           display:flex; flex-direction:column;
           justify-content:center; align-items:center;
           padding:48px 40px; position:relative; overflow-y:auto;
         }
         .input-field {
-          width:100%; background:white;
-          border:2.5px solid rgba(26,18,8,0.15);
+          width:100%; background:var(--bg2);
+          border:2.5px solid var(--border3);
           border-radius:14px; padding:13px 16px;
           font-size:14px; font-weight:600;
           font-family:'Nunito',sans-serif;
-          outline:none; color:#1a1208;
+          outline:none; color:var(--text1);
           transition:border-color 0.18s, box-shadow 0.18s;
         }
         .input-field:focus { border-color:#a78bfa; box-shadow:0 0 0 3px rgba(167,139,250,0.2); }
-        .input-field::placeholder { color:#a8936a; }
+        .input-field::placeholder { color:var(--text3); }
 
         .btn-primary {
           width:100%; background:#a78bfa; color:white;
@@ -198,31 +198,31 @@ export default function RegisterPage() {
         .btn-primary:disabled { opacity:0.6; pointer-events:none; }
 
         .btn-google {
-          width:100%; background:white; color:#1a1208;
-          border:2.5px solid rgba(26,18,8,0.2); border-radius:14px;
+          width:100%; background:var(--bg2); color:var(--text1);
+          border:2.5px solid var(--border3); border-radius:14px;
           padding:13px; font-size:14px; font-weight:700;
           font-family:'Nunito',sans-serif; cursor:pointer;
-          box-shadow:3px 3px 0px rgba(26,18,8,0.1);
+          box-shadow:var(--shadow-card);
           transition:transform 0.12s, box-shadow 0.12s;
           display:flex; align-items:center; justify-content:center; gap:10px;
         }
-        .btn-google:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0px rgba(26,18,8,0.12); background:#f8f4ee; }
+        .btn-google:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0px var(--shadow-card); background:var(--bg3); }
 
         .btn-guest {
-          width:100%; background:#fff0c8; color:#5a3800;
-          border:2.5px solid #f5a623; border-radius:14px;
+          width:100%; background:var(--amber3); color:var(--amber2);
+          border:2.5px solid var(--amber); border-radius:14px;
           padding:13px; font-size:14px; font-weight:700;
           font-family:'Nunito',sans-serif; cursor:pointer;
-          box-shadow:3px 3px 0px rgba(200,130,10,0.25);
+          box-shadow:var(--shadow-amber);
           transition:transform 0.12s, box-shadow 0.12s;
           display:flex; align-items:center; justify-content:center; gap:8px;
         }
-        .btn-guest:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0px rgba(200,130,10,0.3); }
+        .btn-guest:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0px var(--shadow-amber); }
 
         .error-box {
-          background:#ffd4cf; border:2px solid #ff6b5b;
+          background:var(--coral3); border:2px solid var(--coral);
           border-radius:12px; padding:10px 14px;
-          font-size:13px; font-weight:600; color:#7a1a0e;
+          font-size:13px; font-weight:600; color:var(--coral);
           display:flex; align-items:center; gap:7px;
         }
       `}</style>
@@ -270,14 +270,14 @@ export default function RegisterPage() {
         {/* Right panel — registration form */}
         <div className="auth-right">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} style={{ width: "100%", maxWidth: 400 }}>
-            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#6b5c3e", marginBottom: 28, textDecoration: "none" }}>
+            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--text2)", marginBottom: 28, textDecoration: "none" }}>
               <ArrowLeftIcon /> Back
             </Link>
 
-            <h1 style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 32, fontWeight: 600, color: "#1a1208", marginBottom: 6 }}>
+            <h1 style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 32, fontWeight: 600, color: "var(--text1)", marginBottom: 6 }}>
               Create your account
             </h1>
-            <p style={{ fontSize: 14, color: "#6b5c3e", fontWeight: 500, marginBottom: 24 }}>
+            <p style={{ fontSize: 14, color: "var(--text2)", fontWeight: 500, marginBottom: 24 }}>
               Already have one?{" "}
               <Link href="/login" style={{ color: "#a78bfa", fontWeight: 700 }}>Log in →</Link>
             </p>
@@ -290,7 +290,7 @@ export default function RegisterPage() {
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#6b5c3e", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
                   Display name
                 </label>
                 <input
@@ -305,7 +305,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#6b5c3e", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
                   Email
                 </label>
                 <input
@@ -320,7 +320,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#6b5c3e", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
                   Password
                 </label>
                 <div style={{ position: "relative" }}>
@@ -334,7 +334,7 @@ export default function RegisterPage() {
                     className="input-field"
                     style={{ paddingRight: 44 }}
                   />
-                  <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#a8936a", display: "flex", alignItems: "center" }}>
+                  <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text3)", display: "flex", alignItems: "center" }}>
                     {showPass ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
                 </div>
@@ -342,7 +342,7 @@ export default function RegisterPage() {
                 {form.password && (
                   <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                     {STRENGTHS.map((s, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: s.test(form.password) ? "#0a3d2a" : "#a8936a" }}>
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: s.test(form.password) ? "var(--mint2)" : "var(--text3)" }}>
                         {s.test(form.password) ? <CheckCircleIcon /> : <CircleIcon />}
                         <span>{s.label}</span>
                       </div>
@@ -352,7 +352,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#6b5c3e", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 5 }}>
                   Confirm Password
                 </label>
                 <input
@@ -378,9 +378,9 @@ export default function RegisterPage() {
             </form>
 
             <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "18px 0" }}>
-              <div style={{ flex: 1, height: 2, borderTop: "2px dashed rgba(26,18,8,0.1)" }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#a8936a" }}>or</span>
-              <div style={{ flex: 1, height: 2, borderTop: "2px dashed rgba(26,18,8,0.1)" }} />
+              <div style={{ flex: 1, height: 2, borderTop: "2px dashed var(--border2)" }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)" }}>or</span>
+              <div style={{ flex: 1, height: 2, borderTop: "2px dashed var(--border2)" }} />
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -398,7 +398,7 @@ export default function RegisterPage() {
               </button>
             </div>
 
-            <p style={{ fontSize: 11.5, color: "#a8936a", fontWeight: 500, textAlign: "center", marginTop: 18, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 11.5, color: "var(--text3)", fontWeight: 500, textAlign: "center", marginTop: 18, lineHeight: 1.6 }}>
               By creating an account, you agree to our{" "}
               <Link href="/terms" style={{ color: "#a78bfa", fontWeight: 700 }}>Terms</Link>{" "}
               and{" "}

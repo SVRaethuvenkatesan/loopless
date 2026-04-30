@@ -33,31 +33,31 @@ function WeekChart({checkins}:{checkins:Checkin[]}){
       {days.map((g,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",position:"relative",height:"100%"}}
         onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}>
         <AnimatePresence>{hov===i&&g.has&&<motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}} exit={{opacity:0}}
-          style={{position:"absolute",bottom:28,left:"50%",transform:"translateX(-50%)",background:"#1a1208",color:"white",borderRadius:8,padding:"3px 8px",fontSize:10,fontWeight:700,whiteSpace:"nowrap",zIndex:10}}>
+          style={{position:"absolute",bottom:28,left:"50%",transform:"translateX(-50%)",background:"var(--text1)",color:"var(--bg0)",borderRadius:8,padding:"3px 8px",fontSize:10,fontWeight:700,whiteSpace:"nowrap",zIndex:10}}>
           {g.stress}/10
         </motion.div>}</AnimatePresence>
         {g.has
           ?<motion.div initial={{height:0}} animate={{height:`${Math.max((g.stress/mx)*BAR_MAX,5)}px`}}
               transition={{delay:0.1+i*0.07,duration:0.55,ease:"easeOut"}}
               style={{width:"80%",borderRadius:"5px 5px 2px 2px",background:`linear-gradient(180deg,${col(g.stress)}99,${col(g.stress)})`,border:`1.5px solid ${col(g.stress)}`,borderBottom:"none"}}/>
-          :<div style={{width:"80%",height:4,borderRadius:"3px 3px 0 0",background:"rgba(26,18,8,.07)"}}/>}
-        <div style={{width:"80%",height:2,background:g.has?col(g.stress):"rgba(26,18,8,.07)",borderRadius:"0 0 2px 2px",flexShrink:0}}/>
-        <div style={{fontSize:9,fontWeight:800,color:g.has?"#6b5c3e":"#c8b89a",marginTop:4,flexShrink:0}}>{g.day}</div>
+          :<div style={{width:"80%",height:4,borderRadius:"3px 3px 0 0",background:"var(--bg4)"}}/>}
+        <div style={{width:"80%",height:2,background:g.has?col(g.stress):"var(--bg4)",borderRadius:"0 0 2px 2px",flexShrink:0}}/>
+        <div style={{fontSize:9,fontWeight:800,color:g.has?"var(--text2)":"var(--text4)",marginTop:4,flexShrink:0}}>{g.day}</div>
       </div>)}
     </div>
     <div style={{display:"flex",gap:12,marginTop:8,flexWrap:"wrap"}}>
       {[{c:"#5a8f6a",l:"Low (1–3)"},{c:"#c9982a",l:"Med (4–6)"},{c:"#e07b5a",l:"High (7–10)"}].map(x=>(
-        <div key={x.l} style={{display:"flex",alignItems:"center",gap:5}}>
-          <div style={{width:10,height:10,borderRadius:3,background:x.c}}/><span style={{fontSize:10,fontWeight:600,color:"#6b5c3e"}}>{x.l}</span>
+          <div key={x.l} style={{display:"flex",alignItems:"center",gap:5}}>
+          <div style={{width:10,height:10,borderRadius:3,background:x.c}}/><span style={{fontSize:10,fontWeight:600,color:"var(--text2)"}}>{x.l}</span>
         </div>
       ))}
     </div>
-    {!checkins.length&&<p style={{fontSize:11,color:"#a8936a",fontWeight:600,marginTop:8}}>No check-ins yet — log one below to see your week!</p>}
+    {!checkins.length&&<p style={{fontSize:11,color:"var(--text3)",fontWeight:600,marginTop:8}}>No check-ins yet — log one below to see your week!</p>}
   </div>;
 }
 
-const C="white",B="rgba(26,18,8,.1)";
-function card(p:object){return{background:C,border:`2px solid ${B}`,borderRadius:22,padding:18,boxShadow:"4px 4px 0 rgba(26,18,8,.08)",...p};}
+const C="var(--bg2)",B="var(--border2)";
+function card(p:object){return{background:C,border:`2px solid ${B}`,borderRadius:22,padding:18,boxShadow:"var(--shadow-card)",...p};}
 
 export default function DashboardClient({userName,userId,recentCheckins,checkInStreak,checkedInToday,todayEntry,earnedBadges,userTriggers,urgesThisWeek,copingSessionsThisWeek}:Props){
   const [tod,setTod]=useState("morning");
@@ -88,10 +88,10 @@ export default function DashboardClient({userName,userId,recentCheckins,checkInS
   const {level,xpInLevel:xpInLvl}=computeLevel(xp);
 
   const quests=[
-    {Icon:IcoClipboard,title:"Daily check-in",desc:"Log today's stress & mood",reward:"+20 XP",done:done,href:"/checkin",accent:"#5a8f6a",bg:"#e8f5ec", implemented: true},
-    {Icon:IcoWind2,title:"4-7-8 Breathing",desc:"2 min breathing session",reward:"+15 XP",done:copingSessionsThisWeek>0,href:"/coping/breathing",accent:"#5bb8f5",bg:"#dff0fd", implemented: false},
-    {Icon:IcoMessage,title:"Log an urge",desc:"Record & beat a craving",reward:"+25 XP",done:urgesThisWeek>0,href:"/urge",accent:"#c9982a",bg:"#fffbef", implemented: true},
-    {Icon:IcoStar,title:"Myth card",desc:"Learn a vaping fact",reward:"+10 XP",done:false,href:"/myths",accent:"#7b6fa0",bg:"#f0edf8", implemented: false},
+    {Icon:IcoClipboard,title:"Daily check-in",desc:"Log today's stress & mood",reward:"+20 XP",done:done,href:"/checkin",accent:"#5a8f6a",bg:"var(--mint3)", implemented: true},
+    {Icon:IcoWind2,title:"4-7-8 Breathing",desc:"2 min breathing session",reward:"+15 XP",done:copingSessionsThisWeek>0,href:"/coping/breathing",accent:"#5bb8f5",bg:"var(--sky3)", implemented: false},
+    {Icon:IcoMessage,title:"Log an urge",desc:"Record & beat a craving",reward:"+25 XP",done:urgesThisWeek>0,href:"/urge",accent:"#c9982a",bg:"var(--amber3)", implemented: true},
+    {Icon:IcoStar,title:"Myth card",desc:"Learn a vaping fact",reward:"+10 XP",done:false,href:"/myths",accent:"#7b6fa0",bg:"var(--lilac)", implemented: false},
   ];
 
   const moods=[{v:"rough",l:"Rough",c:"#e07b5a"},{v:"meh",l:"Meh",c:"#c9982a"},{v:"okay",l:"Okay",c:"#5bb8f5"},{v:"good",l:"Good",c:"#5a8f6a"}];
@@ -131,7 +131,6 @@ export default function DashboardClient({userName,userId,recentCheckins,checkInS
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-      body{font-family:'Nunito',sans-serif;background:#fef9f0;color:#1a1208;}
       h1,h2,h3,h4{font-family:'Fredoka',sans-serif;}
       a{color:inherit;text-decoration:none;}
       @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.9);opacity:.4;}}
@@ -144,10 +143,10 @@ export default function DashboardClient({userName,userId,recentCheckins,checkInS
       @media(max-width:640px){.stat-grid{grid-template-columns:1fr 1fr;}}
       .two-col{display:grid;grid-template-columns:1fr;gap:14px;}
       @media(min-width:900px){.two-col{grid-template-columns:1fr 1fr;}}
-      .card{background:white;border:2px solid rgba(26,18,8,.1);border-radius:22px;padding:18px;box-shadow:4px 4px 0 rgba(26,18,8,.08);}
-      .slider{-webkit-appearance:none;width:100%;height:12px;border-radius:6px;outline:none;cursor:pointer;border:2px solid rgba(26,18,8,.12);}
-      .slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:white;border:2.5px solid #1a1208;box-shadow:0 3px 8px rgba(0,0,0,.18);cursor:grab;}
-      .mood-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:14px;border:2.5px solid rgba(26,18,8,.1);background:white;cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif;}
+      .card{background:var(--bg2);border:2px solid var(--border2);border-radius:22px;padding:18px;box-shadow:var(--shadow-card);}
+      .slider{-webkit-appearance:none;width:100%;height:12px;border-radius:6px;outline:none;cursor:pointer;border:2px solid var(--border3);}
+      .slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--bg2);border:2.5px solid var(--stroke);box-shadow:0 3px 8px rgba(0,0,0,.18);cursor:grab;}
+      .mood-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:14px;border:2.5px solid var(--border2);background:var(--bg2);cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif;color:var(--text1);}
       .mood-btn.sel{transform:translateY(-4px) scale(1.06);}
     `}</style>
 
@@ -203,30 +202,30 @@ export default function DashboardClient({userName,userId,recentCheckins,checkInS
       {/* STAT TILES */}
       <div className="stat-grid">
         {[
-          {Icon:IcoFire,val:`${streak}d`,label:"Streak",sub:"days clean",accent:"#e07b5a",bg:"#fdf0ea"},
-          {Icon:IcoTrend,val:avgStress,label:"Avg Stress",sub:"this week /10",accent:"#5bb8f5",bg:"#dff0fd"},
-          {Icon:IcoDollar,val:`$${money}`,label:"Saved",sub:"estimated",accent:"#5a8f6a",bg:"#e8f5ec"},
-          {Icon:IcoZap,val:`${urgesThisWeek}`,label:"Urges Logged",sub:"this week",accent:"#c9982a",bg:"#fffbef"},
+          {Icon:IcoFire,val:`${streak}d`,label:"Streak",sub:"days clean",accent:"#e07b5a",bg:"var(--coral3)"},
+          {Icon:IcoTrend,val:avgStress,label:"Avg Stress",sub:"this week /10",accent:"#5bb8f5",bg:"var(--sky3)"},
+          {Icon:IcoDollar,val:`$${money}`,label:"Saved",sub:"estimated",accent:"#5a8f6a",bg:"var(--mint3)"},
+          {Icon:IcoZap,val:`${urgesThisWeek}`,label:"Urges Logged",sub:"this week",accent:"#c9982a",bg:"var(--amber3)"},
         ].map(({Icon,val,label,sub,accent,bg},i)=>(
           <motion.div key={label} initial={{opacity:0,y:18,scale:.9}} animate={{opacity:1,y:0,scale:1}}
             transition={{delay:i*0.08,duration:0.45,type:"spring",bounce:0.3}} whileHover={{y:-4}}
             style={{background:bg,border:`2px solid ${accent}44`,borderRadius:20,padding:"14px 12px",boxShadow:`4px 4px 0 ${accent}33`,cursor:"pointer"}}>
             <div style={{color:accent,marginBottom:6}}><Icon/></div>
-            <div style={{fontFamily:"'Fredoka',sans-serif",fontSize:26,fontWeight:600,color:"#1a1208",lineHeight:1}}>{val}</div>
-            <div style={{fontSize:12,fontWeight:800,color:"#1a1208",marginTop:3}}>{label}</div>
-            <div style={{fontSize:10,fontWeight:500,color:"#6b5c3e"}}>{sub}</div>
+            <div style={{fontFamily:"'Fredoka',sans-serif",fontSize:26,fontWeight:600,color:"var(--text1)",lineHeight:1}}>{val}</div>
+            <div style={{fontSize:12,fontWeight:800,color:"var(--text1)",marginTop:3}}>{label}</div>
+            <div style={{fontSize:10,fontWeight:500,color:"var(--text2)"}}>{sub}</div>
           </motion.div>
         ))}
       </div>
 
       {/* STREAK EXPLANATION */}
       <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:0.15}}
-        style={{background:"#fffbef",border:"1.5px solid #c9982a55",borderRadius:16,padding:"12px 16px",marginBottom:14,display:"flex",gap:12,boxShadow:"2px 2px 0 rgba(201,152,42,.15)"}}>
-        <div style={{color:"#c9982a",flexShrink:0,marginTop:2}}><IcoAlert/></div>
-        <div>
-          <div style={{fontSize:13,fontWeight:800,color:"#7a4a00",marginBottom:2}}>Why keep your streak?</div>
-          <div style={{fontSize:11,fontWeight:600,color:"#9c7931",lineHeight:1.4}}>
-            Your streak represents your momentum. Missing a daily check-in will <strong style={{color:"#e07b5a"}}>reset your streak to 0</strong> and lower your daily XP bonus. Consistent tracking builds self-awareness.
+        style={{background:"var(--amber3)",border:"1.5px solid var(--amber)",borderRadius:16,padding:"12px 16px",marginBottom:14,display:"flex",gap:12,boxShadow:"2px 2px 0 var(--shadow-amber)"}}>
+          <div style={{color:"var(--amber2)",flexShrink:0,marginTop:2}}><IcoAlert/></div>
+          <div>
+            <div style={{fontSize:13,fontWeight:800,color:"var(--text1)",marginBottom:2}}>Why keep your streak?</div>
+            <div style={{fontSize:11,fontWeight:600,color:"var(--text2)",lineHeight:1.4}}>
+              Your streak represents your momentum. Missing a daily check-in will <strong style={{color:"var(--coral)"}}>reset your streak to 0</strong> and lower your daily XP bonus. Consistent tracking builds self-awareness.
           </div>
         </div>
       </motion.div>
@@ -234,11 +233,11 @@ export default function DashboardClient({userName,userId,recentCheckins,checkInS
       {/* STREAK WARNING */}
       {streakAtRisk&&(
         <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
-          style={{background:"#fdf0ea",border:"2px solid #e07b5a",borderRadius:16,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",gap:10,boxShadow:"3px 3px 0 rgba(224,123,90,.25)"}}>
-          <div style={{color:"#e07b5a",flexShrink:0}}><IcoAlert/></div>
+          style={{background:"var(--coral3)",border:"2px solid var(--coral)",borderRadius:16,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",gap:10,boxShadow:"3px 3px 0 var(--shadow-coral)"}}>
+          <div style={{color:"var(--coral)",flexShrink:0}}><IcoAlert/></div>
           <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:800,color:"#7a2a0a"}}>Your {streak}-day streak is at risk!</div>
-            <div style={{fontSize:11,fontWeight:600,color:"#a8936a"}}>Missing today will reset your streak to 0. You've worked hard — check in now.</div>
+            <div style={{fontSize:13,fontWeight:800,color:"var(--text1)"}}>Your {streak}-day streak is at risk!</div>
+            <div style={{fontSize:11,fontWeight:600,color:"var(--text3)"}}>Missing today will reset your streak to 0. You've worked hard — check in now.</div>
           </div>
           <Link href="/checkin" style={{background:"#e07b5a",color:"white",border:"2px solid #1a1208",borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:800,whiteSpace:"nowrap",boxShadow:"2px 2px 0 rgba(168,75,42,.35)"}}>
             Check in
@@ -251,51 +250,51 @@ export default function DashboardClient({userName,userId,recentCheckins,checkInS
         className="card" style={{marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <div>
-            <div style={{display:"flex",alignItems:"center",gap:8,fontFamily:"'Fredoka',sans-serif",fontSize:18,fontWeight:600,color:"#1a1208"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,fontFamily:"'Fredoka',sans-serif",fontSize:18,fontWeight:600,color:"var(--text1)"}}>
               <IcoClipboard/> Daily Check-in
             </div>
-            <div style={{fontSize:11,fontWeight:600,color:"#a8936a"}}>+20 XP · Under 60 seconds</div>
+            <div style={{fontSize:11,fontWeight:600,color:"var(--text3)"}}>+20 XP · Under 60 seconds</div>
           </div>
-          {done&&!editing?<span style={{background:"#e8f5ec",border:"1.5px solid #5a8f6a",borderRadius:50,padding:"5px 12px",fontSize:11,fontWeight:800,color:"#1a4a2a",display:"flex",alignItems:"center",gap:5}}><IcoCheck/> Done today</span>
-          :<Link href="/checkin" style={{fontSize:12,fontWeight:800,color:"#5a8f6a"}}>Full check-in →</Link>}
+          {done&&!editing?<span style={{background:"var(--mint3)",border:"1.5px solid var(--mint2)",borderRadius:50,padding:"5px 12px",fontSize:11,fontWeight:800,color:"var(--mint2)",display:"flex",alignItems:"center",gap:5}}><IcoCheck/> Done today</span>
+          :<Link href="/checkin" style={{fontSize:12,fontWeight:800,color:"var(--mint2)"}}>Full check-in →</Link>}
         </div>
         {done&&!editing?(
-          <div style={{background:"#e8f5ec",border:"1.5px solid #5a8f6a44",borderRadius:14,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
-            <div style={{color:"#5a8f6a"}}><IcoCheck/></div>
+          <div style={{background:"var(--mint3)",border:"1.5px solid var(--mint2)",borderRadius:14,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
+            <div style={{color:"var(--mint2)"}}><IcoCheck/></div>
             <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:800,color:"#1a4a2a"}}>Checked in today</div>
-              {todayEntry&&<div style={{fontSize:11,color:"#3d6b4f"}}>Stress: {todayEntry.stressLevel}/10 · Mood: {todayEntry.mood}</div>}
+              <div style={{fontSize:13,fontWeight:800,color:"var(--text1)"}}>Checked in today</div>
+              {todayEntry&&<div style={{fontSize:11,color:"var(--text2)"}}>Stress: {todayEntry.stressLevel}/10 · Mood: {todayEntry.mood}</div>}
             </div>
             <button onClick={()=>setEditing(true)}
-              style={{background:"white",border:"1.5px solid #5a8f6a",borderRadius:10,padding:"6px 12px",fontSize:11,fontWeight:800,color:"#3d6b4f",cursor:"pointer",boxShadow:"2px 2px 0 #5a8f6a33"}}>
+              style={{background:"var(--bg2)",border:"1.5px solid var(--mint2)",borderRadius:10,padding:"6px 12px",fontSize:11,fontWeight:800,color:"var(--mint2)",cursor:"pointer",boxShadow:"2px 2px 0 var(--shadow-mint)"}}>
               Edit
             </button>
           </div>
         ):(
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            {editing&&<div style={{fontSize:11,fontWeight:700,color:"#c9982a",background:"#fffbef",border:"1.5px solid #c9982a55",borderRadius:10,padding:"7px 12px"}}>Updating today's check-in</div>}
+            {editing&&<div style={{fontSize:11,fontWeight:700,color:"var(--amber2)",background:"var(--amber3)",border:"1.5px solid var(--amber)",borderRadius:10,padding:"7px 12px"}}>Updating today's check-in</div>}
             <div>
-              <div style={{fontSize:11,fontWeight:800,color:"#6b5c3e",marginBottom:6}}>HOW STRESSED ARE YOU? <span style={{color:"#c9982a"}}>{stress}/10</span></div>
+              <div style={{fontSize:11,fontWeight:800,color:"var(--text2)",marginBottom:6}}>HOW STRESSED ARE YOU? <span style={{color:"var(--amber2)"}}>{stress}/10</span></div>
               <input type="range" min={1} max={10} value={stress} onChange={e=>setStress(+e.target.value)} className="slider"
                 style={{background:`linear-gradient(to right,${stress<=3?"#5a8f6a":stress<=6?"#c9982a":"#e07b5a"} ${(stress-1)/9*100}%,#fde8c8 0%)`}}/>
             </div>
             <div>
-              <div style={{fontSize:11,fontWeight:800,color:"#6b5c3e",marginBottom:6}}>HOW'S YOUR MOOD?</div>
+              <div style={{fontSize:11,fontWeight:800,color:"var(--text2)",marginBottom:6}}>HOW'S YOUR MOOD?</div>
               <div style={{display:"flex",gap:8}}>
                 {moods.map(m=>(
                   <button key={m.v} className={`mood-btn${mood===m.v?" sel":""}`}
-                    style={{flex:1,borderColor:mood===m.v?m.c:"rgba(26,18,8,.1)",background:mood===m.v?m.c+"22":"white",boxShadow:mood===m.v?`2px 4px 0 ${m.c}44`:"3px 3px 0 rgba(26,18,8,.07)"}}
+                    style={{flex:1,borderColor:mood===m.v?m.c:"var(--border2)",background:mood===m.v?m.c+"22":"var(--bg2)",boxShadow:mood===m.v?`2px 4px 0 ${m.c}44`:"var(--shadow-card)"}}
                     onClick={()=>setMood(mood===m.v?"":m.v)}>
                     <div style={{width:10,height:10,borderRadius:"50%",background:m.c,border:"1.5px solid rgba(26,18,8,.15)"}}/>
-                    <span style={{fontSize:11,fontWeight:800,color:"#1a1208"}}>{m.l}</span>
+                    <span style={{fontSize:11,fontWeight:800,color:"var(--text1)"}}>{m.l}</span>
                   </button>
                 ))}
               </div>
             </div>
             <div style={{display:"flex",gap:8}}>
-              {editing&&<button onClick={()=>setEditing(false)} style={{flex:"0 0 auto",background:"white",border:"2px solid rgba(26,18,8,.15)",borderRadius:12,padding:"11px 16px",fontSize:13,fontWeight:700,cursor:"pointer",color:"#6b5c3e"}}>Cancel</button>}
+              {editing&&<button onClick={()=>setEditing(false)} style={{flex:"0 0 auto",background:"var(--bg2)",border:"2px solid var(--border2)",borderRadius:12,padding:"11px 16px",fontSize:13,fontWeight:700,cursor:"pointer",color:"var(--text2)"}}>Cancel</button>}
               <button onClick={submit} disabled={!mood||submitting}
-                style={{flex:1,background:mood?"#5ddba8":"#fde8c8",color:mood?"#0a3d2a":"#a8936a",border:"2.5px solid #1a1208",borderRadius:14,padding:13,fontSize:15,fontWeight:800,fontFamily:"'Nunito',sans-serif",cursor:mood?"pointer":"not-allowed",boxShadow:mood?"4px 4px 0 #1a7a52":"none",transition:"all .12s"}}>
+                style={{flex:1,background:mood?"var(--mint)":"var(--bg4)",color:mood?"var(--bg0)":"var(--text3)",border:"2.5px solid var(--stroke)",borderRadius:14,padding:13,fontSize:15,fontWeight:800,fontFamily:"'Nunito',sans-serif",cursor:mood?"pointer":"not-allowed",boxShadow:mood?"4px 4px 0 var(--shadow-mint)":"none",transition:"all .12s"}}>
                 {submitting?"Saving...":(editing?"Update Check-in":"Log Check-in · +20 XP")}
               </button>
             </div>
@@ -306,37 +305,37 @@ export default function DashboardClient({userName,userId,recentCheckins,checkInS
       {/* TODAY'S QUESTS */}
       <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.3}} className="card" style={{marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-          <div style={{fontFamily:"'Fredoka',sans-serif",fontSize:19,fontWeight:600,color:"#1a1208"}}>Today's Quests</div>
-          <span style={{fontSize:11,fontWeight:700,color:"#a8936a"}}>{quests.filter(q=>q.done).length}/{quests.length} done</span>
+          <div style={{fontFamily:"'Fredoka',sans-serif",fontSize:19,fontWeight:600,color:"var(--text1)"}}>Today's Quests</div>
+          <span style={{fontSize:11,fontWeight:700,color:"var(--text3)"}}>{quests.filter(q=>q.done).length}/{quests.length} done</span>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {quests.map(({Icon,title,desc,reward,done:qd,href,accent,bg,implemented},i)=>{
             if (!implemented) {
               return (
-                <div key={title} style={{display:"flex",alignItems:"center",gap:12,background:"#fafafa",border:"2px solid rgba(26,18,8,.05)",borderRadius:16,padding:"11px 13px",opacity:0.5,filter:"grayscale(100%)",cursor:"not-allowed"}}>
-                  <div style={{width:40,height:40,borderRadius:12,flexShrink:0,background:"#eee",border:"2px solid #ccc",display:"flex",alignItems:"center",justifyContent:"center",color:"#999"}}>
+                <div key={title} style={{display:"flex",alignItems:"center",gap:12,background:"var(--bg3)",border:"2px solid var(--border2)",borderRadius:16,padding:"11px 13px",opacity:0.45,filter:"grayscale(100%)",cursor:"not-allowed"}}>
+                  <div style={{width:40,height:40,borderRadius:12,flexShrink:0,background:"var(--bg4)",border:"2px solid var(--border3)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--text4)"}}>
                     <Icon/>
                   </div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:13,fontWeight:800,color:"#666"}}>{title}</div>
-                    <div style={{fontSize:11,color:"#999"}}>{desc}</div>
+                    <div style={{fontSize:13,fontWeight:800,color:"var(--text3)"}}>{title}</div>
+                    <div style={{fontSize:11,color:"var(--text4)"}}>{desc}</div>
                   </div>
-                  <span style={{background:"#eee",border:"1.5px solid #ccc",borderRadius:50,padding:"3px 10px",fontSize:10,fontWeight:800,color:"#999",whiteSpace:"nowrap"}}>{reward}</span>
+                  <span style={{background:"var(--bg4)",border:"1.5px solid var(--border3)",borderRadius:50,padding:"3px 10px",fontSize:10,fontWeight:800,color:"var(--text4)",whiteSpace:"nowrap"}}>{reward}</span>
                 </div>
               );
             }
             return (
               <motion.div key={title} initial={{opacity:0,x:-14}} animate={{opacity:1,x:0}} transition={{delay:0.32+i*0.07}} whileHover={!qd?{x:3}:{}}>
                 <Link href={qd?"#":href} style={{textDecoration:"none"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:12,background:qd?"#f0f7f3":"white",border:`2px solid ${qd?"#5a8f6a33":"rgba(26,18,8,.09)"}`,borderRadius:16,padding:"11px 13px",boxShadow:qd?"2px 2px 0 rgba(61,107,79,.15)":"3px 3px 0 rgba(26,18,8,.07)",opacity:qd?0.75:1}}>
-                    <div style={{width:40,height:40,borderRadius:12,flexShrink:0,background:bg,border:`2px solid ${accent}44`,display:"flex",alignItems:"center",justifyContent:"center",color:qd?"#5a8f6a":accent,boxShadow:`2px 2px 0 ${accent}22`}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,background:qd?"var(--mint3)":"var(--bg2)",border:`2px solid ${qd?"var(--mint-glow)":"var(--border2)"}`,borderRadius:16,padding:"11px 13px",boxShadow:qd?"2px 2px 0 rgba(61,107,79,.15)":"var(--shadow-card)",opacity:qd?0.8:1,transition:"all 0.2s"}}>
+                    <div style={{width:40,height:40,borderRadius:12,flexShrink:0,background:bg,border:`2px solid ${accent}44`,display:"flex",alignItems:"center",justifyContent:"center",color:qd?"var(--mint)":accent,boxShadow:`2px 2px 0 ${accent}22`}}>
                       {qd?<IcoCheck/>:<Icon/>}
                     </div>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:13,fontWeight:800,color:"#1a1208",textDecoration:qd?"line-through":"none"}}>{title}</div>
-                      <div style={{fontSize:11,color:"#6b5c3e"}}>{desc}</div>
+                      <div style={{fontSize:13,fontWeight:800,color:"var(--text1)",textDecoration:qd?"line-through":"none"}}>{title}</div>
+                      <div style={{fontSize:11,color:"var(--text2)"}}>{desc}</div>
                     </div>
-                    <span style={{background:qd?"#c6f7e6":"#fffbef",border:`1.5px solid ${qd?"#5a8f6a":"#c9982a"}`,borderRadius:50,padding:"3px 10px",fontSize:10,fontWeight:800,color:qd?"#3d6b4f":"#7a4a00",whiteSpace:"nowrap"}}>{reward}</span>
+                    <span style={{background:qd?"var(--mint3)":"var(--amber3)",border:`1.5px solid ${qd?"var(--mint)":"var(--amber)"}`,borderRadius:50,padding:"3px 10px",fontSize:10,fontWeight:800,color:qd?"var(--mint)":"var(--amber2)",whiteSpace:"nowrap"}}>{reward}</span>
                   </div>
                 </Link>
               </motion.div>
@@ -356,18 +355,18 @@ export default function DashboardClient({userName,userId,recentCheckins,checkInS
         <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.45}} className="card" style={{alignSelf:"start"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
             <IcoTrend/>
-            <span style={{fontFamily:"'Fredoka',sans-serif",fontSize:19,fontWeight:600,color:"#1a1208"}}>This Week's Stress</span>
+            <span style={{fontFamily:"'Fredoka',sans-serif",fontSize:19,fontWeight:600,color:"var(--text1)"}}>This Week's Stress</span>
           </div>
           <WeekChart checkins={recentCheckins}/>
           
           <div style={{display:"flex",gap:10,marginTop:16}}>
-            <div style={{flex:1,background:"#fdf0ea",borderRadius:12,padding:"10px 12px",border:"1.5px solid #e07b5a33"}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#e07b5a",marginBottom:2}}>HIGHEST STRESS</div>
-              <div style={{fontSize:13,fontWeight:800,color:"#1a1208"}}>{highestStress}</div>
-            </div>
-            <div style={{flex:1,background:"#f0f7f3",borderRadius:12,padding:"10px 12px",border:"1.5px solid #5a8f6a33"}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#5a8f6a",marginBottom:2}}>MOST COMMON MOOD</div>
-              <div style={{fontSize:13,fontWeight:800,color:"#1a1208"}}>{mostCommonMood}</div>
+              <div style={{flex:1,background:"var(--coral3)",borderRadius:12,padding:"10px 12px",border:"1.5px solid var(--coral)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"var(--coral2)",marginBottom:2}}>HIGHEST STRESS</div>
+                <div style={{fontSize:13,fontWeight:800,color:"var(--text1)"}}>{highestStress}</div>
+              </div>
+              <div style={{flex:1,background:"var(--mint3)",borderRadius:12,padding:"10px 12px",border:"1.5px solid var(--mint2)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"var(--mint2)",marginBottom:2}}>MOST COMMON MOOD</div>
+                <div style={{fontSize:13,fontWeight:800,color:"var(--text1)"}}>{mostCommonMood}</div>
             </div>
           </div>
         </motion.div>

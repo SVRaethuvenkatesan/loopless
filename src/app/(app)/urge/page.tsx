@@ -679,7 +679,7 @@ function BreathGame({ onDone }: { onDone: (s: number) => void }) {
         padding: "16px 0",
       }}
     >
-      <div style={{ fontSize: 12, fontWeight: 700, color: "#a8936a" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)" }}>
         Cycle {cyc + 1} of 2
       </div>
       <div
@@ -805,10 +805,10 @@ function WalkGame({ onDone }: { onDone: (s: number) => void }) {
       }}
     >
       <div style={{ display: "flex", gap: 20 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#a8936a" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text3)" }}>
           Steps: {steps}/{target}
         </span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#e07b5a" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--coral)" }}>
           ⏱ {tl}s
         </span>
       </div>
@@ -816,8 +816,8 @@ function WalkGame({ onDone }: { onDone: (s: number) => void }) {
         style={{
           width: "100%",
           height: 16,
-          background: "#e8f5ec",
-          border: "2px solid rgba(26,18,8,.1)",
+          background: "var(--bg3)",
+          border: "2px solid var(--border)",
           borderRadius: 8,
           overflow: "hidden",
         }}
@@ -911,7 +911,7 @@ function ColdGame({ onDone }: { onDone: (s: number) => void }) {
         style={{
           fontSize: 13,
           fontWeight: 600,
-          color: "#6b5c3e",
+          color: "var(--text2)",
           textAlign: "center",
           maxWidth: 260,
           lineHeight: 1.6,
@@ -997,7 +997,7 @@ function JournalGame({ onDone }: { onDone: (s: number, t: string) => void }) {
         style={{
           fontSize: 13,
           fontWeight: 600,
-          color: "#6b5c3e",
+          color: "var(--text2)",
           lineHeight: 1.6,
         }}
       >
@@ -1011,8 +1011,8 @@ function JournalGame({ onDone }: { onDone: (s: number, t: string) => void }) {
         style={{
           width: "100%",
           minHeight: 110,
-          background: "#fef9f0",
-          border: "2.5px solid rgba(26,18,8,.15)",
+          background: "var(--bg1)",
+          border: "2.5px solid var(--border3)",
           borderRadius: 14,
           padding: 14,
           fontSize: 14,
@@ -1021,7 +1021,7 @@ function JournalGame({ onDone }: { onDone: (s: number, t: string) => void }) {
           outline: "none",
           resize: "vertical",
           lineHeight: 1.6,
-          color: "#1a1208",
+          color: "var(--text1)",
         }}
       />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -1244,7 +1244,7 @@ export default function UrgePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Nunito',sans-serif;color:#1a1208;overflow-x:hidden;}
+        body{font-family:'Nunito',sans-serif;color:var(--text1);overflow-x:hidden;}
         h1,h2,h3{font-family:'Fredoka',sans-serif;}
         a{text-decoration:none;color:inherit;}
         @keyframes scanline{0%{background-position:0 0;}100%{background-position:0 4px;}}
@@ -1261,9 +1261,9 @@ export default function UrgePage() {
 
         .page{max-width:520px;margin:0 auto;padding:16px 16px 80px;position:relative;z-index:1;}
 
-        .card{background:rgba(254,249,240,.97);border:3px solid #1a1208;border-radius:26px;box-shadow:8px 8px 0 rgba(26,18,8,.25);overflow:hidden;}
+        .card{background:var(--bg1);border:3px solid var(--stroke);border-radius:26px;box-shadow:var(--shadow-card);overflow:hidden;}
 
-        .tool-btn{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 10px;border-radius:18px;border:2.5px solid rgba(26,18,8,.1);background:white;cursor:pointer;transition:all .18s;box-shadow:4px 4px 0 rgba(26,18,8,.09);font-family:'Nunito',sans-serif;}
+        .tool-btn{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 10px;border-radius:18px;border:2.5px solid var(--border3);background:var(--bg2);cursor:pointer;transition:all .18s;box-shadow:var(--shadow-card);font-family:'Nunito',sans-serif;}
         .tool-btn:hover{transform:translate(-2px,-3px);box-shadow:6px 7px 0 rgba(26,18,8,.13);}
         .tool-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(26,18,8,.07);}
 
@@ -1394,7 +1394,7 @@ export default function UrgePage() {
                       fontFamily: "'Fredoka',sans-serif",
                       fontSize: 26,
                       fontWeight: 600,
-                      color: "#1a1208",
+                      color: "var(--text1)",
                       marginBottom: 6,
                     }}
                   >
@@ -1404,7 +1404,7 @@ export default function UrgePage() {
                     style={{
                       fontSize: 13.5,
                       fontWeight: 500,
-                      color: "#6b5c3e",
+                      color: "var(--text2)",
                       marginBottom: 22,
                       lineHeight: 1.6,
                     }}
@@ -1445,7 +1445,7 @@ export default function UrgePage() {
                           style={{
                             fontSize: 10.5,
                             fontWeight: 800,
-                            color: "#a8936a",
+                            color: "var(--text3)",
                             textTransform: "uppercase",
                             letterSpacing: ".06em",
                           }}
@@ -1506,7 +1506,7 @@ export default function UrgePage() {
                             fontSize: 9,
                             fontWeight: 700,
                             color:
-                              stress === n ? "#1a1208" : "rgba(26,18,8,.25)",
+                              stress === n ? "var(--text1)" : "var(--border)",
                           }}
                         >
                           {n}
@@ -1547,7 +1547,7 @@ export default function UrgePage() {
                               padding: "10px 4px",
                               borderRadius: 14,
                               border: `2px solid ${sel ? "#5a8f6a" : "rgba(26,18,8,.1)"}`,
-                              background: sel ? "#e8f5ec" : "white",
+                              background: sel ? "var(--mint3)" : "var(--bg2)",
                               cursor: "pointer",
                               display: "flex",
                               flexDirection: "column",
@@ -1558,7 +1558,7 @@ export default function UrgePage() {
                                 ? "2px 2px 0 rgba(61,107,79,.25)"
                                 : "2px 2px 0 rgba(26,18,8,.06)",
                               transition: "all .15s",
-                              color: sel ? "#1a4a2a" : "#6b5c3e",
+                              color: sel ? "#1a4a2a" : "var(--text2)",
                             }}
                           >
                             <motion.div
@@ -1572,7 +1572,7 @@ export default function UrgePage() {
                               style={{
                                 fontSize: 9.5,
                                 fontWeight: 700,
-                                color: sel ? "#1a4a2a" : "#6b5c3e",
+                                color: sel ? "#1a4a2a" : "var(--text2)",
                               }}
                             >
                               {t.label}
@@ -1597,7 +1597,7 @@ export default function UrgePage() {
                         style={{
                           fontSize: 11,
                           fontWeight: 800,
-                          color: "#a8936a",
+                          color: "var(--text3)",
                           textTransform: "uppercase",
                           letterSpacing: ".06em",
                         }}
@@ -1608,7 +1608,7 @@ export default function UrgePage() {
                     
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                       <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: "#6b5c3e", marginBottom: 6 }}>Activity Before Urge</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", marginBottom: 6 }}>Activity Before Urge</div>
                         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                           {["Working", "Studying", "Scrolling", "Waking up", "Eating", "Driving"].map(a => (
                             <button
@@ -1618,10 +1618,10 @@ export default function UrgePage() {
                                 padding: "6px 12px",
                                 borderRadius: 12,
                                 border: `2px solid ${activityBefore === a ? "#5a8f6a" : "rgba(26,18,8,.1)"}`,
-                                background: activityBefore === a ? "#e8f5ec" : "white",
+                                background: activityBefore === a ? "var(--mint3)" : "var(--bg2)",
                                 fontSize: 12,
                                 fontWeight: 600,
-                                color: activityBefore === a ? "#1a4a2a" : "#6b5c3e",
+                                color: activityBefore === a ? "#1a4a2a" : "var(--text2)",
                                 cursor: "pointer",
                                 transition: "all .15s",
                                 fontFamily: "'Nunito',sans-serif",
@@ -1635,7 +1635,7 @@ export default function UrgePage() {
                       </div>
 
                       <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: "#6b5c3e", marginBottom: 6 }}>Social Context</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", marginBottom: 6 }}>Social Context</div>
                         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                           {["Alone", "Friends", "Family", "Partner", "Co-workers", "Strangers"].map(s => (
                             <button
@@ -1645,10 +1645,10 @@ export default function UrgePage() {
                                 padding: "6px 12px",
                                 borderRadius: 12,
                                 border: `2px solid ${socialContext === s ? "#5bb8f5" : "rgba(26,18,8,.1)"}`,
-                                background: socialContext === s ? "#dff0fd" : "white",
+                                background: socialContext === s ? "var(--sky3)" : "var(--bg2)",
                                 fontSize: 12,
                                 fontWeight: 600,
-                                color: socialContext === s ? "#1a3a5a" : "#6b5c3e",
+                                color: socialContext === s ? "#1a3a5a" : "var(--text2)",
                                 cursor: "pointer",
                                 transition: "all .15s",
                                 fontFamily: "'Nunito',sans-serif",

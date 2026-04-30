@@ -32,7 +32,7 @@ function BadgeModal({ badge, onClose }: { badge: typeof BADGE_META[string] & { e
       onClick={onClose}>
       <motion.div initial={{ scale: 0.85, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        style={{ background: "white", border: "2.5px solid rgba(26,18,8,.15)", borderRadius: 24, padding: 28, maxWidth: 340, width: "100%", boxShadow: "8px 8px 0 rgba(26,18,8,.18)" }}>
+        style={{ background: "var(--bg2)", border: "2.5px solid var(--border3)", borderRadius: 24, padding: 28, maxWidth: 340, width: "100%", boxShadow: "var(--shadow-card-lg)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ width: 56, height: 56, borderRadius: 16, background: badge.bg, border: `2px solid ${badge.color}55`, display: "flex", alignItems: "center", justifyContent: "center", color: badge.color }}>
             <badge.Icon />
@@ -76,7 +76,7 @@ export function BadgesSection({ earnedBadges }: { earnedBadges: Badge[] }) {
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
         <IcoBadge />
-        <span style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 19, fontWeight: 600, color: "#1a1208" }}>Lung Recovery Badges</span>
+        <span style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 19, fontWeight: 600, color: "var(--text1)" }}>Lung Recovery Badges</span>
         <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#a8936a" }}>{earnedBadges.length}/{ALL_BADGE_TYPES.length} earned</span>
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -86,12 +86,12 @@ export function BadgesSection({ earnedBadges }: { earnedBadges: Badge[] }) {
           return (
             <motion.button key={bt} whileHover={{ y: -3 }} whileTap={{ scale: 0.95 }}
               onClick={() => setSelected(bt)}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "12px 10px", borderRadius: 16, border: `2px solid ${earned ? meta.color + "55" : "rgba(26,18,8,.08)"}`, background: earned ? meta.bg : "#f8f4ee", cursor: "pointer", minWidth: 64, opacity: earned ? 1 : 0.45, filter: earned ? "none" : "grayscale(0.5)", boxShadow: earned ? `3px 3px 0 ${meta.color}33` : "2px 2px 0 rgba(26,18,8,.06)" }}>
-              <div style={{ color: earned ? meta.color : "#a8936a" }}>
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "12px 10px", borderRadius: 16, border: `2px solid ${earned ? meta.color + "55" : "var(--border2)"}`, background: earned ? meta.bg : "var(--bg3)", cursor: "pointer", minWidth: 64, opacity: earned ? 1 : 0.45, filter: earned ? "none" : "grayscale(0.5)", boxShadow: earned ? `3px 3px 0 ${meta.color}33` : "var(--shadow-card)" }}>
+              <div style={{ color: earned ? meta.color : "var(--text3)" }}>
                 {earned ? <meta.Icon /> : <IcoLock />}
               </div>
-              <div style={{ fontSize: 9.5, fontWeight: 800, color: earned ? "#1a1208" : "#a8936a", textAlign: "center", lineHeight: 1.2, maxWidth: 56 }}>{meta.label}</div>
-              <div style={{ fontSize: 8.5, fontWeight: 700, color: earned ? meta.color : "#c8b89a" }}>{meta.xp} XP</div>
+              <div style={{ fontSize: 9.5, fontWeight: 800, color: earned ? "var(--text1)" : "var(--text3)", textAlign: "center", lineHeight: 1.2, maxWidth: 56 }}>{meta.label}</div>
+              <div style={{ fontSize: 8.5, fontWeight: 700, color: earned ? meta.color : "var(--text4)" }}>{meta.xp} XP</div>
             </motion.button>
           );
         })}

@@ -385,11 +385,11 @@ function HistoryCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06 }}
       style={{
-        background: "white",
-        border: "2px solid rgba(26,18,8,.1)",
+        background: "var(--bg2)",
+        border: "2px solid var(--border2)",
         borderRadius: 18,
         padding: "16px 18px",
-        boxShadow: "4px 4px 0 rgba(26,18,8,.07)",
+        boxShadow: "var(--shadow-card)",
         display: "flex",
         alignItems: "center",
         gap: 14,
@@ -450,7 +450,7 @@ function HistoryCard({
             </span>
           )}
         </div>
-        <div style={{ fontSize: 11.5, fontWeight: 700, color: "#a8936a" }}>
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text3)" }}>
           {fmt(entry.checkedInAt)}
         </div>
       </div>
@@ -502,13 +502,13 @@ function AnalyticsTile({
         style={{
           fontSize: 11.5,
           fontWeight: 800,
-          color: "#1a1208",
+          color: "var(--text1)",
           marginBottom: 2,
         }}
       >
         {label}
       </div>
-      <div style={{ fontSize: 10.5, fontWeight: 500, color: "#6b5c3e" }}>
+      <div style={{ fontSize: 10.5, fontWeight: 500, color: "var(--text2)" }}>
         {sub}
       </div>
     </div>
@@ -542,11 +542,11 @@ function MiniChart({ history }: { history: CheckInRecord[] }) {
               width: "100%",
               borderRadius: "3px 3px 0 0",
               background: stressColor(h.stressLevel),
-              border: "1.5px solid rgba(26,18,8,.1)",
+              border: "1.5px solid var(--border2)",
               minHeight: 3,
             }}
           />
-          <div style={{ fontSize: 8, fontWeight: 700, color: "#a8936a" }}>
+          <div style={{ fontSize: 8, fontWeight: 700, color: "var(--text3)" }}>
             {new Date(h.checkedInAt).toLocaleDateString("en", {
               weekday: "narrow",
             })}
@@ -570,11 +570,11 @@ function MiniChart({ history }: { history: CheckInRecord[] }) {
                 width: "100%",
                 height: 4,
                 borderRadius: 3,
-                background: "#fde8c8",
-                border: "1.5px solid rgba(26,18,8,.07)",
+                background: "var(--bg4)",
+                border: "1.5px solid var(--border)",
               }}
             />
-            <div style={{ fontSize: 8, fontWeight: 700, color: "#d4c8b0" }}>
+            <div style={{ fontSize: 8, fontWeight: 700, color: "var(--text4)" }}>
               -
             </div>
           </div>
@@ -992,13 +992,13 @@ export default function CheckInPage() {
               fontFamily: "'Fredoka',sans-serif",
               fontSize: 26,
               fontWeight: 600,
-              color: "#1a1208",
+              color: "var(--text1)",
               marginBottom: 3,
             }}
           >
             {tab === "checkin" ? "Daily check-in ✏️" : "My check-in log 📊"}
           </h1>
-          <p style={{ fontSize: 13, fontWeight: 500, color: "#a8936a" }}>
+          <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text3)" }}>
             {tab === "checkin"
               ? "60 seconds · Builds your loop pattern"
               : "All your check-ins + AI insights"}
@@ -1302,8 +1302,17 @@ export default function CheckInPage() {
                               fontSize: 30,
                               lineHeight: 1,
                               display: "block",
+                              transformOrigin: "center bottom",
                             }}
-                            whileHover={{ scale: 1.2, rotate: [-5, 5, -5, 0] }}
+                            animate={{
+                              scale: [1, 1.08, 1],
+                              rotate: [-3, 3, -3]
+                            }}
+                            transition={{
+                              duration: 2 + Math.random() * 1.5,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
                           >
                             {m.emoji}
                           </motion.span>

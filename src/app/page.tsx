@@ -1,118 +1,141 @@
 "use client";
 
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+/* ─────────────────────────────────────
+   ANIMATED SVG ICONS
+───────────────────────────────────── */
+const IconSearch = () => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconSpin 4s ease-in-out infinite", transformOrigin: "11px 11px" }}>
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+const IconSOS = () => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconPulse 2s ease-in-out infinite" }}>
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+const IconChart = () => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconRise 2.5s ease-in-out infinite" }}>
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+    <polyline points="16 7 22 7 22 13"/>
+  </svg>
+);
+const IconMedal = () => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconBounce 2s ease-in-out infinite" }}>
+    <circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+  </svg>
+);
+
+const IconLoop = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconSpin 3s linear infinite" }}>
+    <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+    <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+  </svg>
+);
+const IconBreath = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconBreath 3s ease-in-out infinite" }}>
+    <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+  </svg>
+);
+const IconPen = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconWrite 2.5s ease-in-out infinite" }}>
+    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+  </svg>
+);
+const IconBrain = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconPulse 2s ease-in-out infinite" }}>
+    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14"/>
+    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14"/>
+  </svg>
+);
+const IconSnowflake = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconSpin 6s linear infinite" }}>
+    <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+    <path d="M20 16l-4-4 4-4"/><path d="M4 8l4 4-4 4"/><path d="M16 4l-4 4-4-4"/><path d="M8 20l4-4 4 4"/>
+  </svg>
+);
+const IconShare = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconBounce 2.5s ease-in-out infinite" }}>
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+    <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+  </svg>
+);
+const IconOffline = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconPulse 3s ease-in-out infinite" }}>
+    <line x1="1" y1="1" x2="23" y2="23"/>
+    <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+    <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>
+  </svg>
+);
+const IconShield = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ animation: "iconPulse 2s ease-in-out infinite" }}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+  </svg>
+);
 
 /* ─────────────────────────────────────
    DATA
 ───────────────────────────────────── */
 const STATS = [
-  {
-    val: "21%",
-    label: "of 18–24s in Australia currently vape",
-    color: "#e07b5a",
-  },
-  {
-    val: "49%",
-    label: "have tried e-cigarettes at least once",
-    color: "#5a8f6a",
-  },
-  {
-    val: "38.8%",
-    label: "experience mental health challenges",
-    color: "#7b6fa0",
-  },
+  { val: "21%",   label: "of 18–24s in Australia currently vape", color: "#ff3347" },
+  { val: "49%",   label: "have tried e-cigarettes at least once",  color: "#ff6b78" },
+  { val: "38.8%", label: "experience mental health challenges",     color: "#a78bfa" },
 ];
 
 const HOW_STEPS = [
   {
-    n: "01",
-    emoji: "🔍",
+    n: "01", Icon: IconSearch,
     title: "Map your loop",
     desc: "Quick, shame-free onboarding surfaces your personal stress–vape triggers in under 2 minutes.",
-    color: "#e8f5ec",
-    accent: "#5a8f6a",
-    shadow: "#3d6b4f",
+    color: "rgba(232,25,44,0.07)", accent: "#e8192c",
   },
   {
-    n: "02",
-    emoji: "🆘",
+    n: "02", Icon: IconSOS,
     title: "Urge SOS - anytime",
     desc: "One tap from any screen. Breathing, grounding, journalling - your coping tools, instantly.",
-    color: "#fdf0ea",
-    accent: "#e07b5a",
-    shadow: "#a84f2a",
+    color: "rgba(255,71,87,0.07)", accent: "#ff4757",
   },
   {
-    n: "03",
-    emoji: "📈",
+    n: "03", Icon: IconChart,
     title: "Watch patterns emerge",
     desc: "A 7-day stress + urge chart shows the cycle - and ML nudges warn you before it peaks.",
-    color: "#f0edf8",
-    accent: "#7b6fa0",
-    shadow: "#4e4478",
+    color: "rgba(167,139,250,0.07)", accent: "#a78bfa",
   },
   {
-    n: "04",
-    emoji: "🏅",
+    n: "04", Icon: IconMedal,
     title: "Earn milestones",
     desc: "Streaks, badges, freeze tokens - quitting feels like a game you're actually winning.",
-    color: "#fffbef",
-    accent: "#c9982a",
-    shadow: "#8c6400",
+    color: "rgba(245,166,35,0.07)", accent: "#ffc654",
   },
 ];
 
 const FEATURES = [
-  {
-    emoji: "🌀",
-    title: "Loop Explainer",
-    desc: "5-panel science explainer. Understand why your brain craves - not just that it does.",
-    tag: "Psychoeducation",
-  },
-  {
-    emoji: "🌬️",
-    title: "4-7-8 Breathwork",
-    desc: "Evidence-based technique. Pre/post stress score so you *see* it working.",
-    tag: "Coping",
-  },
-  {
-    emoji: "✍️",
-    title: "Urge Journal",
-    desc: "Gentle prompts. No lectures. Your voice, your words, your progress.",
-    tag: "Reflection",
-  },
-  {
-    emoji: "🤖",
-    title: "Predictive Nudges",
-    desc: "scikit-learn models your high-risk windows and sends a heads-up before cravings peak.",
-    tag: "ML · Epic 6",
-  },
-  {
-    emoji: "🧊",
-    title: "Streak Freeze",
-    desc: "Life happens. Use a freeze token to protect your streak without guilt.",
-    tag: "Motivation",
-  },
-  {
-    emoji: "📲",
-    title: "Share Cards",
-    desc: "9:16 myth-busting fact cards. Share to Instagram or TikTok. Spread the truth.",
-    tag: "Peer spread",
-  },
-  {
-    emoji: "📴",
-    title: "Offline-First",
-    desc: "All coping tools work on the morning train. No data needed.",
-    tag: "Accessibility",
-  },
-  {
-    emoji: "🆘",
-    title: "Crisis Card",
-    desc: "Lifeline · Beyond Blue · headspace. Auto-surfaces when stress ≥ 8.",
-    tag: "Safety",
-  },
+  { Icon: IconLoop,      title: "Loop Explainer",    desc: "5-panel science explainer. Understand why your brain craves - not just that it does.", tag: "Psychoeducation" },
+  { Icon: IconBreath,    title: "4-7-8 Breathwork",  desc: "Evidence-based technique. Pre/post stress score so you see it working.",              tag: "Coping" },
+  { Icon: IconPen,       title: "Urge Journal",       desc: "Gentle prompts. No lectures. Your voice, your words, your progress.",                 tag: "Reflection" },
+  { Icon: IconBrain,     title: "Predictive Nudges",  desc: "scikit-learn models your high-risk windows and sends a heads-up before cravings peak.",tag: "ML" },
+  { Icon: IconSnowflake, title: "Streak Freeze",      desc: "Life happens. Use a freeze token to protect your streak without guilt.",              tag: "Motivation" },
+  { Icon: IconShare,     title: "Share Cards",        desc: "9:16 myth-busting fact cards. Share to Instagram or TikTok. Spread the truth.",       tag: "Peer spread" },
+  { Icon: IconOffline,   title: "Offline-First",      desc: "All coping tools work on the morning train. No data needed.",                         tag: "Accessibility" },
+  { Icon: IconShield,    title: "Crisis Card",        desc: "Lifeline · Beyond Blue · headspace. Auto-surfaces when stress ≥ 8.",                  tag: "Safety" },
 ];
 
 const MYTHS = [
@@ -139,15 +162,9 @@ const MYTHS = [
 function WavyDivider({ fill, bg }: { fill: string; bg: string }) {
   return (
     <div style={{ background: bg, lineHeight: 0 }}>
-      <svg
-        viewBox="0 0 1440 60"
-        preserveAspectRatio="none"
-        style={{ width: "100%", height: 60, display: "block" }}
-      >
-        <path
-          d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 C1320,45 1390,20 1440,30 L1440,60 L0,60 Z"
-          fill={fill}
-        />
+      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" style={{ width: "100%", height: 60, display: "block" }}>
+        <path d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 C1320,45 1390,20 1440,30 L1440,60 L0,60 Z"
+          style={{ fill }} />
       </svg>
     </div>
   );
@@ -199,11 +216,11 @@ function PhoneMockup() {
     <div
       style={{
         width: 260,
-        background: "#fffdf8",
-        border: "3px solid #1a1208",
+        background: "#141414",
+        border: "1px solid rgba(232,25,44,0.25)",
         borderRadius: 34,
         padding: "14px 14px 20px",
-        boxShadow: "10px 10px 0px rgba(26,18,8,0.18)",
+        boxShadow: "0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(232,25,44,0.1)",
         position: "relative",
       }}
     >
@@ -215,7 +232,7 @@ function PhoneMockup() {
           style={{
             width: 90,
             height: 9,
-            background: "#1a1208",
+            background: "#2e2e2e",
             borderRadius: 9,
           }}
         />
@@ -235,7 +252,7 @@ function PhoneMockup() {
             style={{
               fontSize: 10,
               fontWeight: 800,
-              color: "#a8936a",
+              color: "rgba(255,255,255,0.55)",
               textTransform: "uppercase",
               letterSpacing: "0.07em",
             }}
@@ -247,7 +264,7 @@ function PhoneMockup() {
               fontFamily: "'Fredoka',sans-serif",
               fontSize: 20,
               fontWeight: 600,
-              color: "#1a1208",
+              color: "#ffffff",
               lineHeight: 1.1,
             }}
           >
@@ -256,7 +273,7 @@ function PhoneMockup() {
           <div
             style={{
               fontSize: 10,
-              color: "#5a8f6a",
+              color: "#5ddba8",
               fontWeight: 700,
               marginTop: 1,
             }}
@@ -330,12 +347,11 @@ function PhoneMockup() {
                   borderRadius: "3px 3px 0 0",
                   height: `${h * 0.38}%`,
                   background:
-                    h > 75 ? "#e07b5a" : h > 50 ? "#c9982a" : "#5a8f6a",
-                  border: "1px solid rgba(26,18,8,0.1)",
+                    h > 75 ? "#e8192c" : h > 50 ? "#ffc654" : "#2e2e2e",
                   minHeight: 4,
                 }}
               />
-              <div style={{ fontSize: 8, fontWeight: 700, color: "#a8936a" }}>
+              <div style={{ fontSize: 8, fontWeight: 600, color: "#737373" }}>
                 {days[i]}
               </div>
             </div>
@@ -387,24 +403,23 @@ function PhoneMockup() {
       {/* Tools row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
         {[
-          { emoji: "🌬️", l: "Breathe", bg: "#e8f5ec", accent: "#5a8f6a" },
-          { emoji: "✍️", l: "Journal", bg: "#fffbef", accent: "#c9982a" },
+          { emoji: "🌬️", l: "Breathe", bg: "rgba(232,25,44,0.08)", accent: "#e8192c" },
+          { emoji: "✍️", l: "Journal", bg: "rgba(255,198,84,0.1)", accent: "#ffc654" },
         ].map((t, i) => (
           <div
             key={i}
             style={{
               background: t.bg,
-              border: `1.5px solid ${t.accent}66`,
+              border: `1px solid ${t.accent}44`,
               borderRadius: 10,
               padding: "8px 10px",
               display: "flex",
               alignItems: "center",
               gap: 7,
-              boxShadow: "2px 2px 0px rgba(26,18,8,0.06)",
             }}
           >
             <span style={{ fontSize: 16 }}>{t.emoji}</span>
-            <span style={{ fontSize: 11, fontWeight: 800, color: "#1a1208" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#d4d4d4" }}>
               {t.l}
             </span>
           </div>
@@ -430,12 +445,19 @@ export default function LandingPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=Fredoka:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
         html { scroll-behavior:smooth; }
-        body { font-family:'Nunito',sans-serif; background:#fef9f0; color:#1a1208; overflow-x:hidden; }
-        h1,h2,h3,h4 { font-family:'Fredoka',sans-serif; }
+        body { font-family:'Inter',sans-serif; background:var(--bg0); color:var(--text1); overflow-x:hidden; letter-spacing:-0.01em; }
+        h1,h2,h3,h4 { font-family:'Space Grotesk',sans-serif; letter-spacing:-0.03em; }
         a { color:inherit; text-decoration:none; }
+
+        @keyframes iconSpin { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(15deg)} }
+        @keyframes iconPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.12);opacity:.8} }
+        @keyframes iconRise { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+        @keyframes iconBounce { 0%,100%{transform:translateY(0) rotate(0deg)} 40%{transform:translateY(-6px) rotate(-8deg)} 60%{transform:translateY(-3px) rotate(4deg)} }
+        @keyframes iconBreath { 0%,100%{transform:scaleX(1)} 50%{transform:scaleX(1.1)} }
+        @keyframes iconWrite { 0%,100%{transform:rotate(0deg)} 30%{transform:rotate(-8deg)} 60%{transform:rotate(4deg)} }
 
         @keyframes looplessPuff {
           0%   { opacity:0; transform:translateY(0) scale(0.6) rotate(0deg); }
@@ -475,121 +497,132 @@ export default function LandingPage() {
         /* NAV */
         .lp-nav {
           position:fixed; top:0; left:0; right:0; z-index:200;
-          background:rgba(254,249,240,0.94);
-          backdrop-filter:blur(20px);
-          border-bottom:2px solid rgba(26,18,8,0.07);
+          background:var(--smoke1);
+          backdrop-filter:blur(24px) saturate(180%);
+          border-bottom:1px solid var(--border2);
           padding:13px 5%;
           display:flex; align-items:center; justify-content:space-between;
         }
-        .nav-logo { font-family:'Fredoka',sans-serif; font-size:24px; font-weight:600; letter-spacing:-0.5px; }
+        .nav-logo { font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; letter-spacing:-0.04em; }
         .nav-links { display:flex; align-items:center; gap:4px; }
         .nav-link {
-          font-size:13.5px; font-weight:700; color:#6b5c3e;
+          font-size:13.5px; font-weight:600; color:var(--text3);
           padding:7px 14px; border-radius:50px;
           transition:background 0.15s, color 0.15s;
         }
-        .nav-link:hover { background:#e8f5ec; color:#3d6b4f; }
+        .nav-link:hover { background:var(--bg3); color:var(--text1); }
         .nav-cta {
-          background:#5a8f6a; color:white;
-          border:2.5px solid #1a1208; border-radius:50px;
-          padding:8px 20px; font-size:13.5px; font-weight:800;
-          box-shadow:3px 3px 0px #3d6b4f;
-          transition:transform 0.12s, box-shadow 0.12s;
-          font-family:'Nunito',sans-serif;
+          background:var(--red); color:white;
+          border:none; border-radius:50px;
+          padding:9px 22px; font-size:13.5px; font-weight:700;
+          box-shadow:0 4px 20px var(--red-glow);
+          transition:transform 0.15s, box-shadow 0.15s, background 0.15s;
+          font-family:'Inter',sans-serif;
         }
-        .nav-cta:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0px #3d6b4f; }
+        .nav-cta:hover { background:var(--red2); transform:translateY(-1px); box-shadow:0 6px 28px rgba(232,25,44,0.4); }
         @media(max-width:640px) {
           .nav-links .nav-link { display:none; }
         }
 
         /* TICKER */
         .ticker {
-          background:#1a1208; color:#c6f7e6;
+          background:var(--bg1); color:var(--text3);
           padding:9px 0; overflow:hidden;
-          border-top:2px solid rgba(255,255,255,0.06);
+          border-top:1px solid var(--border2);
+          border-bottom:1px solid var(--border2);
+        }
+        .dark .ticker {
+          background:#0d0d0d;
+          border-color:rgba(232,25,44,0.15);
         }
         .ticker-inner {
           display:flex; gap:0; white-space:nowrap;
           animation:tickerScroll 28s linear infinite;
-          font-size:12.5px; font-weight:700; letter-spacing:0.04em;
+          font-size:12px; font-weight:600; letter-spacing:0.04em;
         }
-        .ticker-item { padding:0 40px; }
-        .ticker-dot { color:#5a8f6a; }
+        .ticker-item { padding:0 40px; color:var(--text3); }
+        .ticker-dot { color:var(--mint); }
+        .dark .ticker-dot { color:#e8192c; }
 
         /* CARDS */
         .feat-card {
-          background:white; border:2px solid rgba(26,18,8,0.1);
-          border-radius:20px; padding:22px;
-          box-shadow:4px 4px 0px rgba(26,18,8,0.09);
-          transition:transform 0.18s, box-shadow 0.18s;
+          background:var(--bg2); border:1px solid var(--border2);
+          border-radius:16px; padding:22px;
+          box-shadow:var(--shadow-card);
+          transition:transform 0.2s cubic-bezier(.22,1,.36,1), box-shadow 0.2s, border-color 0.2s;
         }
-        .feat-card:hover { transform:translate(-2px,-3px); box-shadow:6px 7px 0px rgba(26,18,8,0.12); }
+        .feat-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-card-lg); border-color:rgba(232,25,44,0.3); }
 
         .step-card {
-          border:2.5px solid rgba(26,18,8,0.1);
-          border-radius:24px; padding:28px 24px;
-          transition:transform 0.18s, box-shadow 0.18s;
+          border:1px solid var(--border2);
+          border-radius:20px; padding:28px 24px;
+          background:var(--bg2);
+          transition:transform 0.2s cubic-bezier(.22,1,.36,1), border-color 0.2s;
         }
-        .step-card:hover { transform:translate(-2px,-3px); }
+        .step-card:hover { transform:translateY(-4px); border-color:rgba(232,25,44,0.3); }
 
         .myth-card {
-          background:white; border:2.5px solid rgba(26,18,8,0.1);
-          border-radius:20px; padding:24px;
-          box-shadow:4px 4px 0px rgba(26,18,8,0.09);
+          background:var(--bg2); border:1px solid var(--border2);
+          border-radius:16px; padding:24px;
+          box-shadow:var(--shadow-card);
+          transition:border-color 0.2s;
         }
+        .myth-card:hover { border-color:rgba(232,25,44,0.2); }
 
         /* BTNS */
         .btn-hero {
           display:inline-flex; align-items:center; gap:10px;
-          background:#5a8f6a; color:white;
-          border:3px solid #1a1208; border-radius:18px;
-          padding:16px 34px; font-size:17px; font-weight:800;
-          box-shadow:5px 5px 0px #3d6b4f;
-          transition:transform 0.12s, box-shadow 0.12s;
-          font-family:'Nunito',sans-serif; cursor:pointer;
+          background:var(--red); color:white;
+          border:none; border-radius:14px;
+          padding:16px 34px; font-size:16px; font-weight:700;
+          box-shadow:0 4px 24px var(--red-glow);
+          transition:transform 0.15s, box-shadow 0.15s, background 0.15s;
+          font-family:'Inter',sans-serif; cursor:pointer;
+          letter-spacing:-0.01em;
         }
-        .btn-hero:hover { transform:translate(-2px,-2px); box-shadow:7px 7px 0px #3d6b4f; }
-        .btn-hero:active { transform:translate(3px,3px); box-shadow:2px 2px 0px #3d6b4f; }
+        .btn-hero:hover { background:var(--red2); transform:translateY(-2px); box-shadow:0 8px 32px rgba(232,25,44,0.45); }
+        .btn-hero:active { transform:translateY(0); box-shadow:0 2px 8px rgba(232,25,44,0.3); }
 
         .btn-ghost {
           display:inline-flex; align-items:center; gap:8px;
-          background:transparent; color:#1a1208;
-          border:2.5px solid rgba(26,18,8,0.2); border-radius:16px;
-          padding:14px 26px; font-size:15px; font-weight:700;
-          box-shadow:3px 3px 0px rgba(26,18,8,0.12);
-          transition:transform 0.12s, box-shadow 0.12s, background 0.12s;
-          font-family:'Nunito',sans-serif; cursor:pointer;
+          background:transparent; color:var(--text1);
+          border:1px solid var(--border3); border-radius:14px;
+          padding:15px 26px; font-size:15px; font-weight:600;
+          transition:transform 0.15s, background 0.15s, border-color 0.15s;
+          font-family:'Inter',sans-serif; cursor:pointer;
         }
-        .btn-ghost:hover { background:#fde8c8; transform:translate(-1px,-1px); box-shadow:4px 4px 0px rgba(26,18,8,0.12); }
+        .btn-ghost:hover { background:var(--bg3); transform:translateY(-1px); border-color:var(--border3); }
 
         /* SECTION */
-        .section { padding:80px 5%; }
+        .section { padding:96px 5%; }
         .section-label {
           display:inline-flex; align-items:center; gap:8px;
-          border:2px solid currentColor; border-radius:50px;
-          padding:6px 16px; font-size:11.5px; font-weight:800;
-          text-transform:uppercase; letter-spacing:0.07em;
-          margin-bottom:18px;
+          border:1px solid currentColor; border-radius:50px;
+          padding:5px 14px; font-size:11px; font-weight:700;
+          text-transform:uppercase; letter-spacing:0.08em;
+          margin-bottom:18px; opacity:0.85;
         }
 
         /* LOOP DIAGRAM */
         .loop-node {
-          background:white; border:2.5px solid #1a1208;
-          border-radius:16px; padding:12px 16px;
-          font-size:13px; font-weight:800; color:#1a1208;
-          box-shadow:3px 3px 0px rgba(26,18,8,0.12);
-          text-align:center; min-width:130px;
+          background:var(--bg2); border:1px solid var(--border3);
+          border-radius:12px; padding:12px 16px;
+          font-size:13px; font-weight:600; color:var(--text1);
+          box-shadow:var(--shadow-card);
+          text-align:center; min-width:110px;
         }
         .loop-arrow {
-          font-size:18px; color:#e07b5a; font-weight:900;
+          font-size:18px; color:var(--red); font-weight:900;
         }
 
         /* SDG badge */
         .sdg-badge {
           display:inline-flex; align-items:center; gap:8px;
-          background:#e8f5ec; border:2px solid #5a8f6a; border-radius:50px;
-          padding:8px 16px; font-size:12px; font-weight:700; color:#3d6b4f;
-          box-shadow:2px 2px 0px rgba(61,107,79,0.25);
+          background:rgba(90,143,106,0.10); border:1px solid rgba(90,143,106,0.35); border-radius:50px;
+          padding:7px 16px; font-size:12px; font-weight:600; color:var(--mint);
+        }
+        .dark .sdg-badge {
+          background:rgba(232,25,44,0.08); border-color:rgba(232,25,44,0.3); color:var(--red3);
         }
 
         /* RESPONSIVE */
@@ -614,21 +647,10 @@ export default function LandingPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="nav-logo">
-          Loop<span style={{ color: "#5a8f6a" }}>less</span>
-          <span
-            style={{
-              fontSize: 12,
-              fontFamily: "'Nunito',sans-serif",
-              fontWeight: 700,
-              color: "#a8936a",
-              marginLeft: 8,
-              verticalAlign: "middle",
-            }}
-          >
-            by Team Marshmello
-          </span>
+          Loop<span style={{ color: "var(--red2)" }}>less</span>
         </div>
         <div className="nav-links">
+          <ThemeToggle />
           <a href="#how" className="nav-link">
             How it works
           </a>
@@ -638,7 +660,7 @@ export default function LandingPage() {
           <a href="#myth" className="nav-link">
             Myth busting
           </a>
-          <Link href="/login" className="nav-link" style={{ color: "#3d6b4f" }}>
+          <Link href="/login" className="nav-link" style={{ color: "var(--text2)" }}>
             Log in
           </Link>
           <Link href="/register" className="nav-cta" style={{ marginLeft: 6 }}>
@@ -653,67 +675,63 @@ export default function LandingPage() {
         style={{
           minHeight: "100vh",
           paddingTop: 80,
-          background:
-            "linear-gradient(170deg,#fef9f0 0%,#e8f5ec 40%,#fef9f0 100%)",
+          background: "var(--bg0)",
           position: "relative",
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
         }}
       >
-        {/* Background blobs */}
+        {/* Background blobs — theme-aware via CSS classes */}
         <div
+          className="hero-blob-1"
           style={{
             position: "absolute",
             top: "-8%",
             right: "-4%",
-            width: 450,
-            height: 450,
+            width: 600,
+            height: 600,
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle,rgba(90,143,106,0.15) 0%,transparent 70%)",
             animation: "blobDrift 10s ease-in-out infinite",
             pointerEvents: "none",
           }}
         />
         <div
+          className="hero-blob-2"
           style={{
             position: "absolute",
             bottom: "5%",
             left: "-6%",
-            width: 380,
-            height: 380,
+            width: 480,
+            height: 480,
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle,rgba(224,123,90,0.1) 0%,transparent 70%)",
             animation: "blobDrift 12s ease-in-out 2s infinite",
             pointerEvents: "none",
           }}
         />
         <div
+          className="hero-blob-3"
           style={{
             position: "absolute",
             top: "30%",
             left: "40%",
-            width: 300,
-            height: 300,
+            width: 360,
+            height: 360,
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle,rgba(201,152,42,0.08) 0%,transparent 70%)",
             animation: "blobDrift 9s ease-in-out 1s infinite",
             pointerEvents: "none",
           }}
         />
 
-        <SmokePuffs color="rgba(90,143,106,0.3)" />
+        <SmokePuffs color="rgba(232,25,44,0.12)" />
 
         <motion.div
           style={{
             y: heroY,
             width: "100%",
-            padding: "0 5%",
+            padding: "0 5% 80px",
             position: "relative",
-            zIndex: 2,
+            zIndex: 3,
           }}
         >
           <div
@@ -729,36 +747,16 @@ export default function LandingPage() {
           >
             {/* LEFT */}
             <div>
-              {/* SDG badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-              >
-                <div className="sdg-badge" style={{ marginBottom: 20 }}>
-                  <span
-                    style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: "50%",
-                      background: "#5a8f6a",
-                      display: "inline-block",
-                      flexShrink: 0,
-                    }}
-                  />
-                  SDG 3 · Good Health &amp; Wellbeing · Australia
-                </div>
-              </motion.div>
-
               <motion.h1
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25, duration: 0.55 }}
                 style={{
-                  fontSize: "clamp(40px,6vw,70px)",
-                  fontWeight: 600,
-                  lineHeight: 1.1,
+                  fontSize: "clamp(40px,6vw,72px)",
+                  fontWeight: 700,
+                  lineHeight: 1.05,
                   marginBottom: 18,
+                  letterSpacing: "-0.04em",
                 }}
               >
                 Vaping feels like
@@ -767,13 +765,13 @@ export default function LandingPage() {
                 <span
                   style={{
                     display: "block",
-                    background: "linear-gradient(135deg,#5a8f6a,#3d6b4f)",
+                    background: "linear-gradient(135deg,#ff3347,#ff6b78)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
                   }}
                 >
-                  It isn't. We can help.
+                  It isn&apos;t. We can help.
                 </span>
               </motion.h1>
 
@@ -783,16 +781,16 @@ export default function LandingPage() {
                 transition={{ delay: 0.35 }}
                 style={{
                   fontSize: 17,
-                  color: "#6b5c3e",
+                  color: "var(--text2)",
                   lineHeight: 1.7,
                   marginBottom: 12,
-                  fontWeight: 500,
+                  fontWeight: 400,
                   maxWidth: 480,
                 }}
               >
-                Nicotine doesn't fix stress - it just relieves the withdrawal it
+                Nicotine doesn&apos;t fix stress — it just relieves the withdrawal it
                 caused. Loopless helps you{" "}
-                <strong style={{ color: "#1a1208" }}>
+                <strong style={{ color: "var(--text1)", fontWeight: 700 }}>
                   understand the loop, break it,
                 </strong>{" "}
                 and build coping habits that actually work.
@@ -803,9 +801,9 @@ export default function LandingPage() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
                 style={{
-                  fontSize: 13.5,
-                  color: "#a8936a",
-                  fontWeight: 700,
+                  fontSize: 13,
+                  color: "var(--text3)",
+                  fontWeight: 500,
                   marginBottom: 28,
                   display: "flex",
                   alignItems: "center",
@@ -817,9 +815,10 @@ export default function LandingPage() {
                     width: 8,
                     height: 8,
                     borderRadius: "50%",
-                    background: "#5a8f6a",
+                    background: "var(--mint)",
                     display: "inline-block",
                     animation: "pulseDot 2s infinite",
+                    boxShadow: "0 0 6px var(--mint-glow)",
                   }}
                 />
                 Shame-free · Science-backed · Built for 18–24s in Australia
@@ -836,7 +835,7 @@ export default function LandingPage() {
                   marginBottom: 36,
                 }}
               >
-                <Link href="/register" className="btn-hero">
+                <Link href="/register" className="btn-hero btn-shimmer">
                   🌱 Break the loop - free
                 </Link>
                 <Link href="/guest" className="btn-ghost">
@@ -855,21 +854,22 @@ export default function LandingPage() {
                   <div
                     key={i}
                     style={{
-                      background: "white",
-                      border: "2px solid rgba(26,18,8,0.1)",
-                      borderRadius: 14,
+                      background: "var(--bg2)",
+                      border: "1px solid var(--border2)",
+                      borderRadius: 12,
                       padding: "10px 14px",
-                      boxShadow: "3px 3px 0px rgba(26,18,8,0.07)",
+                      boxShadow: "var(--shadow-card)",
                       maxWidth: 160,
                     }}
                   >
                     <div
                       style={{
-                        fontFamily: "'Fredoka',sans-serif",
+                        fontFamily: "'Space Grotesk',sans-serif",
                         fontSize: 22,
-                        fontWeight: 600,
+                        fontWeight: 700,
                         color: s.color,
                         lineHeight: 1,
+                        letterSpacing: "-0.03em",
                       }}
                     >
                       {s.val}
@@ -877,8 +877,8 @@ export default function LandingPage() {
                     <div
                       style={{
                         fontSize: 11,
-                        fontWeight: 600,
-                        color: "#6b5c3e",
+                        fontWeight: 500,
+                        color: "var(--text3)",
                         marginTop: 3,
                         lineHeight: 1.4,
                       }}
@@ -906,8 +906,8 @@ export default function LandingPage() {
                   height: 360,
                   borderRadius: "50%",
                   background:
-                    "radial-gradient(circle,rgba(90,143,106,0.2) 0%,transparent 70%)",
-                  filter: "blur(24px)",
+                    "radial-gradient(circle,rgba(232,25,44,0.15) 0%,transparent 70%)",
+                  filter: "blur(32px)",
                 }}
               />
               <div
@@ -923,15 +923,15 @@ export default function LandingPage() {
                     position: "absolute",
                     top: "14%",
                     right: -68,
-                    background: "white",
-                    border: "2px solid #5a8f6a",
+                    background: "var(--bg2)",
+                    border: "1px solid rgba(232,25,44,0.4)",
                     borderRadius: 50,
                     padding: "8px 14px",
                     fontSize: 12,
-                    fontWeight: 800,
-                    color: "#1a4a2a",
+                    fontWeight: 700,
+                    color: "var(--text1)",
                     whiteSpace: "nowrap",
-                    boxShadow: "3px 3px 0px rgba(61,107,79,0.3)",
+                    boxShadow: "0 4px 16px rgba(232,25,44,0.2)",
                   }}
                 >
                   🔥 12-day streak!
@@ -941,15 +941,15 @@ export default function LandingPage() {
                     position: "absolute",
                     bottom: "22%",
                     left: -72,
-                    background: "white",
-                    border: "2px solid #c9982a",
+                    background: "var(--bg2)",
+                    border: "1px solid rgba(245,166,35,0.4)",
                     borderRadius: 50,
                     padding: "8px 14px",
                     fontSize: 12,
-                    fontWeight: 800,
-                    color: "#5a3800",
+                    fontWeight: 700,
+                    color: "var(--text1)",
                     whiteSpace: "nowrap",
-                    boxShadow: "3px 3px 0px rgba(160,100,0,0.25)",
+                    boxShadow: "0 4px 16px rgba(245,166,35,0.15)",
                     animation: "wiggleBadge 4s ease-in-out 1.2s infinite",
                   }}
                 >
@@ -960,15 +960,15 @@ export default function LandingPage() {
                     position: "absolute",
                     top: "48%",
                     right: -60,
-                    background: "#fdf0ea",
-                    border: "2px solid #e07b5a",
-                    borderRadius: 14,
+                    background: "var(--bg2)",
+                    border: "1px solid rgba(232,25,44,0.35)",
+                    borderRadius: 12,
                     padding: "9px 12px",
                     fontSize: 11,
-                    fontWeight: 800,
-                    color: "#7a2a0a",
+                    fontWeight: 700,
+                    color: "var(--red3)",
                     whiteSpace: "nowrap",
-                    boxShadow: "3px 3px 0px rgba(168,75,42,0.25)",
+                    boxShadow: "0 4px 16px rgba(232,25,44,0.15)",
                   }}
                 >
                   Stress ↓ 40% this week
@@ -978,25 +978,11 @@ export default function LandingPage() {
           </div>
         </motion.div>
 
-        {/* Wave bottom */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 3,
-          }}
-        >
-          <svg
-            viewBox="0 0 1440 70"
-            preserveAspectRatio="none"
-            style={{ width: "100%", height: 70, display: "block" }}
-          >
-            <path
-              d="M0,35 C240,70 480,0 720,35 C960,70 1200,5 1440,35 L1440,70 L0,70 Z"
-              fill="#1a1208"
-            />
+        {/* Wave bottom — zIndex 1 so it stays behind hero content */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 1, pointerEvents: "none" }}>
+          <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style={{ width: "100%", height: 70, display: "block" }}>
+            <path d="M0,35 C240,70 480,0 720,35 C960,70 1200,5 1440,35 L1440,70 L0,70 Z"
+              style={{ fill: "var(--bg0)" }} />
           </svg>
         </div>
       </section>
@@ -1030,13 +1016,13 @@ export default function LandingPage() {
       {/* ── THE LOOP SECTION ───────────────────── */}
       <section
         style={{
-          background: "#1a1208",
-          padding: "80px 5%",
+          background: "var(--bg1)",
+          padding: "96px 5%",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        <SmokePuffs color="rgba(90,143,106,0.2)" />
+        <SmokePuffs color="rgba(232,25,44,0.08)" />
         <div
           style={{
             maxWidth: 900,
@@ -1054,8 +1040,8 @@ export default function LandingPage() {
             <div
               className="section-label"
               style={{
-                color: "#5a8f6a",
-                borderColor: "#5a8f6a",
+                color: "var(--red3)",
+                borderColor: "rgba(232,25,44,0.4)",
                 marginBottom: 16,
               }}
             >
@@ -1065,7 +1051,7 @@ export default function LandingPage() {
               style={{
                 fontSize: "clamp(28px,4.5vw,48px)",
                 fontWeight: 600,
-                color: "white",
+                color: "var(--text1)",
                 marginBottom: 14,
               }}
             >
@@ -1074,7 +1060,7 @@ export default function LandingPage() {
             <p
               style={{
                 fontSize: 16,
-                color: "rgba(255,255,255,0.65)",
+                color: "var(--text2)",
                 fontWeight: 500,
                 maxWidth: 560,
                 margin: "0 auto",
@@ -1084,8 +1070,8 @@ export default function LandingPage() {
               Your brain adapts to nicotine. When you don't vape, withdrawal
               spikes your anxiety. When you vape, it drops back to "normal" -
               which your brain reads as{" "}
-              <em style={{ color: "#c6f7e6" }}>"vaping fixed my stress"</em>. It
-              didn't. It just created the problem it solved.
+              <em style={{ color: "var(--red3)" }}>&quot;vaping fixed my stress&quot;</em>. It
+              didn&apos;t. It just created the problem it solved.
             </p>
           </motion.div>
 
@@ -1108,36 +1094,36 @@ export default function LandingPage() {
               {
                 icon: "😤",
                 label: "Stress hits",
-                color: "#fdf0ea",
-                border: "#e07b5a",
+                color: "rgba(232,25,44,0.12)",
+                border: "rgba(232,25,44,0.4)",
               },
               { icon: "→", label: "", arrow: true },
               {
                 icon: "🌀",
                 label: "Craving loops",
-                color: "#1e1420",
-                border: "#7b6fa0",
+                color: "rgba(167,139,250,0.1)",
+                border: "rgba(167,139,250,0.4)",
               },
               { icon: "→", label: "", arrow: true },
               {
                 icon: "💨",
                 label: "You vape",
-                color: "#181c18",
-                border: "#5a8f6a",
+                color: "rgba(255,255,255,0.04)",
+                border: "rgba(255,255,255,0.15)",
               },
               { icon: "→", label: "", arrow: true },
               {
                 icon: "😮‍💨",
                 label: "Brief relief",
-                color: "#e8f5ec",
-                border: "#5a8f6a",
+                color: "rgba(232,25,44,0.06)",
+                border: "rgba(232,25,44,0.25)",
               },
               { icon: "→", label: "", arrow: true },
               {
                 icon: "😰",
                 label: "Anxiety spikes",
-                color: "#fdf0ea",
-                border: "#e07b5a",
+                color: "rgba(232,25,44,0.15)",
+                border: "rgba(232,25,44,0.45)",
               },
               { icon: "↩", label: "", arrow: true },
             ].map((n, i) =>
@@ -1167,7 +1153,7 @@ export default function LandingPage() {
                     style={{
                       fontSize: 12,
                       fontWeight: 800,
-                      color: "white",
+                      color: "var(--text1)",
                       lineHeight: 1.2,
                     }}
                   >
@@ -1182,27 +1168,27 @@ export default function LandingPage() {
             <div
               style={{
                 display: "inline-block",
-                background: "rgba(90,143,106,0.15)",
-                border: "2px solid #5a8f6a",
-                borderRadius: 16,
+                background: "rgba(232,25,44,0.08)",
+                border: "1px solid rgba(232,25,44,0.3)",
+                borderRadius: 14,
                 padding: "16px 28px",
                 fontSize: 15,
-                fontWeight: 700,
-                color: "#c6f7e6",
+                fontWeight: 500,
+                color: "var(--text2)",
                 maxWidth: 560,
                 lineHeight: 1.6,
               }}
             >
-              💡 <strong>Loopless teaches your brain the truth</strong> and
-              gives you real tools to replace the loop - not just suppress it.
+              💡 <strong style={{color:"var(--text1)",fontWeight:700}}>Loopless teaches your brain the truth</strong> and
+              gives you real tools to replace the loop — not just suppress it.
             </div>
           </div>
         </div>
       </section>
 
       {/* ── HOW IT WORKS ───────────────────────── */}
-      <WavyDivider fill="#fef9f0" bg="#1a1208" />
-      <section id="how" className="section" style={{ background: "#fef9f0" }}>
+      <WavyDivider fill="var(--bg0)" bg="var(--bg1)" />
+      <section id="how" className="section" style={{ background: "var(--bg0)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -1212,7 +1198,7 @@ export default function LandingPage() {
           >
             <div
               className="section-label"
-              style={{ color: "#5a8f6a", borderColor: "#5a8f6a" }}
+              style={{ color: "var(--red)", borderColor: "rgba(232,25,44,0.5)" }}
             >
               ✦ How it works
             </div>
@@ -1228,8 +1214,8 @@ export default function LandingPage() {
             <p
               style={{
                 fontSize: 16,
-                color: "#6b5c3e",
-                fontWeight: 500,
+                color: "var(--text2)",
+                fontWeight: 400,
                 maxWidth: 520,
               }}
             >
@@ -1256,30 +1242,32 @@ export default function LandingPage() {
                 transition={{ delay: i * 0.1, duration: 0.45 }}
                 style={{
                   background: s.color,
-                  borderColor: `${s.accent}66`,
-                  boxShadow: `4px 4px 0px ${s.accent}44`,
+                  borderColor: `${s.accent}44`,
+                  boxShadow: `0 2px 16px ${s.accent}22`,
                 }}
               >
                 <div
                   style={{
-                    fontFamily: "'Fredoka',sans-serif",
+                    fontFamily: "'Space Grotesk',sans-serif",
                     fontSize: 36,
-                    fontWeight: 600,
+                    fontWeight: 700,
                     color: s.accent,
                     lineHeight: 1,
                     marginBottom: 8,
+                    letterSpacing: "-0.04em",
                   }}
                 >
                   {s.n}
                 </div>
-                <div style={{ fontSize: 30, marginBottom: 12 }}>{s.emoji}</div>
+                <div style={{ color: s.accent, marginBottom: 12 }}><s.Icon /></div>
                 <h3
                   style={{
-                    fontFamily: "'Fredoka',sans-serif",
-                    fontSize: 19,
+                    fontFamily: "'Space Grotesk',sans-serif",
+                    fontSize: 18,
                     fontWeight: 600,
                     marginBottom: 8,
-                    color: "#1a1208",
+                    color: "var(--text1)",
+                    letterSpacing: "-0.02em",
                   }}
                 >
                   {s.title}
@@ -1287,9 +1275,9 @@ export default function LandingPage() {
                 <p
                   style={{
                     fontSize: 13,
-                    color: "#6b5c3e",
+                    color: "var(--text3)",
                     lineHeight: 1.65,
-                    fontWeight: 500,
+                    fontWeight: 400,
                   }}
                 >
                   {s.desc}
@@ -1301,11 +1289,11 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ───────────────────────────── */}
-      <WavyDivider fill="#fffdf8" bg="#fef9f0" />
+      <WavyDivider fill="var(--bg1)" bg="var(--bg0)" />
       <section
         id="features"
         className="section"
-        style={{ background: "#fffdf8" }}
+        style={{ background: "var(--bg1)" }}
       >
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <motion.div
@@ -1335,8 +1323,8 @@ export default function LandingPage() {
             <p
               style={{
                 fontSize: 14,
-                color: "#6b5c3e",
-                fontWeight: 500,
+                color: "var(--text3)",
+                fontWeight: 400,
                 maxWidth: 340,
                 lineHeight: 1.6,
               }}
@@ -1363,7 +1351,7 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.07, duration: 0.4 }}
               >
-                <div style={{ fontSize: 32, marginBottom: 12 }}>{f.emoji}</div>
+                <div style={{ color: "var(--red)", marginBottom: 12 }}><f.Icon /></div>
                 <div
                   style={{
                     display: "flex",
@@ -1378,7 +1366,7 @@ export default function LandingPage() {
                       fontFamily: "'Fredoka',sans-serif",
                       fontSize: 17,
                       fontWeight: 600,
-                      color: "#1a1208",
+                      color: "var(--text1)",
                     }}
                   >
                     {f.title}
@@ -1387,9 +1375,9 @@ export default function LandingPage() {
                 <p
                   style={{
                     fontSize: 12.5,
-                    color: "#6b5c3e",
+                    color: "var(--text3)",
                     lineHeight: 1.6,
-                    fontWeight: 500,
+                    fontWeight: 400,
                     marginBottom: 10,
                   }}
                 >
@@ -1398,15 +1386,15 @@ export default function LandingPage() {
                 <div
                   style={{
                     display: "inline-block",
-                    background: "#e8f5ec",
-                    border: "1.5px solid #5a8f6a",
+                    background: "rgba(232,25,44,0.08)",
+                    border: "1px solid rgba(232,25,44,0.3)",
                     borderRadius: 50,
                     padding: "3px 10px",
                     fontSize: 10,
-                    fontWeight: 800,
-                    color: "#3d6b4f",
+                    fontWeight: 700,
+                    color: "var(--red3)",
                     textTransform: "uppercase",
-                    letterSpacing: "0.05em",
+                    letterSpacing: "0.06em",
                   }}
                 >
                   {f.tag}
@@ -1418,8 +1406,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── MYTH BUSTING ───────────────────────── */}
-      <WavyDivider fill="#fff8ee" bg="#fffdf8" />
-      <section id="myth" className="section" style={{ background: "#fff8ee" }}>
+      <WavyDivider fill="var(--bg0)" bg="var(--bg1)" />
+      <section id="myth" className="section" style={{ background: "var(--bg0)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -1446,7 +1434,7 @@ export default function LandingPage() {
             >
               Let's be real about vaping
             </h2>
-            <p style={{ fontSize: 15, color: "#6b5c3e", fontWeight: 500 }}>
+            <p style={{ fontSize: 15, color: "var(--text3)", fontWeight: 400 }}>
               AIHW & TGA-cited facts. Share them to Instagram or TikTok with one
               tap.
             </p>
@@ -1470,29 +1458,29 @@ export default function LandingPage() {
               >
                 <div
                   style={{
-                    background: "#fdf0ea",
-                    border: "2px solid #e07b5a66",
-                    borderRadius: 14,
+                    background: "rgba(232,25,44,0.08)",
+                    border: "1px solid rgba(232,25,44,0.3)",
+                    borderRadius: 12,
                     padding: "14px 18px",
                   }}
                 >
                   <div
                     style={{
                       fontSize: 10,
-                      fontWeight: 800,
-                      color: "#e07b5a",
+                      fontWeight: 700,
+                      color: "var(--red3)",
                       textTransform: "uppercase",
                       letterSpacing: "0.06em",
                       marginBottom: 6,
                     }}
                   >
-                    ❌ Myth
+                    Myth
                   </div>
                   <div
                     style={{
                       fontSize: 14,
-                      fontWeight: 700,
-                      color: "#5a1a0a",
+                      fontWeight: 600,
+                      color: "var(--text1)",
                       lineHeight: 1.5,
                       fontStyle: "italic",
                     }}
@@ -1502,29 +1490,29 @@ export default function LandingPage() {
                 </div>
                 <div
                   style={{
-                    background: "#e8f5ec",
-                    border: "2px solid #5a8f6a66",
-                    borderRadius: 14,
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid var(--border3)",
+                    borderRadius: 12,
                     padding: "14px 18px",
                   }}
                 >
                   <div
                     style={{
                       fontSize: 10,
-                      fontWeight: 800,
-                      color: "#3d6b4f",
+                      fontWeight: 700,
+                      color: "var(--text3)",
                       textTransform: "uppercase",
                       letterSpacing: "0.06em",
                       marginBottom: 6,
                     }}
                   >
-                    ✅ Fact - {m.source}
+                    Fact — {m.source}
                   </div>
                   <div
                     style={{
                       fontSize: 14,
-                      fontWeight: 600,
-                      color: "#1a3a2a",
+                      fontWeight: 500,
+                      color: "var(--text1)",
                       lineHeight: 1.5,
                     }}
                   >
@@ -1544,8 +1532,8 @@ export default function LandingPage() {
             <div
               style={{
                 fontSize: 13,
-                fontWeight: 700,
-                color: "#a8936a",
+                fontWeight: 600,
+                color: "var(--text3)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -1561,8 +1549,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── JESS QUOTE (Persona) ─────────────── */}
-      <WavyDivider fill="#fef9f0" bg="#fff8ee" />
-      <section className="section" style={{ background: "#fef9f0" }}>
+      <WavyDivider fill="var(--bg1)" bg="var(--bg0)" />
+      <section className="section" style={{ background: "var(--bg1)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.92 }}
@@ -1572,20 +1560,20 @@ export default function LandingPage() {
           >
             <div
               style={{
-                background: "white",
-                border: "2.5px solid rgba(26,18,8,0.1)",
-                borderRadius: 28,
+                background: "var(--bg2)",
+                border: "1px solid var(--border2)",
+                borderRadius: 24,
                 padding: "40px 36px",
-                boxShadow: "6px 6px 0px rgba(26,18,8,0.1)",
+                boxShadow: "var(--shadow-card)",
                 position: "relative",
               }}
             >
               {/* Big quote mark */}
               <div
                 style={{
-                  fontFamily: "'Fredoka',sans-serif",
+                  fontFamily: "'Space Grotesk',sans-serif",
                   fontSize: 80,
-                  color: "#e8f5ec",
+                  color: "rgba(232,25,44,0.1)",
                   lineHeight: 0.7,
                   marginBottom: 16,
                   userSelect: "none",
@@ -1595,9 +1583,9 @@ export default function LandingPage() {
               </div>
               <p
                 style={{
-                  fontSize: 22,
-                  fontWeight: 600,
-                  color: "#1a1208",
+                  fontSize: 20,
+                  fontWeight: 500,
+                  color: "var(--text1)",
                   lineHeight: 1.55,
                   marginBottom: 20,
                   fontStyle: "italic",
@@ -1619,24 +1607,24 @@ export default function LandingPage() {
                     width: 42,
                     height: 42,
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg,#5a8f6a,#3d6b4f)",
+                    background: "linear-gradient(135deg,var(--red),var(--red2))",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 20,
-                    border: "2px solid #1a1208",
+                    border: "2px solid var(--border3)",
                   }}
                 >
                   🙋
                 </div>
                 <div style={{ textAlign: "left" }}>
                   <div
-                    style={{ fontSize: 14, fontWeight: 800, color: "#1a1208" }}
+                    style={{ fontSize: 14, fontWeight: 800, color: "var(--text1)" }}
                   >
                     Jess, 22 - Melbourne
                   </div>
                   <div
-                    style={{ fontSize: 12, fontWeight: 600, color: "#a8936a" }}
+                    style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}
                   >
                     Junior Marketing Coordinator · Monash grad
                   </div>
@@ -1660,13 +1648,13 @@ export default function LandingPage() {
                   <span
                     key={t}
                     style={{
-                      background: "#e8f5ec",
-                      border: "1.5px solid #5a8f6a",
+                      background: "rgba(232,25,44,0.08)",
+                      border: "1px solid rgba(232,25,44,0.3)",
                       borderRadius: 50,
                       padding: "5px 12px",
                       fontSize: 11,
-                      fontWeight: 800,
-                      color: "#3d6b4f",
+                      fontWeight: 700,
+                      color: "var(--red3)",
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
                     }}
@@ -1683,23 +1671,23 @@ export default function LandingPage() {
       {/* ── FINAL CTA ────────────────────────── */}
       <section
         style={{
-          background: "#1a1208",
-          padding: "80px 5%",
+          background: "var(--bg0)",
+          padding: "96px 5%",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        <SmokePuffs color="rgba(90,143,106,0.25)" />
+        <SmokePuffs color="rgba(232,25,44,0.08)" />
         <div
           style={{
             position: "absolute",
             top: "-10%",
             right: "-5%",
-            width: 400,
-            height: 400,
+            width: 500,
+            height: 500,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle,rgba(90,143,106,0.12) 0%,transparent 70%)",
+              "radial-gradient(circle,rgba(232,25,44,0.08) 0%,transparent 70%)",
             animation: "blobDrift 9s ease-in-out infinite",
             zIndex: 0,
           }}
@@ -1722,19 +1710,19 @@ export default function LandingPage() {
             style={{
               fontSize: "clamp(30px,5vw,52px)",
               fontWeight: 600,
-              color: "white",
+              color: "var(--text1)",
               marginBottom: 14,
               lineHeight: 1.15,
             }}
           >
             Ready to break
             <br />
-            <span style={{ color: "#5a8f6a" }}>the loop?</span>
+            <span style={{ color: "var(--red2)" }}>the loop?</span>
           </h2>
           <p
             style={{
               fontSize: 16,
-              color: "rgba(255,255,255,0.65)",
+              color: "var(--text2)",
               fontWeight: 500,
               marginBottom: 36,
               lineHeight: 1.7,
@@ -1758,7 +1746,7 @@ export default function LandingPage() {
             <Link
               href="/guest"
               className="btn-ghost"
-              style={{ color: "white", borderColor: "rgba(255,255,255,0.25)" }}
+              style={{ color: "var(--text1)", borderColor: "var(--border3)" }}
             >
               Try as guest
             </Link>
@@ -1766,7 +1754,7 @@ export default function LandingPage() {
           <div
             style={{
               fontSize: 13,
-              color: "rgba(255,255,255,0.4)",
+              color: "var(--text3)",
               fontWeight: 600,
             }}
           >
@@ -1778,8 +1766,8 @@ export default function LandingPage() {
       {/* ── FOOTER ──────────────────────────── */}
       <footer
         style={{
-          background: "#111009",
-          borderTop: "2px solid rgba(255,255,255,0.06)",
+          background: "var(--bg0)",
+          borderTop: "1px solid rgba(232,25,44,0.1)",
           padding: "32px 5%",
         }}
       >
@@ -1797,24 +1785,24 @@ export default function LandingPage() {
           <div>
             <div
               style={{
-                fontFamily: "'Fredoka',sans-serif",
+                fontFamily: "'Space Grotesk',sans-serif",
                 fontSize: 20,
-                fontWeight: 600,
-                color: "white",
+                fontWeight: 700,
+                color: "var(--text1)",
                 marginBottom: 4,
+                letterSpacing: "-0.03em",
               }}
             >
-              Loop<span style={{ color: "#5a8f6a" }}>less</span>
+              Loop<span style={{ color: "var(--red2)" }}>less</span>
             </div>
             <div
               style={{
                 fontSize: 12,
-                fontWeight: 600,
-                color: "rgba(255,255,255,0.3)",
+                fontWeight: 500,
+                color: "var(--text4)",
               }}
             >
-              FIT5120 · Team Marshmello · SDG 3 · March 2026 · Melbourne,
-              Australia
+              SDG 3 · Good Health &amp; Wellbeing · Melbourne, Australia
             </div>
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -1825,16 +1813,16 @@ export default function LandingPage() {
                 style={{
                   fontSize: 12,
                   fontWeight: 700,
-                  color: "rgba(255,255,255,0.45)",
+                  color: "var(--text3)",
                   padding: "6px 12px",
                   borderRadius: 50,
                   transition: "color 0.15s",
                 }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "rgba(255,255,255,0.8)")
+                  (e.currentTarget.style.color = "var(--text1)")
                 }
                 onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "rgba(255,255,255,0.45)")
+                  (e.currentTarget.style.color = "var(--text3)")
                 }
               >
                 {l}

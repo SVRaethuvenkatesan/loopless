@@ -83,7 +83,7 @@ export function AIInsights() {
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
         <IcoBrain />
-        <span style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 19, fontWeight: 600, color: "#1a1208" }}>Health Insights</span>
+        <span style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 19, fontWeight: 600, color: "var(--text1)" }}>Health Insights</span>
         <span style={{ marginLeft: "auto", background: "#e8f5ec", border: "1.5px solid #5a8f6a44", borderRadius: 50, padding: "2px 10px", fontSize: 10, fontWeight: 800, color: "#3d6b4f" }}>Tap to expand</span>
       </div>
       <p style={{ fontSize: 11, color: "#a8936a", fontWeight: 500, marginBottom: 12 }}>Evidence-based facts about vaping cessation — all sources linked.</p>
@@ -91,7 +91,7 @@ export function AIInsights() {
       {loading ? (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {[0,1,2,3].map(i => (
-            <div key={i} style={{ height: 80, borderRadius: 14, background: "#fde8c8", animation: `shimmerPulse 1.5s ease-in-out ${i*0.15}s infinite` }} />
+            <div key={i} className="skel" style={{ height: 80, borderRadius: 14, background: "var(--bg3)", animation: `shimmerPulse 1.5s ease-in-out ${i*0.15}s infinite` }} />
           ))}
         </div>
       ) : (
