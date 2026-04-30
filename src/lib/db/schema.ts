@@ -32,6 +32,8 @@ export const checkins = pgTable("checkins", {
   stressLevel: integer("stress_level").notNull(),
   mood: text("mood").notNull(),
   triggerType: text("trigger_type"),
+  sleepQuality: integer("sleep_quality"),
+  energyLevel: integer("energy_level"),
   checkedInAt: timestamp("checked_in_at", { withTimezone: true }).defaultNow(),
   timezoneOffset: text("timezone_offset"),
 });
@@ -42,6 +44,9 @@ export const urgeEvents = pgTable("urge_events", {
   urgeType: text("urge_type"),
   triggers: text("triggers").array(),
   preStress: integer("pre_stress"),
+  intensity: integer("intensity"),
+  activityBefore: text("activity_before"),
+  socialContext: text("social_context"),
   occurredAt: timestamp("occurred_at", { withTimezone: true }).defaultNow(),
 });
 
@@ -100,3 +105,34 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   authKey: text("auth_key").notNull(),
   subscribedAt: timestamp("subscribed_at", { withTimezone: true }).defaultNow(),
 });
+
+// --- Epic 7: Adaptive AI & Predictive Resilience Engine ---
+
+export const dailyInsights = pgTable("daily_insights", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  insightText: text("insight_text").notNull(),
+  source: text("source").default("rule_based"), // "rule_based" or "llm"
+  insightDate: timestamp("insight_date", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+export const riskPredictions = pgTable("risk_predictions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  predictedWindowStart: timestamp("predicted_window_start", { withTimezone: true }).notNull(),
+  predictedWindowEnd: timestamp("predicted_window_end", { withTimezone: true }).notNull(),
+  confidence: real("confidence"),
+  status: text("status").default("pending"), // pending, notified, dismissed, snoozed
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+export const nudgeLogs = pgTable("nudge_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  riskPredictionId: uuid("risk_prediction_id").references(() => riskPredictions.id, { onDelete: "cascade" }),
+  nudgeType: text("nudge_type").notNull(),
+  interaction: text("interaction"), // dismissed, snoozed, opened
+  sentAt: timestamp("sent_at", { withTimezone: true }).defaultNow(),
+});
+

@@ -32,6 +32,7 @@ const NAV = [
   { href: "/loop", Icon: LoopIcon, label: "Loop", implemented: false },
   { href: "/progress", Icon: ProgressIcon, label: "Progress", implemented: false },
   { href: "/awareness", Icon: SparkleIcon, label: "Awareness", implemented: true },
+  { href: "/insights", Icon: InsightsIcon, label: "Insights", implemented: true },
   { href: "/coping", Icon: ToolkitIcon, label: "Toolkit", implemented: false },
   { href: "/myths", Icon: MythsIcon, label: "Myth Cards", implemented: false },
   { href: "/support", Icon: SupportIcon, label: "Support", implemented: false },
@@ -40,7 +41,7 @@ const BOTTOM_NAV = [
   { href: "/dashboard", Icon: HomeIcon, label: "Home", implemented: true },
   { href: "/checkin", Icon: CheckinIcon, label: "Check-in", implemented: true },
   { href: "/awareness", Icon: SparkleIcon, label: "Awareness", implemented: true },
-  { href: "/progress", Icon: ProgressIcon, label: "Progress", implemented: false },
+  { href: "/insights", Icon: InsightsIcon, label: "Insights", implemented: true },
   { href: "/support", Icon: SupportIcon, label: "More", implemented: false },
 ];
 
@@ -375,7 +376,7 @@ export default function AppShell({ children, session: serverSession }: { childre
 
           <nav className="nav-section">
             <div className="nav-group-label">Main</div>
-            {NAV.slice(0, 5).map((item) => (
+            {NAV.slice(0, 6).map((item) => (
               item.implemented ? (
                 <Link key={item.href} href={item.href} onClick={spawnParticles}>
                   <div className={`nav-item${isActive(item.href) ? " active" : ""}`}>
@@ -397,7 +398,7 @@ export default function AppShell({ children, session: serverSession }: { childre
               )
             ))}
             <div className="nav-group-label" style={{ marginTop: 6 }}>Tools</div>
-            {NAV.slice(5).map((item) => (
+            {NAV.slice(6).map((item) => (
               item.implemented ? (
                 <Link key={item.href} href={item.href} onClick={spawnParticles}>
                   <div className={`nav-item${isActive(item.href) ? " active" : ""}`}>

@@ -99,7 +99,7 @@ export async function GET(req: Request) {
       }
 
       const streakCount = computedStreaks.find(s => s.streakType === "checkin")?.count ?? 0;
-      const xp = computeXP(earnedBadges, streakCount, recentCheckins.length);
+      const xp = computeXP(earnedBadges, streakCount, recentCheckins);
       const { level, xpInLevel, xpToNext } = computeLevel(xp);
 
       return { user, triggers, earnedBadges, userStreaks: computedStreaks, recentCheckins, xp, level, xpInLevel, xpToNext };

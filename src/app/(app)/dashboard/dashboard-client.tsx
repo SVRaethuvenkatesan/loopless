@@ -8,7 +8,7 @@ import { AIInsights } from "./dash-insights";
 import { IcoFire, IcoStar, IcoDollar, IcoZap, IcoTrend, IcoAlert, IcoClipboard, IcoMessage, IcoCheck, IcoWind2, IcoArrow } from "./dash-icons";
 import { computeXP, computeLevel } from "@/lib/xp";
 
-interface Checkin{id:string;stressLevel:number;mood:string;triggerType:string|null;checkedInAt:string;}
+interface Checkin{id:string;stressLevel:number;mood:string;triggerType:string|null;checkedInAt:string;sleepQuality?:number;energyLevel?:number;}
 interface Props{userName:string;userId:string;recentCheckins:Checkin[];checkInStreak:number;checkedInToday:boolean;todayEntry:Checkin|null;earnedBadges:Badge[];userTriggers:{triggerType:string}[];urgesThisWeek:number;copingSessionsThisWeek:number;}
 
 function XPBar({pct}:{pct:number}){
@@ -84,7 +84,7 @@ export default function DashboardClient({userName,userId,recentCheckins,checkInS
   const streak=checkInStreak;
   const avgStress=recentCheckins.length?(recentCheckins.reduce((s,c)=>s+c.stressLevel,0)/recentCheckins.length).toFixed(1):"—";
   const money=Math.round(streak*2.5);
-  const xp=computeXP(earnedBadges,streak,recentCheckins.length);
+  const xp=computeXP(earnedBadges,streak,recentCheckins);
   const {level,xpInLevel:xpInLvl}=computeLevel(xp);
 
   const quests=[

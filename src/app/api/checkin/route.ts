@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { stressLevel, mood, triggerType, timezoneOffset } = body;
+    const { stressLevel, mood, triggerType, sleepQuality, energyLevel, timezoneOffset } = body;
 
     if (typeof stressLevel !== "number" || stressLevel < 1 || stressLevel > 10)
       return NextResponse.json({ error: "stress must be 1–10" }, { status: 422 });
@@ -38,7 +38,14 @@ export async function POST(req: Request) {
       if (existing) {
         await db
           .update(checkins)
-          .set({ stressLevel, mood, triggerType: triggerType ?? null, timezoneOffset: timezoneOffset ?? null })
+          .set({ 
+            stressLevel, 
+            mood, 
+            triggerType: triggerType ?? null, 
+            sleepQuality: sleepQuality ?? null,
+            energyLevel: energyLevel ?? null,
+            timezoneOffset: timezoneOffset ?? null 
+          })
           .where(eq(checkins.id, existing.id));
         const streakRow = await db.query.streaks.findFirst({
           where: and(eq(streaks.userId, userId), eq(streaks.streakType, "checkin")),
@@ -49,7 +56,16 @@ export async function POST(req: Request) {
       // New entry: insert and update streak
       const [entry] = await db
         .insert(checkins)
-        .values({ userId, stressLevel, mood, triggerType: triggerType ?? null, timezoneOffset: timezoneOffset ?? null, checkedInAt: now })
+        .values({ 
+          userId, 
+          stressLevel, 
+          mood, 
+          triggerType: triggerType ?? null, 
+          sleepQuality: sleepQuality ?? null,
+          energyLevel: energyLevel ?? null,
+          timezoneOffset: timezoneOffset ?? null, 
+          checkedInAt: now 
+        })
         .returning({ id: checkins.id });
 
       // ── Streak logic ────────────────────────────────────────────────
@@ -103,12 +119,13 @@ export async function POST(req: Request) {
       return { updated: false, id: entry.id, streak: newCount };
     });
 
+    const bonusXp = (sleepQuality ? 10 : 0) + (energyLevel ? 10 : 0);
     return NextResponse.json({
       success: true,
       updated: result.updated ?? false,
       id: result.id,
       streak: result.streak,
-      xpEarned: result.updated ? 0 : 20 + (stressLevel >= 7 ? 10 : 0),
+      xpEarned: result.updated ? 0 : 20 + (stressLevel >= 7 ? 10 : 0) + bonusXp,
     });
   } catch (err: any) {
     console.error("Checkin POST:", err?.message);

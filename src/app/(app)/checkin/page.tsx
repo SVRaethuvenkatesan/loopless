@@ -596,6 +596,8 @@ export default function CheckInPage() {
   const [mood, setMood] = useState("");
   const [trigger, setTrigger] = useState("");
   const [note, setNote] = useState("");
+  const [sleepQuality, setSleepQuality] = useState(0);
+  const [energyLevel, setEnergyLevel] = useState(0);
   const [loading, setLoading] = useState(false);
   const [alreadyDone, setAlreadyDone] = useState(false);
   const [todayEntry, setTodayEntry] = useState<CheckInRecord | null>(null);
@@ -748,7 +750,8 @@ export default function CheckInPage() {
 
   async function submit(e: React.MouseEvent) {
     setLoading(true);
-    const xp = 20 + (stress >= 7 ? 10 : 0);
+    const bonusXp = (sleepQuality ? 10 : 0) + (energyLevel ? 10 : 0);
+    const xp = 20 + (stress >= 7 ? 10 : 0) + bonusXp;
     setEarnedXP(xp);
     spawnXP(xp, e);
     await fetchAI(stress, mood, trigger);
@@ -768,6 +771,8 @@ export default function CheckInPage() {
           stressLevel: stress,
           mood,
           triggerType: trigger,
+          sleepQuality,
+          energyLevel,
           note,
           timezoneOffset: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
@@ -775,7 +780,7 @@ export default function CheckInPage() {
     } catch {}
     setLoading(false);
     setSubmitted(true);
-    setStep(4);
+    setStep(5);
   }
 
   function goNext(e: React.MouseEvent) {
@@ -786,9 +791,8 @@ export default function CheckInPage() {
         "Recognising your trigger is the most powerful step in breaking the loop.",
       );
     }
-    if (step === 2) {
+    if (step === 3) {
       fetchAI(stress, mood, trigger);
-      setStep(3);
     }
   }
 
@@ -1421,10 +1425,89 @@ export default function CheckInPage() {
               </motion.div>
             )}
 
-            {/* Step 3 - Note + AI */}
+            {/* Step 3 - Advanced Context */}
             {!alreadyDone && step === 3 && (
               <motion.div
                 key="s3"
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -40 }}
+                transition={{ duration: 0.28 }}
+              >
+                <div className="card" style={{ marginBottom: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <h3 style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 20, fontWeight: 600 }}>
+                      Bonus Details
+                    </h3>
+                    <span style={{ background: "#e8f5ec", color: "#1a4a2a", padding: "4px 8px", borderRadius: 50, fontSize: 10, fontWeight: 800 }}>
+                      ⚡ +20 XP available
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 12.5, fontWeight: 500, color: "#a8936a", marginBottom: 16 }}>
+                    Help our AI learn your patterns. Skip if you're in a rush!
+                  </p>
+                  
+                  {/* Sleep Quality */}
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, display: "flex", justifyContent: "space-between" }}>
+                      <span>Sleep Quality 🛏️</span>
+                      {sleepQuality > 0 && <span style={{ color: "#5a8f6a" }}>+10 XP ✓</span>}
+                    </div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          onClick={(e) => { setSleepQuality(n); burst(e, "#5bb8f5"); }}
+                          style={{
+                            flex: 1, padding: "10px 0", borderRadius: 12,
+                            border: `2px solid ${sleepQuality === n ? "#5bb8f5" : "rgba(26,18,8,.1)"}`,
+                            background: sleepQuality === n ? "#dff0fd" : "white",
+                            fontWeight: 800, color: sleepQuality === n ? "#1a1208" : "#c8b89a",
+                            cursor: "pointer", transition: "all .15s"
+                          }}
+                        >{n}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Energy Level */}
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, display: "flex", justifyContent: "space-between" }}>
+                      <span>Energy Level 🔋</span>
+                      {energyLevel > 0 && <span style={{ color: "#5a8f6a" }}>+10 XP ✓</span>}
+                    </div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          onClick={(e) => { setEnergyLevel(n); burst(e, "#f5c842"); }}
+                          style={{
+                            flex: 1, padding: "10px 0", borderRadius: 12,
+                            border: `2px solid ${energyLevel === n ? "#f5c842" : "rgba(26,18,8,.1)"}`,
+                            background: energyLevel === n ? "#fffbef" : "white",
+                            fontWeight: 800, color: energyLevel === n ? "#1a1208" : "#c8b89a",
+                            cursor: "pointer", transition: "all .15s"
+                          }}
+                        >{n}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  className="next-btn"
+                  onClick={goNext}
+                  style={{ background: stressColor(stress) }}
+                >
+                  Next: Add a note →
+                </button>
+              </motion.div>
+            )}
+
+            {/* Step 4 - Note + AI */}
+            {!alreadyDone && step === 4 && (
+              <motion.div
+                key="s4"
                 initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -40 }}
@@ -1583,10 +1666,10 @@ export default function CheckInPage() {
               </motion.div>
             )}
 
-            {/* Step 4 - Success */}
-            {step === 4 && submitted && (
+            {/* Step 5 - Success */}
+            {step === 5 && submitted && (
               <motion.div
-                key="s4"
+                key="s5"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: "spring", bounce: 0.4 }}
