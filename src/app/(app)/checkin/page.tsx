@@ -385,11 +385,11 @@ function HistoryCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06 }}
       style={{
-        background: "white",
-        border: "2px solid rgba(26,18,8,.1)",
+        background: "var(--bg2)",
+        border: "2px solid var(--border2)",
         borderRadius: 18,
         padding: "16px 18px",
-        boxShadow: "4px 4px 0 rgba(26,18,8,.07)",
+        boxShadow: "var(--shadow-card)",
         display: "flex",
         alignItems: "center",
         gap: 14,
@@ -450,7 +450,7 @@ function HistoryCard({
             </span>
           )}
         </div>
-        <div style={{ fontSize: 11.5, fontWeight: 700, color: "#a8936a" }}>
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text3)" }}>
           {fmt(entry.checkedInAt)}
         </div>
       </div>
@@ -502,13 +502,13 @@ function AnalyticsTile({
         style={{
           fontSize: 11.5,
           fontWeight: 800,
-          color: "#1a1208",
+          color: "var(--text1)",
           marginBottom: 2,
         }}
       >
         {label}
       </div>
-      <div style={{ fontSize: 10.5, fontWeight: 500, color: "#6b5c3e" }}>
+      <div style={{ fontSize: 10.5, fontWeight: 500, color: "var(--text2)" }}>
         {sub}
       </div>
     </div>
@@ -542,11 +542,11 @@ function MiniChart({ history }: { history: CheckInRecord[] }) {
               width: "100%",
               borderRadius: "3px 3px 0 0",
               background: stressColor(h.stressLevel),
-              border: "1.5px solid rgba(26,18,8,.1)",
+              border: "1.5px solid var(--border2)",
               minHeight: 3,
             }}
           />
-          <div style={{ fontSize: 8, fontWeight: 700, color: "#a8936a" }}>
+          <div style={{ fontSize: 8, fontWeight: 700, color: "var(--text3)" }}>
             {new Date(h.checkedInAt).toLocaleDateString("en", {
               weekday: "narrow",
             })}
@@ -570,11 +570,11 @@ function MiniChart({ history }: { history: CheckInRecord[] }) {
                 width: "100%",
                 height: 4,
                 borderRadius: 3,
-                background: "#fde8c8",
-                border: "1.5px solid rgba(26,18,8,.07)",
+                background: "var(--bg4)",
+                border: "1.5px solid var(--border)",
               }}
             />
-            <div style={{ fontSize: 8, fontWeight: 700, color: "#d4c8b0" }}>
+            <div style={{ fontSize: 8, fontWeight: 700, color: "var(--text4)" }}>
               -
             </div>
           </div>
@@ -596,6 +596,8 @@ export default function CheckInPage() {
   const [mood, setMood] = useState("");
   const [trigger, setTrigger] = useState("");
   const [note, setNote] = useState("");
+  const [sleepQuality, setSleepQuality] = useState(0);
+  const [energyLevel, setEnergyLevel] = useState(0);
   const [loading, setLoading] = useState(false);
   const [alreadyDone, setAlreadyDone] = useState(false);
   const [todayEntry, setTodayEntry] = useState<CheckInRecord | null>(null);
@@ -748,7 +750,8 @@ export default function CheckInPage() {
 
   async function submit(e: React.MouseEvent) {
     setLoading(true);
-    const xp = 20 + (stress >= 7 ? 10 : 0);
+    const bonusXp = (sleepQuality ? 10 : 0) + (energyLevel ? 10 : 0);
+    const xp = 20 + (stress >= 7 ? 10 : 0) + bonusXp;
     setEarnedXP(xp);
     spawnXP(xp, e);
     await fetchAI(stress, mood, trigger);
@@ -768,6 +771,8 @@ export default function CheckInPage() {
           stressLevel: stress,
           mood,
           triggerType: trigger,
+          sleepQuality,
+          energyLevel,
           note,
           timezoneOffset: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
@@ -775,7 +780,7 @@ export default function CheckInPage() {
     } catch {}
     setLoading(false);
     setSubmitted(true);
-    setStep(4);
+    setStep(5);
   }
 
   function goNext(e: React.MouseEvent) {
@@ -786,9 +791,8 @@ export default function CheckInPage() {
         "Recognising your trigger is the most powerful step in breaking the loop.",
       );
     }
-    if (step === 2) {
+    if (step === 3) {
       fetchAI(stress, mood, trigger);
-      setStep(3);
     }
   }
 
@@ -988,13 +992,13 @@ export default function CheckInPage() {
               fontFamily: "'Fredoka',sans-serif",
               fontSize: 26,
               fontWeight: 600,
-              color: "#1a1208",
+              color: "var(--text1)",
               marginBottom: 3,
             }}
           >
             {tab === "checkin" ? "Daily check-in ✏️" : "My check-in log 📊"}
           </h1>
-          <p style={{ fontSize: 13, fontWeight: 500, color: "#a8936a" }}>
+          <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text3)" }}>
             {tab === "checkin"
               ? "60 seconds · Builds your loop pattern"
               : "All your check-ins + AI insights"}
@@ -1298,8 +1302,17 @@ export default function CheckInPage() {
                               fontSize: 30,
                               lineHeight: 1,
                               display: "block",
+                              transformOrigin: "center bottom",
                             }}
-                            whileHover={{ scale: 1.2, rotate: [-5, 5, -5, 0] }}
+                            animate={{
+                              scale: [1, 1.08, 1],
+                              rotate: [-3, 3, -3]
+                            }}
+                            transition={{
+                              duration: 2 + Math.random() * 1.5,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
                           >
                             {m.emoji}
                           </motion.span>
@@ -1421,10 +1434,89 @@ export default function CheckInPage() {
               </motion.div>
             )}
 
-            {/* Step 3 - Note + AI */}
+            {/* Step 3 - Advanced Context */}
             {!alreadyDone && step === 3 && (
               <motion.div
                 key="s3"
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -40 }}
+                transition={{ duration: 0.28 }}
+              >
+                <div className="card" style={{ marginBottom: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <h3 style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 20, fontWeight: 600 }}>
+                      Bonus Details
+                    </h3>
+                    <span style={{ background: "#e8f5ec", color: "#1a4a2a", padding: "4px 8px", borderRadius: 50, fontSize: 10, fontWeight: 800 }}>
+                      ⚡ +20 XP available
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 12.5, fontWeight: 500, color: "#a8936a", marginBottom: 16 }}>
+                    Help our AI learn your patterns. Skip if you're in a rush!
+                  </p>
+                  
+                  {/* Sleep Quality */}
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, display: "flex", justifyContent: "space-between" }}>
+                      <span>Sleep Quality 🛏️</span>
+                      {sleepQuality > 0 && <span style={{ color: "#5a8f6a" }}>+10 XP ✓</span>}
+                    </div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          onClick={(e) => { setSleepQuality(n); burst(e, "#5bb8f5"); }}
+                          style={{
+                            flex: 1, padding: "10px 0", borderRadius: 12,
+                            border: `2px solid ${sleepQuality === n ? "#5bb8f5" : "rgba(26,18,8,.1)"}`,
+                            background: sleepQuality === n ? "#dff0fd" : "white",
+                            fontWeight: 800, color: sleepQuality === n ? "#1a1208" : "#c8b89a",
+                            cursor: "pointer", transition: "all .15s"
+                          }}
+                        >{n}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Energy Level */}
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, display: "flex", justifyContent: "space-between" }}>
+                      <span>Energy Level 🔋</span>
+                      {energyLevel > 0 && <span style={{ color: "#5a8f6a" }}>+10 XP ✓</span>}
+                    </div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          onClick={(e) => { setEnergyLevel(n); burst(e, "#f5c842"); }}
+                          style={{
+                            flex: 1, padding: "10px 0", borderRadius: 12,
+                            border: `2px solid ${energyLevel === n ? "#f5c842" : "rgba(26,18,8,.1)"}`,
+                            background: energyLevel === n ? "#fffbef" : "white",
+                            fontWeight: 800, color: energyLevel === n ? "#1a1208" : "#c8b89a",
+                            cursor: "pointer", transition: "all .15s"
+                          }}
+                        >{n}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  className="next-btn"
+                  onClick={goNext}
+                  style={{ background: stressColor(stress) }}
+                >
+                  Next: Add a note →
+                </button>
+              </motion.div>
+            )}
+
+            {/* Step 4 - Note + AI */}
+            {!alreadyDone && step === 4 && (
+              <motion.div
+                key="s4"
                 initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -40 }}
@@ -1583,10 +1675,10 @@ export default function CheckInPage() {
               </motion.div>
             )}
 
-            {/* Step 4 - Success */}
-            {step === 4 && submitted && (
+            {/* Step 5 - Success */}
+            {step === 5 && submitted && (
               <motion.div
-                key="s4"
+                key="s5"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: "spring", bounce: 0.4 }}

@@ -15,10 +15,21 @@ export const XP_MAP: Record<string, number> = {
 export function computeXP(
   earnedBadges: { badgeType: string }[],
   streakCount: number,
-  totalCheckins: number,
+  checkins: any[] | number,
 ): number {
   const badgeXP = earnedBadges.reduce((s, b) => s + (XP_MAP[b.badgeType] ?? 75), 0);
-  return badgeXP + streakCount * 10 + totalCheckins * 20;
+  
+  const checkinXP = typeof checkins === 'number'
+    ? checkins * 20
+    : checkins.reduce((s, c) => {
+        let bonus = 0;
+        if (c.stressLevel >= 7) bonus += 10;
+        if (c.sleepQuality) bonus += 10;
+        if (c.energyLevel) bonus += 10;
+        return s + 20 + bonus;
+      }, 0);
+
+  return badgeXP + streakCount * 10 + checkinXP;
 }
 
 export function computeLevel(xp: number): { level: number; xpInLevel: number; xpToNext: number } {

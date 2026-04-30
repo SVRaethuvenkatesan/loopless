@@ -35,7 +35,7 @@ const TOOLS: Tool[] = [
   {
     id: "breathe",
     name: "4-7-8 Breathe",
-    icon: "🌬️",
+    icon: "wind",
     damage: 35,
     color: "#5bb8f5",
     bg: "#dff0fd",
@@ -45,7 +45,7 @@ const TOOLS: Tool[] = [
   {
     id: "walk",
     name: "Interrupt Walk",
-    icon: "🚶",
+    icon: "walk",
     damage: 25,
     color: "#5a8f6a",
     bg: "#e8f5ec",
@@ -55,7 +55,7 @@ const TOOLS: Tool[] = [
   {
     id: "cold",
     name: "Ice Shock",
-    icon: "🧊",
+    icon: "ice",
     damage: 30,
     color: "#7b6fa0",
     bg: "#f0edf8",
@@ -65,7 +65,7 @@ const TOOLS: Tool[] = [
   {
     id: "journal",
     name: "Brain Dump",
-    icon: "✍️",
+    icon: "pen",
     damage: 20,
     color: "#c9982a",
     bg: "#fffbef",
@@ -75,14 +75,54 @@ const TOOLS: Tool[] = [
 ];
 
 const TRIGGERS = [
-  { val: "stress", emoji: "😤", label: "Stress" },
-  { val: "boredom", emoji: "😴", label: "Boredom" },
-  { val: "social", emoji: "🎉", label: "Social" },
-  { val: "anxiety", emoji: "😰", label: "Anxiety" },
-  { val: "routine", emoji: "⏰", label: "Routine" },
-  { val: "alcohol", emoji: "🍺", label: "Drinking" },
-  { val: "break", emoji: "☕", label: "Break" },
-  { val: "emotions", emoji: "💔", label: "Emotions" },
+  {
+    val: "stress", label: "Stress",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    val: "boredom", label: "Boredom",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M8 15s1.5-2 4-2 4 2 4 2M9 9h.01M15 9h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+  },
+  {
+    val: "social", label: "Social",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    val: "anxiety", label: "Anxiety",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    val: "routine", label: "Routine",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+  },
+  {
+    val: "alcohol", label: "Drinking",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M8 22h8M12 11v11M5 2l2 20h10L19 2H5zM5 8h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    val: "break", label: "Break time",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    val: "emotions", label: "Emotions",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    val: "loneliness", label: "Loneliness",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="17" y1="11" x2="22" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+  },
+  {
+    val: "excitement", label: "Excitement",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    val: "after-eating", label: "After Eating",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M3 11l19-9-9 19-2-8-8-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  },
+  {
+    val: "waking-up", label: "Waking Up",
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+  },
 ];
 
 /* ─── Dragon SVG ─── */
@@ -639,7 +679,7 @@ function BreathGame({ onDone }: { onDone: (s: number) => void }) {
         padding: "16px 0",
       }}
     >
-      <div style={{ fontSize: 12, fontWeight: 700, color: "#a8936a" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)" }}>
         Cycle {cyc + 1} of 2
       </div>
       <div
@@ -765,10 +805,10 @@ function WalkGame({ onDone }: { onDone: (s: number) => void }) {
       }}
     >
       <div style={{ display: "flex", gap: 20 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#a8936a" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text3)" }}>
           Steps: {steps}/{target}
         </span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#e07b5a" }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--coral)" }}>
           ⏱ {tl}s
         </span>
       </div>
@@ -776,8 +816,8 @@ function WalkGame({ onDone }: { onDone: (s: number) => void }) {
         style={{
           width: "100%",
           height: 16,
-          background: "#e8f5ec",
-          border: "2px solid rgba(26,18,8,.1)",
+          background: "var(--bg3)",
+          border: "2px solid var(--border)",
           borderRadius: 8,
           overflow: "hidden",
         }}
@@ -871,7 +911,7 @@ function ColdGame({ onDone }: { onDone: (s: number) => void }) {
         style={{
           fontSize: 13,
           fontWeight: 600,
-          color: "#6b5c3e",
+          color: "var(--text2)",
           textAlign: "center",
           maxWidth: 260,
           lineHeight: 1.6,
@@ -957,7 +997,7 @@ function JournalGame({ onDone }: { onDone: (s: number, t: string) => void }) {
         style={{
           fontSize: 13,
           fontWeight: 600,
-          color: "#6b5c3e",
+          color: "var(--text2)",
           lineHeight: 1.6,
         }}
       >
@@ -971,8 +1011,8 @@ function JournalGame({ onDone }: { onDone: (s: number, t: string) => void }) {
         style={{
           width: "100%",
           minHeight: 110,
-          background: "#fef9f0",
-          border: "2.5px solid rgba(26,18,8,.15)",
+          background: "var(--bg1)",
+          border: "2.5px solid var(--border3)",
           borderRadius: 14,
           padding: 14,
           fontSize: 14,
@@ -981,7 +1021,7 @@ function JournalGame({ onDone }: { onDone: (s: number, t: string) => void }) {
           outline: "none",
           resize: "vertical",
           lineHeight: 1.6,
-          color: "#1a1208",
+          color: "var(--text1)",
         }}
       />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -1033,6 +1073,8 @@ export default function UrgePage() {
   const [phase, setPhase] = useState<Phase>("entry");
   const [stress, setStress] = useState(7);
   const [trigger, setTrigger] = useState("");
+  const [activityBefore, setActivityBefore] = useState("");
+  const [socialContext, setSocialContext] = useState("");
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [activeTool, setActiveTool] = useState<Tool | null>(null);
   const [bossHp, setBossHp] = useState(100);
@@ -1080,6 +1122,9 @@ export default function UrgePage() {
           urgeType: "vape",
           triggers: [trigger],
           preStress: stress,
+          intensity: stress,
+          activityBefore: activityBefore || null,
+          socialContext: socialContext || null,
         }),
       });
       const d = await r.json();
@@ -1199,7 +1244,7 @@ export default function UrgePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Nunito',sans-serif;color:#1a1208;overflow-x:hidden;}
+        body{font-family:'Nunito',sans-serif;color:var(--text1);overflow-x:hidden;}
         h1,h2,h3{font-family:'Fredoka',sans-serif;}
         a{text-decoration:none;color:inherit;}
         @keyframes scanline{0%{background-position:0 0;}100%{background-position:0 4px;}}
@@ -1216,9 +1261,9 @@ export default function UrgePage() {
 
         .page{max-width:520px;margin:0 auto;padding:16px 16px 80px;position:relative;z-index:1;}
 
-        .card{background:rgba(254,249,240,.97);border:3px solid #1a1208;border-radius:26px;box-shadow:8px 8px 0 rgba(26,18,8,.25);overflow:hidden;}
+        .card{background:var(--bg1);border:3px solid var(--stroke);border-radius:26px;box-shadow:var(--shadow-card);overflow:hidden;}
 
-        .tool-btn{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 10px;border-radius:18px;border:2.5px solid rgba(26,18,8,.1);background:white;cursor:pointer;transition:all .18s;box-shadow:4px 4px 0 rgba(26,18,8,.09);font-family:'Nunito',sans-serif;}
+        .tool-btn{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 10px;border-radius:18px;border:2.5px solid var(--border3);background:var(--bg2);cursor:pointer;transition:all .18s;box-shadow:var(--shadow-card);font-family:'Nunito',sans-serif;}
         .tool-btn:hover{transform:translate(-2px,-3px);box-shadow:6px 7px 0 rgba(26,18,8,.13);}
         .tool-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(26,18,8,.07);}
 
@@ -1349,7 +1394,7 @@ export default function UrgePage() {
                       fontFamily: "'Fredoka',sans-serif",
                       fontSize: 26,
                       fontWeight: 600,
-                      color: "#1a1208",
+                      color: "var(--text1)",
                       marginBottom: 6,
                     }}
                   >
@@ -1359,7 +1404,7 @@ export default function UrgePage() {
                     style={{
                       fontSize: 13.5,
                       fontWeight: 500,
-                      color: "#6b5c3e",
+                      color: "var(--text2)",
                       marginBottom: 22,
                       lineHeight: 1.6,
                     }}
@@ -1400,7 +1445,7 @@ export default function UrgePage() {
                           style={{
                             fontSize: 10.5,
                             fontWeight: 800,
-                            color: "#a8936a",
+                            color: "var(--text3)",
                             textTransform: "uppercase",
                             letterSpacing: ".06em",
                           }}
@@ -1461,7 +1506,7 @@ export default function UrgePage() {
                             fontSize: 9,
                             fontWeight: 700,
                             color:
-                              stress === n ? "#1a1208" : "rgba(26,18,8,.25)",
+                              stress === n ? "var(--text1)" : "var(--border)",
                           }}
                         >
                           {n}
@@ -1502,7 +1547,7 @@ export default function UrgePage() {
                               padding: "10px 4px",
                               borderRadius: 14,
                               border: `2px solid ${sel ? "#5a8f6a" : "rgba(26,18,8,.1)"}`,
-                              background: sel ? "#e8f5ec" : "white",
+                              background: sel ? "var(--mint3)" : "var(--bg2)",
                               cursor: "pointer",
                               display: "flex",
                               flexDirection: "column",
@@ -1513,20 +1558,21 @@ export default function UrgePage() {
                                 ? "2px 2px 0 rgba(61,107,79,.25)"
                                 : "2px 2px 0 rgba(26,18,8,.06)",
                               transition: "all .15s",
+                              color: sel ? "#1a4a2a" : "var(--text2)",
                             }}
                           >
-                            <motion.span
+                            <motion.div
                               animate={sel ? { rotate: [0, -10, 10, 0] } : {}}
                               transition={{ duration: 0.3 }}
-                              style={{ fontSize: 22 }}
+                              style={{ width: 20, height: 20 }}
                             >
-                              {t.emoji}
-                            </motion.span>
+                              {t.icon}
+                            </motion.div>
                             <span
                               style={{
                                 fontSize: 9.5,
                                 fontWeight: 700,
-                                color: sel ? "#1a4a2a" : "#6b5c3e",
+                                color: sel ? "#1a4a2a" : "var(--text2)",
                               }}
                             >
                               {t.label}
@@ -1534,6 +1580,86 @@ export default function UrgePage() {
                           </motion.button>
                         );
                       })}
+                    </div>
+                  </div>
+
+                  {/* Advanced Context */}
+                  <div style={{ marginBottom: 22 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          color: "var(--text3)",
+                          textTransform: "uppercase",
+                          letterSpacing: ".06em",
+                        }}
+                      >
+                        Context (+20 XP)
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", marginBottom: 6 }}>Activity Before Urge</div>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {["Working", "Studying", "Scrolling", "Waking up", "Eating", "Driving"].map(a => (
+                            <button
+                              key={a}
+                              onClick={() => setActivityBefore(a === activityBefore ? "" : a)}
+                              style={{
+                                padding: "6px 12px",
+                                borderRadius: 12,
+                                border: `2px solid ${activityBefore === a ? "#5a8f6a" : "rgba(26,18,8,.1)"}`,
+                                background: activityBefore === a ? "var(--mint3)" : "var(--bg2)",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: activityBefore === a ? "#1a4a2a" : "var(--text2)",
+                                cursor: "pointer",
+                                transition: "all .15s",
+                                fontFamily: "'Nunito',sans-serif",
+                                boxShadow: activityBefore === a ? "2px 2px 0 rgba(61,107,79,.2)" : "none"
+                              }}
+                            >
+                              {a}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", marginBottom: 6 }}>Social Context</div>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {["Alone", "Friends", "Family", "Partner", "Co-workers", "Strangers"].map(s => (
+                            <button
+                              key={s}
+                              onClick={() => setSocialContext(s === socialContext ? "" : s)}
+                              style={{
+                                padding: "6px 12px",
+                                borderRadius: 12,
+                                border: `2px solid ${socialContext === s ? "#5bb8f5" : "rgba(26,18,8,.1)"}`,
+                                background: socialContext === s ? "var(--sky3)" : "var(--bg2)",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: socialContext === s ? "#1a3a5a" : "var(--text2)",
+                                cursor: "pointer",
+                                transition: "all .15s",
+                                fontFamily: "'Nunito',sans-serif",
+                                boxShadow: socialContext === s ? "2px 2px 0 rgba(91,184,245,.3)" : "none"
+                              }}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -1800,16 +1926,37 @@ export default function UrgePage() {
                                 boxShadow: `3px 3px 0 ${t.color}44`,
                               }}
                             >
-                              <motion.span
+                              <motion.div
                                 whileHover={{
                                   rotate: [-5, 5, -5, 0],
                                   scale: 1.2,
                                 }}
                                 transition={{ duration: 0.3 }}
-                                style={{ fontSize: 28 }}
+                                style={{ width: 30, height: 30, color: t.color }}
                               >
-                                {t.icon}
-                              </motion.span>
+                                {t.id === "breathe" && (
+                                  <svg viewBox="0 0 24 24" fill="none" width={30} height={30}>
+                                    <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                )}
+                                {t.id === "walk" && (
+                                  <svg viewBox="0 0 24 24" fill="none" width={30} height={30}>
+                                    <circle cx="12" cy="5" r="2" stroke="currentColor" strokeWidth="2"/>
+                                    <path d="m19 13-3-2-3-6-3 5-3-1M16 21l-3-8M8 21l2-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                )}
+                                {t.id === "cold" && (
+                                  <svg viewBox="0 0 24 24" fill="none" width={30} height={30}>
+                                    <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                  </svg>
+                                )}
+                                {t.id === "journal" && (
+                                  <svg viewBox="0 0 24 24" fill="none" width={30} height={30}>
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                )}
+                              </motion.div>
                               <div
                                 style={{
                                   fontSize: 12.5,

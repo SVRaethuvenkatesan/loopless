@@ -230,7 +230,7 @@ export default function ProfilePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Nunito',sans-serif;background:#fef9f0;color:#1a1208;}
+        body{font-family:'Nunito',sans-serif;background:var(--bg0);color:var(--text1);}
         h1,h2,h3{font-family:'Fredoka',sans-serif;}
         a{text-decoration:none;color:inherit;}
 
@@ -241,43 +241,43 @@ export default function ProfilePage() {
         .profile-page{max-width:780px;margin:0 auto;padding:24px 22px 80px;}
         @media(max-width:640px){.profile-page{padding:14px 12px 100px;}}
 
-        .card{background:white;border:2px solid rgba(26,18,8,.1);border-radius:22px;padding:20px;box-shadow:4px 4px 0 rgba(26,18,8,.08);margin-bottom:14px;}
+        .card{background:var(--bg2);border:2px solid var(--border2);border-radius:22px;padding:20px;box-shadow:var(--shadow-card);margin-bottom:14px;color:var(--text1);}
 
-        .tab-bar{display:flex;gap:6px;background:white;border:2px solid rgba(26,18,8,.1);border-radius:16px;padding:5px;box-shadow:3px 3px 0 rgba(26,18,8,.07);margin-bottom:18px;}
-        .tab{flex:1;padding:9px 6px;border-radius:12px;border:none;background:transparent;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#6b5c3e;cursor:pointer;transition:all .15s;text-align:center;}
-        .tab.active{background:linear-gradient(135deg,#1a3d28,#2d5a3d);color:white;box-shadow:2px 2px 0 rgba(26,18,8,.2);}
+        .tab-bar{display:flex;gap:6px;background:var(--bg2);border:2px solid var(--border2);border-radius:16px;padding:5px;box-shadow:var(--shadow-card);margin-bottom:18px;}
+        .tab{flex:1;padding:9px 6px;border-radius:12px;border:none;background:transparent;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .15s;text-align:center;}
+        .tab.active{background:linear-gradient(135deg,var(--red),var(--red2));color:white;box-shadow:2px 2px 0 var(--red-glow);}
 
-        .field-label{font-size:10.5px;font-weight:800;color:#a8936a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
-        .field-val{font-size:15px;font-weight:700;color:#1a1208;}
+        .field-label{font-size:10.5px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+        .field-val{font-size:15px;font-weight:700;color:var(--text1);}
 
-        .edit-btn{background:#e8f5ec;border:2px solid #5a8f6a;border-radius:12px;padding:8px 18px;font-size:13px;font-weight:800;color:#1a4a2a;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:2px 2px 0 rgba(61,107,79,.25);transition:all .12s;}
-        .edit-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(61,107,79,.3);}
+        .edit-btn{background:rgba(232,25,44,0.10);border:2px solid var(--red);border-radius:12px;padding:8px 18px;font-size:13px;font-weight:800;color:var(--red2);cursor:pointer;font-family:'Nunito',sans-serif;transition:all .12s;}
+        .edit-btn:hover{transform:translate(-1px,-1px);background:rgba(232,25,44,0.18);}
 
-        .save-btn{background:#5a8f6a;border:2px solid #1a1208;border-radius:12px;padding:9px 20px;font-size:13px;font-weight:800;color:white;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:3px 3px 0 rgba(26,18,8,.15);transition:all .12s;}
-        .save-btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(26,18,8,.15);}
+        .save-btn{background:var(--red);border:2px solid var(--red2);border-radius:12px;padding:9px 20px;font-size:13px;font-weight:800;color:white;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 20px var(--red-glow);transition:all .12s;}
+        .save-btn:hover{transform:translate(-1px,-1px);background:var(--red2);}
         .save-btn:disabled{opacity:.5;pointer-events:none;}
 
-        .cancel-btn{background:transparent;border:2px solid rgba(26,18,8,.15);border-radius:12px;padding:9px 16px;font-size:13px;font-weight:700;color:#6b5c3e;cursor:pointer;font-family:'Nunito',sans-serif;transition:background .12s;}
-        .cancel-btn:hover{background:#fde8c8;}
+        .cancel-btn{background:transparent;border:2px solid var(--border3);border-radius:12px;padding:9px 16px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;font-family:'Nunito',sans-serif;transition:background .12s;}
+        .cancel-btn:hover{background:var(--bg3);}
 
-        .select-field{width:100%;background:#fef9f0;border:2px solid rgba(26,18,8,.15);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600;font-family:'Nunito',sans-serif;outline:none;color:#1a1208;cursor:pointer;}
-        .select-field:focus{border-color:#5a8f6a;box-shadow:0 0 0 3px rgba(90,143,106,.15);}
+        .select-field{width:100%;background:var(--bg1);border:2px solid var(--border3);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600;font-family:'Nunito',sans-serif;outline:none;color:var(--text1);cursor:pointer;}
+        .select-field:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow);}
 
-        .trig-btn{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:13px;border:2px solid rgba(26,18,8,.1);background:white;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#1a1208;box-shadow:2px 2px 0 rgba(26,18,8,.06);transition:all .15s;}
-        .trig-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(26,18,8,.09);}
-        .trig-btn.on{background:#e8f5ec;border-color:#5a8f6a;box-shadow:2px 2px 0 rgba(61,107,79,.25);}
+        .trig-btn{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:13px;border:2px solid var(--border2);background:var(--bg2);cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--text1);box-shadow:var(--shadow-card);transition:all .15s;}
+        .trig-btn:hover{transform:translate(-1px,-1px);}
+        .trig-btn.on{background:rgba(232,25,44,0.10);border-color:var(--red);color:var(--red2);}
 
-        .badge-tile{background:white;border:2px solid rgba(26,18,8,.1);border-radius:18px;padding:18px 12px;text-align:center;box-shadow:3px 3px 0 rgba(26,18,8,.07);transition:transform .15s;}
+        .badge-tile{background:var(--bg2);border:2px solid var(--border2);border-radius:18px;padding:18px 12px;text-align:center;box-shadow:var(--shadow-card);transition:transform .15s;color:var(--text1);}
         .badge-tile:hover{transform:translate(-1px,-2px);}
-        .badge-tile.earned{background:linear-gradient(135deg,#edfff7,#e0f9ee);border-color:#5a8f6a55;animation:floatBadge 3s ease-in-out infinite;}
+        .badge-tile.earned{background:rgba(232,25,44,0.08);border-color:rgba(232,25,44,0.35);animation:floatBadge 3s ease-in-out infinite;}
         .badge-tile.locked{opacity:.38;filter:grayscale(.6);}
 
-        .stat-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:2px dashed rgba(26,18,8,.06);}
+        .stat-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:2px dashed var(--border);}
         .stat-row:last-child{border-bottom:none;}
 
-        .trigger-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:50px;background:#e8f5ec;border:1.5px solid #5a8f6a55;font-size:12px;font-weight:700;color:#1a4a2a;margin:3px;}
+        .trigger-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:50px;background:rgba(232,25,44,0.10);border:1.5px solid rgba(232,25,44,0.35);font-size:12px;font-weight:700;color:var(--red2);margin:3px;}
 
-        .upgrade-banner{background:linear-gradient(135deg,#1a3d28,#2d5a3d);border:2.5px solid #1a1208;border-radius:20px;padding:20px;box-shadow:5px 5px 0 rgba(26,18,8,.2);margin-bottom:14px;display:flex;gap:16px;align-items:center;}
+        .upgrade-banner{background:linear-gradient(135deg,#1a3d28,#2d5a3d);border:2.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:20px;box-shadow:var(--shadow-card-lg);margin-bottom:14px;display:flex;gap:16px;align-items:center;}
       `}</style>
 
       <div className="profile-page">
@@ -797,7 +797,7 @@ export default function ProfilePage() {
                           <span
                             style={{
                               fontSize: 13,
-                              color: "#a8936a",
+                              color: "var(--text3)",
                               fontWeight: 600,
                             }}
                           >
@@ -807,7 +807,7 @@ export default function ProfilePage() {
                               style={{
                                 background: "none",
                                 border: "none",
-                                color: "#5a8f6a",
+                                color: "var(--red)",
                                 fontWeight: 800,
                                 cursor: "pointer",
                                 fontFamily: "'Nunito',sans-serif",
@@ -856,7 +856,7 @@ export default function ProfilePage() {
                       style={{
                         fontSize: 13,
                         fontWeight: 800,
-                        color: "#5a8f6a",
+                        color: "var(--text3)",
                       }}
                     >
                       {earnedCount}/{ALL_BADGES.length} earned
@@ -865,9 +865,9 @@ export default function ProfilePage() {
                   <div
                     style={{
                       height: 8,
-                      background: "#fde8c8",
+                      background: "var(--bg3)",
                       borderRadius: 4,
-                      border: "1.5px solid rgba(26,18,8,.1)",
+                      border: "1.5px solid var(--border3)",
                       overflow: "hidden",
                     }}
                   >
@@ -879,7 +879,7 @@ export default function ProfilePage() {
                       transition={{ duration: 1, ease: "easeOut" }}
                       style={{
                         height: "100%",
-                        background: "linear-gradient(90deg,#c9982a,#f5c842)",
+                        background: "linear-gradient(90deg,var(--red),var(--red2))",
                         borderRadius: 4,
                       }}
                     />
@@ -925,7 +925,7 @@ export default function ProfilePage() {
                           style={{
                             fontSize: 12.5,
                             fontWeight: 800,
-                            color: "#1a1208",
+                            color: "var(--text1)",
                             marginBottom: 3,
                           }}
                         >
@@ -935,7 +935,7 @@ export default function ProfilePage() {
                           style={{
                             fontSize: 10.5,
                             fontWeight: 500,
-                            color: "#6b5c3e",
+                            color: "var(--text3)",
                             lineHeight: 1.4,
                             marginBottom: 6,
                           }}
@@ -944,13 +944,13 @@ export default function ProfilePage() {
                         </div>
                         <div
                           style={{
-                            background: earned ? "#c6f7e6" : "#fffbef",
-                            border: `1.5px solid ${earned ? "#5a8f6a" : "#c9982a"}`,
+                            background: earned ? "rgba(232,25,44,0.1)" : "var(--bg3)",
+                            border: `1.5px solid ${earned ? "var(--red)" : "var(--border3)"}`,
                             borderRadius: 50,
                             padding: "3px 10px",
                             fontSize: 10,
                             fontWeight: 800,
-                            color: earned ? "#3d6b4f" : "#7a4a00",
+                            color: earned ? "var(--red)" : "var(--text3)",
                             display: "inline-block",
                           }}
                         >
@@ -960,7 +960,7 @@ export default function ProfilePage() {
                           <div
                             style={{
                               fontSize: 9.5,
-                              color: "#a8936a",
+                              color: "var(--text3)",
                               fontWeight: 600,
                               marginTop: 4,
                             }}
@@ -999,25 +999,18 @@ export default function ProfilePage() {
                     My stats
                   </h3>
                   {[
+                    { label: "Check-in streak", val: `${streak} days` },
+                    { label: "Level", val: `Level ${level}` },
+                    { label: "Total XP", val: `${totalXP} XP` },
                     {
-                      icon: "🔥",
-                      label: "Check-in streak",
-                      val: `${streak} days`,
-                    },
-                    { icon: "⚔️", label: "Level", val: `Level ${level}` },
-                    { icon: "✨", label: "Total XP", val: `${totalXP} XP` },
-                    {
-                      icon: "🏅",
                       label: "Badges earned",
                       val: `${earnedCount} / ${ALL_BADGES.length}`,
                     },
                     {
-                      icon: "🎯",
                       label: "Triggers identified",
                       val: `${displayTriggers.length}`,
                     },
                     {
-                      icon: "🧘",
                       label: "Coping style",
                       val:
                         COPING_OPTIONS.find(
@@ -1025,12 +1018,10 @@ export default function ProfilePage() {
                         )?.label ?? "-",
                     },
                     {
-                      icon: "💰",
                       label: "Est. money saved",
                       val: streak ? `$${Math.round(streak * 2.5)}` : "-",
                     },
                     {
-                      icon: "⏱️",
                       label: "Time reclaimed",
                       val: streak ? `${streak * 15} min` : "-",
                     },
@@ -1049,12 +1040,11 @@ export default function ProfilePage() {
                           gap: 10,
                         }}
                       >
-                        <span style={{ fontSize: 20 }}>{row.icon}</span>
                         <span
                           style={{
                             fontSize: 14,
                             fontWeight: 700,
-                            color: "#1a1208",
+                            color: "var(--text2)",
                           }}
                         >
                           {row.label}
@@ -1065,7 +1055,7 @@ export default function ProfilePage() {
                           fontFamily: "'Fredoka',sans-serif",
                           fontSize: 17,
                           fontWeight: 600,
-                          color: "#5a8f6a",
+                          color: "var(--red)",
                         }}
                       >
                         {row.val}

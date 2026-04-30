@@ -2,6 +2,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SessionProviderWrapper from "@/components/session-provider";
+import { ThemeProvider } from "@/components/theme-provider";
+import { CustomCursor } from "@/components/cursor";
 
 export const metadata: Metadata = {
   title: "Loopless - Break Free From Nicotine",
@@ -11,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fef9f0",
+  themeColor: "#060606",
 };
 
 export default function RootLayout({
@@ -20,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -29,12 +31,15 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Fredoka:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
       </head>
       <body>
-        <SessionProviderWrapper>{children}</SessionProviderWrapper>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <CustomCursor />
+          <SessionProviderWrapper>{children}</SessionProviderWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

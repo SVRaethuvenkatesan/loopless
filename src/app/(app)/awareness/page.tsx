@@ -197,11 +197,11 @@ export default function AwarenessPage() {
                         gap: 10,
                         padding: "9px 12px",
                         borderRadius: 12,
-                        border: `2px solid ${active ? "#1a1208" : "rgba(26,18,8,.1)"}`,
-                        background: active ? "#1a1208" : "white",
+                        border: `2px solid ${active ? "var(--stroke)" : "var(--border2)"}`,
+                        background: active ? "var(--text1)" : "var(--bg2)",
                         cursor: "pointer",
                         textAlign: "left",
-                        boxShadow: active ? "3px 3px 0 rgba(26,18,8,.2)" : "2px 2px 0 rgba(26,18,8,.06)",
+                        boxShadow: active ? "3px 3px 0 var(--shadow-card)" : "2px 2px 0 var(--stroke-light)",
                         transition: "all 0.12s",
                         fontFamily: "var(--font-sans)",
                       }}
@@ -223,7 +223,7 @@ export default function AwarenessPage() {
                       <span style={{
                         fontSize: 12,
                         fontWeight: 700,
-                        color: active ? "white" : "#1a1208",
+                        color: active ? "var(--bg0)" : "var(--text1)",
                         lineHeight: 1.35,
                       }}>
                         {item.title}
@@ -250,8 +250,8 @@ export default function AwarenessPage() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0, scale: 0.97 }}
                   style={{
-                    background: "white",
-                    border: "2px dashed rgba(26,18,8,.15)",
+                    background: "var(--bg2)",
+                    border: "2px dashed var(--border2)",
                     borderRadius: 22,
                     padding: 40,
                     display: "flex",
@@ -260,7 +260,7 @@ export default function AwarenessPage() {
                     justifyContent: "center",
                     minHeight: 460,
                     textAlign: "center",
-                    boxShadow: "4px 4px 0 rgba(26,18,8,.04)",
+                    boxShadow: "var(--shadow-card)",
                   }}
                 >
                   <motion.div
@@ -316,20 +316,20 @@ export default function AwarenessPage() {
                   exit={{ opacity: 0, scale: 0.985 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
                   style={{
-                    background: "white",
-                    border: "2.5px solid #1a1208",
+                    background: "var(--bg2)",
+                    border: "2.5px solid var(--border3)",
                     borderRadius: 22,
-                    boxShadow: "6px 6px 0 rgba(26,18,8,.14)",
+                    boxShadow: "var(--shadow-card-lg)",
                     overflow: "hidden",
                   }}
                 >
                   {/* Card header */}
                   <div style={{
                     padding: "20px 24px 16px",
-                    borderBottom: "2px dashed rgba(26,18,8,.1)",
+                    borderBottom: "2px dashed var(--border2)",
                     background: wheelItem
-                      ? `color-mix(in srgb, ${wheelItem.color} 10%, #fef9f0)`
-                      : "#fef9f0",
+                      ? `color-mix(in srgb, ${wheelItem.color} 8%, var(--bg2))`
+                      : "var(--bg2)",
                   }}>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
                       {wheelItem && (
