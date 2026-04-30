@@ -2,7 +2,7 @@
 // Offline caching + push notifications
 
 const CACHE_VERSION = "v2";
-const STATIC_CACHE  = "loopless-static-" + CACHE_VERSION;
+const STATIC_CACHE = "loopless-static-" + CACHE_VERSION;
 const DYNAMIC_CACHE = "loopless-dynamic-" + CACHE_VERSION;
 
 // Shell pages to pre-cache on install
@@ -40,11 +40,17 @@ self.addEventListener("activate", function (event) {
       .then(function (keys) {
         return Promise.all(
           keys
-            .filter(function (k) { return !allowed.includes(k); })
-            .map(function (k) { return caches.delete(k); }),
+            .filter(function (k) {
+              return !allowed.includes(k);
+            })
+            .map(function (k) {
+              return caches.delete(k);
+            }),
         );
       })
-      .then(function () { return self.clients.claim(); }),
+      .then(function () {
+        return self.clients.claim();
+      }),
   );
 });
 
@@ -55,23 +61,30 @@ self.addEventListener("fetch", function (event) {
 
   // Only handle GET requests on same origin + Google Fonts
   if (request.method !== "GET") return;
-  if (url.origin !== self.location.origin &&
-      !url.hostname.includes("fonts.googleapis.com") &&
-      !url.hostname.includes("fonts.gstatic.com")) return;
+  if (
+    url.origin !== self.location.origin &&
+    !url.hostname.includes("fonts.googleapis.com") &&
+    !url.hostname.includes("fonts.gstatic.com")
+  )
+    return;
 
-  // API routes: always network (no caching — user data must be fresh)
+  // API routes: always network (no caching - user data must be fresh)
   if (url.pathname.startsWith("/api/")) return;
 
   // Next.js static assets: cache-first (they have content hashes, safe forever)
-  if (url.pathname.startsWith("/_next/static/") ||
-      url.pathname.match(/\.(woff2?|ttf|otf|eot)$/)) {
+  if (
+    url.pathname.startsWith("/_next/static/") ||
+    url.pathname.match(/\.(woff2?|ttf|otf|eot)$/)
+  ) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }
 
   // Google Fonts: stale-while-revalidate
-  if (url.hostname.includes("fonts.googleapis.com") ||
-      url.hostname.includes("fonts.gstatic.com")) {
+  if (
+    url.hostname.includes("fonts.googleapis.com") ||
+    url.hostname.includes("fonts.gstatic.com")
+  ) {
     event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
     return;
   }
@@ -111,10 +124,14 @@ function cacheFirst(request, cacheName) {
 function staleWhileRevalidate(request, cacheName) {
   return caches.open(cacheName).then(function (cache) {
     return cache.match(request).then(function (cached) {
-      var fetchPromise = fetch(request).then(function (response) {
-        if (response.ok) cache.put(request, response.clone());
-        return response;
-      }).catch(function () { return cached; });
+      var fetchPromise = fetch(request)
+        .then(function (response) {
+          if (response.ok) cache.put(request, response.clone());
+          return response;
+        })
+        .catch(function () {
+          return cached;
+        });
       return cached || fetchPromise;
     });
   });
@@ -163,7 +180,7 @@ self.addEventListener("push", function (event) {
       url: data.url || "/",
     },
     actions: [
-      { action: "snoozed",   title: "Snooze (15m)" },
+      { action: "snoozed", title: "Snooze (15m)" },
       { action: "dismissed", title: "Dismiss" },
     ],
   };

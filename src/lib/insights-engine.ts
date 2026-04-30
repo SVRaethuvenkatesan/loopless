@@ -55,7 +55,7 @@ function fallbackStressSentence(
   const abs = Math.abs(rho);
   const strength = abs > 0.7 ? "strongly" : abs > 0.4 ? "moderately" : "weakly";
   return rho > 0
-    ? `Your stress and urge frequency are ${strength} linked — higher-stress days bring more urges.`
+    ? `Your stress and urge frequency are ${strength} linked - higher-stress days bring more urges.`
     : `Interestingly, your urges tend to appear on lower-stress days (${strength} inverse link).`;
 }
 
@@ -68,9 +68,10 @@ async function generateAISentence(
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return fallback;
 
-  const pctStr = highStressUrgePct !== null
-    ? `${highStressUrgePct}% of the time`
-    : "data insufficient for exact percentage";
+  const pctStr =
+    highStressUrgePct !== null
+      ? `${highStressUrgePct}% of the time`
+      : "data insufficient for exact percentage";
 
   const prompt = `You write single-sentence insights for a quit-vaping app targeting Australians aged 18–24.
 
@@ -81,7 +82,7 @@ Statistics:
 
 Write ONE plain-English sentence (max 20 words) expressing this pattern from the user's perspective.
 Example: "When your stress exceeds 7/10, you log an urge within 90 minutes 68% of the time."
-Output the sentence only — no quotes, no explanation.`;
+Output the sentence only - no quotes, no explanation.`;
 
   try {
     const res = await fetch(
@@ -109,9 +110,8 @@ export async function computeUserInsights(
   userId: string,
 ): Promise<CorrelationInsightData> {
   return withDb(async (db) => {
-    const { checkins, urgeEvents, correlationInsights } = await import(
-      "@/lib/db/schema"
-    );
+    const { checkins, urgeEvents, correlationInsights } =
+      await import("@/lib/db/schema");
     const { eq, asc } = await import("drizzle-orm");
 
     // Fetch all user data
@@ -216,7 +216,12 @@ export async function computeUserInsights(
     let topTimeSentence: string | null = null;
 
     if (checkinDays >= 14 && urgeEventCount >= 10) {
-      const buckets: TimeOfDayRisk = { morning: 0, afternoon: 0, evening: 0, night: 0 };
+      const buckets: TimeOfDayRisk = {
+        morning: 0,
+        afternoon: 0,
+        evening: 0,
+        night: 0,
+      };
       for (const u of allUrges) {
         if (!u.occurredAt) continue;
         const h = new Date(u.occurredAt).getHours();
@@ -226,9 +231,9 @@ export async function computeUserInsights(
         else buckets.night++;
       }
       timeOfDayRisk = buckets;
-      const topEntry = (Object.entries(buckets) as [keyof TimeOfDayRisk, number][]).sort(
-        (a, b) => b[1] - a[1],
-      )[0];
+      const topEntry = (
+        Object.entries(buckets) as [keyof TimeOfDayRisk, number][]
+      ).sort((a, b) => b[1] - a[1])[0];
       const topPct = Math.round((topEntry[1] / urgeEventCount) * 100);
       topTimeSentence = `You're most likely to feel an urge in the ${topEntry[0]} (${topPct}% of urges).`;
     }
@@ -299,7 +304,9 @@ export async function invalidateInsightsCache(userId: string): Promise<void> {
   await withDb(async (db) => {
     const { correlationInsights } = await import("@/lib/db/schema");
     const { eq } = await import("drizzle-orm");
-    await db.delete(correlationInsights).where(eq(correlationInsights.userId, userId));
+    await db
+      .delete(correlationInsights)
+      .where(eq(correlationInsights.userId, userId));
   });
 }
 
@@ -331,7 +338,9 @@ export async function getOrComputeInsights(
         topTriggerSentence: existing.topTriggerSentence ?? null,
         timeOfDayRisk: (existing.timeOfDayRisk as TimeOfDayRisk) ?? null,
         topTimeSentence: existing.topTimeSentence ?? null,
-        computedAt: existing.computedAt ? new Date(existing.computedAt).toISOString() : new Date().toISOString(),
+        computedAt: existing.computedAt
+          ? new Date(existing.computedAt).toISOString()
+          : new Date().toISOString(),
       };
     }
 

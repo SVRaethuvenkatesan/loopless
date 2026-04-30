@@ -9,85 +9,210 @@ import { ThemeToggle } from "@/components/theme-toggle";
    ANIMATED SVG ICONS
 ───────────────────────────────────── */
 const IconSearch = () => (
-  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconSpin 4s ease-in-out infinite", transformOrigin: "11px 11px" }}>
-    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  <svg
+    width="36"
+    height="36"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{
+      animation: "iconSpin 4s ease-in-out infinite",
+      transformOrigin: "11px 11px",
+    }}
+  >
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 );
 const IconSOS = () => (
-  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconPulse 2s ease-in-out infinite" }}>
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  <svg
+    width="36"
+    height="36"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconPulse 2s ease-in-out infinite" }}
+  >
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 );
 const IconChart = () => (
-  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconRise 2.5s ease-in-out infinite" }}>
-    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-    <polyline points="16 7 22 7 22 13"/>
+  <svg
+    width="36"
+    height="36"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconRise 2.5s ease-in-out infinite" }}
+  >
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+    <polyline points="16 7 22 7 22 13" />
   </svg>
 );
 const IconMedal = () => (
-  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconBounce 2s ease-in-out infinite" }}>
-    <circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+  <svg
+    width="36"
+    height="36"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconBounce 2s ease-in-out infinite" }}
+  >
+    <circle cx="12" cy="8" r="6" />
+    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
   </svg>
 );
 
 const IconLoop = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconSpin 3s linear infinite" }}>
-    <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-    <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconSpin 3s linear infinite" }}
+  >
+    <polyline points="17 1 21 5 17 9" />
+    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+    <polyline points="7 23 3 19 7 15" />
+    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
   </svg>
 );
 const IconBreath = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconBreath 3s ease-in-out infinite" }}>
-    <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconBreath 3s ease-in-out infinite" }}
+  >
+    <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
   </svg>
 );
 const IconPen = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconWrite 2.5s ease-in-out infinite" }}>
-    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconWrite 2.5s ease-in-out infinite" }}
+  >
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
   </svg>
 );
 const IconBrain = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconPulse 2s ease-in-out infinite" }}>
-    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14"/>
-    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14"/>
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconPulse 2s ease-in-out infinite" }}
+  >
+    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14" />
+    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14" />
   </svg>
 );
 const IconSnowflake = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconSpin 6s linear infinite" }}>
-    <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
-    <path d="M20 16l-4-4 4-4"/><path d="M4 8l4 4-4 4"/><path d="M16 4l-4 4-4-4"/><path d="M8 20l4-4 4 4"/>
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconSpin 6s linear infinite" }}
+  >
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <line x1="12" y1="2" x2="12" y2="22" />
+    <path d="M20 16l-4-4 4-4" />
+    <path d="M4 8l4 4-4 4" />
+    <path d="M16 4l-4 4-4-4" />
+    <path d="M8 20l4-4 4 4" />
   </svg>
 );
 const IconShare = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconBounce 2.5s ease-in-out infinite" }}>
-    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-    <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconBounce 2.5s ease-in-out infinite" }}
+  >
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+    <polyline points="16 6 12 2 8 6" />
+    <line x1="12" y1="2" x2="12" y2="15" />
   </svg>
 );
 const IconOffline = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconPulse 3s ease-in-out infinite" }}>
-    <line x1="1" y1="1" x2="23" y2="23"/>
-    <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
-    <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
-    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconPulse 3s ease-in-out infinite" }}
+  >
+    <line x1="1" y1="1" x2="23" y2="23" />
+    <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
+    <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" />
+    <path d="M10.71 5.05A16 16 0 0 1 22.56 9" />
+    <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88" />
+    <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+    <line x1="12" y1="20" x2="12.01" y2="20" />
   </svg>
 );
 const IconShield = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ animation: "iconPulse 2s ease-in-out infinite" }}>
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ animation: "iconPulse 2s ease-in-out infinite" }}
+  >
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
   </svg>
 );
 
@@ -95,47 +220,107 @@ const IconShield = () => (
    DATA
 ───────────────────────────────────── */
 const STATS = [
-  { val: "21%",   label: "of 18–24s in Australia currently vape", color: "#ff3347" },
-  { val: "49%",   label: "have tried e-cigarettes at least once",  color: "#ff6b78" },
-  { val: "38.8%", label: "experience mental health challenges",     color: "#a78bfa" },
+  {
+    val: "21%",
+    label: "of 18–24s in Australia currently vape",
+    color: "#ff3347",
+  },
+  {
+    val: "49%",
+    label: "have tried e-cigarettes at least once",
+    color: "#ff6b78",
+  },
+  {
+    val: "38.8%",
+    label: "experience mental health challenges",
+    color: "#a78bfa",
+  },
 ];
 
 const HOW_STEPS = [
   {
-    n: "01", Icon: IconSearch,
+    n: "01",
+    Icon: IconSearch,
     title: "Map your loop",
     desc: "Quick, shame-free onboarding surfaces your personal stress–vape triggers in under 2 minutes.",
-    color: "rgba(232,25,44,0.07)", accent: "#e8192c",
+    color: "rgba(232,25,44,0.07)",
+    accent: "#e8192c",
   },
   {
-    n: "02", Icon: IconSOS,
+    n: "02",
+    Icon: IconSOS,
     title: "Urge SOS - anytime",
     desc: "One tap from any screen. Breathing, grounding, journalling - your coping tools, instantly.",
-    color: "rgba(255,71,87,0.07)", accent: "#ff4757",
+    color: "rgba(255,71,87,0.07)",
+    accent: "#ff4757",
   },
   {
-    n: "03", Icon: IconChart,
+    n: "03",
+    Icon: IconChart,
     title: "Watch patterns emerge",
     desc: "A 7-day stress + urge chart shows the cycle - and ML nudges warn you before it peaks.",
-    color: "rgba(167,139,250,0.07)", accent: "#a78bfa",
+    color: "rgba(167,139,250,0.07)",
+    accent: "#a78bfa",
   },
   {
-    n: "04", Icon: IconMedal,
+    n: "04",
+    Icon: IconMedal,
     title: "Earn milestones",
     desc: "Streaks, badges, freeze tokens - quitting feels like a game you're actually winning.",
-    color: "rgba(245,166,35,0.07)", accent: "#ffc654",
+    color: "rgba(245,166,35,0.07)",
+    accent: "#ffc654",
   },
 ];
 
 const FEATURES = [
-  { Icon: IconLoop,      title: "Loop Explainer",    desc: "5-panel science explainer. Understand why your brain craves - not just that it does.", tag: "Psychoeducation" },
-  { Icon: IconBreath,    title: "4-7-8 Breathwork",  desc: "Evidence-based technique. Pre/post stress score so you see it working.",              tag: "Coping" },
-  { Icon: IconPen,       title: "Urge Journal",       desc: "Gentle prompts. No lectures. Your voice, your words, your progress.",                 tag: "Reflection" },
-  { Icon: IconBrain,     title: "Predictive Nudges",  desc: "scikit-learn models your high-risk windows and sends a heads-up before cravings peak.",tag: "ML" },
-  { Icon: IconSnowflake, title: "Streak Freeze",      desc: "Life happens. Use a freeze token to protect your streak without guilt.",              tag: "Motivation" },
-  { Icon: IconShare,     title: "Share Cards",        desc: "9:16 myth-busting fact cards. Share to Instagram or TikTok. Spread the truth.",       tag: "Peer spread" },
-  { Icon: IconOffline,   title: "Offline-First",      desc: "All coping tools work on the morning train. No data needed.",                         tag: "Accessibility" },
-  { Icon: IconShield,    title: "Crisis Card",        desc: "Lifeline · Beyond Blue · headspace. Auto-surfaces when stress ≥ 8.",                  tag: "Safety" },
+  {
+    Icon: IconLoop,
+    title: "Loop Explainer",
+    desc: "5-panel science explainer. Understand why your brain craves - not just that it does.",
+    tag: "Psychoeducation",
+  },
+  {
+    Icon: IconBreath,
+    title: "4-7-8 Breathwork",
+    desc: "Evidence-based technique. Pre/post stress score so you see it working.",
+    tag: "Coping",
+  },
+  {
+    Icon: IconPen,
+    title: "Urge Journal",
+    desc: "Gentle prompts. No lectures. Your voice, your words, your progress.",
+    tag: "Reflection",
+  },
+  {
+    Icon: IconBrain,
+    title: "Predictive Nudges",
+    desc: "scikit-learn models your high-risk windows and sends a heads-up before cravings peak.",
+    tag: "ML",
+  },
+  {
+    Icon: IconSnowflake,
+    title: "Streak Freeze",
+    desc: "Life happens. Use a freeze token to protect your streak without guilt.",
+    tag: "Motivation",
+  },
+  {
+    Icon: IconShare,
+    title: "Share Cards",
+    desc: "9:16 myth-busting fact cards. Share to Instagram or TikTok. Spread the truth.",
+    tag: "Peer spread",
+  },
+  {
+    Icon: IconOffline,
+    title: "Offline-First",
+    desc: "All coping tools work on the morning train. No data needed.",
+    tag: "Accessibility",
+  },
+  {
+    Icon: IconShield,
+    title: "Crisis Card",
+    desc: "Lifeline · Beyond Blue · headspace. Auto-surfaces when stress ≥ 8.",
+    tag: "Safety",
+  },
 ];
 
 const MYTHS = [
@@ -162,9 +347,15 @@ const MYTHS = [
 function WavyDivider({ fill, bg }: { fill: string; bg: string }) {
   return (
     <div style={{ background: bg, lineHeight: 0 }}>
-      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" style={{ width: "100%", height: 60, display: "block" }}>
-        <path d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 C1320,45 1390,20 1440,30 L1440,60 L0,60 Z"
-          style={{ fill }} />
+      <svg
+        viewBox="0 0 1440 60"
+        preserveAspectRatio="none"
+        style={{ width: "100%", height: 60, display: "block" }}
+      >
+        <path
+          d="M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 C1320,45 1390,20 1440,30 L1440,60 L0,60 Z"
+          style={{ fill }}
+        />
       </svg>
     </div>
   );
@@ -403,8 +594,18 @@ function PhoneMockup() {
       {/* Tools row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
         {[
-          { emoji: "🌬️", l: "Breathe", bg: "rgba(232,25,44,0.08)", accent: "#e8192c" },
-          { emoji: "✍️", l: "Journal", bg: "rgba(255,198,84,0.1)", accent: "#ffc654" },
+          {
+            emoji: "🌬️",
+            l: "Breathe",
+            bg: "rgba(232,25,44,0.08)",
+            accent: "#e8192c",
+          },
+          {
+            emoji: "✍️",
+            l: "Journal",
+            bg: "rgba(255,198,84,0.1)",
+            accent: "#ffc654",
+          },
         ].map((t, i) => (
           <div
             key={i}
@@ -660,7 +861,11 @@ export default function LandingPage() {
           <a href="#myth" className="nav-link">
             Myth busting
           </a>
-          <Link href="/login" className="nav-link" style={{ color: "var(--text2)" }}>
+          <Link
+            href="/login"
+            className="nav-link"
+            style={{ color: "var(--text2)" }}
+          >
             Log in
           </Link>
           <Link href="/register" className="nav-cta" style={{ marginLeft: 6 }}>
@@ -682,7 +887,7 @@ export default function LandingPage() {
           alignItems: "center",
         }}
       >
-        {/* Background blobs — theme-aware via CSS classes */}
+        {/* Background blobs - theme-aware via CSS classes */}
         <div
           className="hero-blob-1"
           style={{
@@ -788,8 +993,8 @@ export default function LandingPage() {
                   maxWidth: 480,
                 }}
               >
-                Nicotine doesn&apos;t fix stress — it just relieves the withdrawal it
-                caused. Loopless helps you{" "}
+                Nicotine doesn&apos;t fix stress - it just relieves the
+                withdrawal it caused. Loopless helps you{" "}
                 <strong style={{ color: "var(--text1)", fontWeight: 700 }}>
                   understand the loop, break it,
                 </strong>{" "}
@@ -978,11 +1183,26 @@ export default function LandingPage() {
           </div>
         </motion.div>
 
-        {/* Wave bottom — zIndex 1 so it stays behind hero content */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 1, pointerEvents: "none" }}>
-          <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style={{ width: "100%", height: 70, display: "block" }}>
-            <path d="M0,35 C240,70 480,0 720,35 C960,70 1200,5 1440,35 L1440,70 L0,70 Z"
-              style={{ fill: "var(--bg0)" }} />
+        {/* Wave bottom - zIndex 1 so it stays behind hero content */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+        >
+          <svg
+            viewBox="0 0 1440 70"
+            preserveAspectRatio="none"
+            style={{ width: "100%", height: 70, display: "block" }}
+          >
+            <path
+              d="M0,35 C240,70 480,0 720,35 C960,70 1200,5 1440,35 L1440,70 L0,70 Z"
+              style={{ fill: "var(--bg0)" }}
+            />
           </svg>
         </div>
       </section>
@@ -1070,8 +1290,10 @@ export default function LandingPage() {
               Your brain adapts to nicotine. When you don't vape, withdrawal
               spikes your anxiety. When you vape, it drops back to "normal" -
               which your brain reads as{" "}
-              <em style={{ color: "var(--red3)" }}>&quot;vaping fixed my stress&quot;</em>. It
-              didn&apos;t. It just created the problem it solved.
+              <em style={{ color: "var(--red3)" }}>
+                &quot;vaping fixed my stress&quot;
+              </em>
+              . It didn&apos;t. It just created the problem it solved.
             </p>
           </motion.div>
 
@@ -1179,8 +1401,12 @@ export default function LandingPage() {
                 lineHeight: 1.6,
               }}
             >
-              💡 <strong style={{color:"var(--text1)",fontWeight:700}}>Loopless teaches your brain the truth</strong> and
-              gives you real tools to replace the loop — not just suppress it.
+              💡{" "}
+              <strong style={{ color: "var(--text1)", fontWeight: 700 }}>
+                Loopless teaches your brain the truth
+              </strong>{" "}
+              and gives you real tools to replace the loop - not just suppress
+              it.
             </div>
           </div>
         </div>
@@ -1188,7 +1414,11 @@ export default function LandingPage() {
 
       {/* ── HOW IT WORKS ───────────────────────── */}
       <WavyDivider fill="var(--bg0)" bg="var(--bg1)" />
-      <section id="how" className="section" style={{ background: "var(--bg0)" }}>
+      <section
+        id="how"
+        className="section"
+        style={{ background: "var(--bg0)" }}
+      >
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -1198,7 +1428,10 @@ export default function LandingPage() {
           >
             <div
               className="section-label"
-              style={{ color: "var(--red)", borderColor: "rgba(232,25,44,0.5)" }}
+              style={{
+                color: "var(--red)",
+                borderColor: "rgba(232,25,44,0.5)",
+              }}
             >
               ✦ How it works
             </div>
@@ -1259,7 +1492,9 @@ export default function LandingPage() {
                 >
                   {s.n}
                 </div>
-                <div style={{ color: s.accent, marginBottom: 12 }}><s.Icon /></div>
+                <div style={{ color: s.accent, marginBottom: 12 }}>
+                  <s.Icon />
+                </div>
                 <h3
                   style={{
                     fontFamily: "'Space Grotesk',sans-serif",
@@ -1351,7 +1586,9 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.07, duration: 0.4 }}
               >
-                <div style={{ color: "var(--red)", marginBottom: 12 }}><f.Icon /></div>
+                <div style={{ color: "var(--red)", marginBottom: 12 }}>
+                  <f.Icon />
+                </div>
                 <div
                   style={{
                     display: "flex",
@@ -1407,7 +1644,11 @@ export default function LandingPage() {
 
       {/* ── MYTH BUSTING ───────────────────────── */}
       <WavyDivider fill="var(--bg0)" bg="var(--bg1)" />
-      <section id="myth" className="section" style={{ background: "var(--bg0)" }}>
+      <section
+        id="myth"
+        className="section"
+        style={{ background: "var(--bg0)" }}
+      >
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -1506,7 +1747,7 @@ export default function LandingPage() {
                       marginBottom: 6,
                     }}
                   >
-                    Fact — {m.source}
+                    Fact - {m.source}
                   </div>
                   <div
                     style={{
@@ -1607,7 +1848,8 @@ export default function LandingPage() {
                     width: 42,
                     height: 42,
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg,var(--red),var(--red2))",
+                    background:
+                      "linear-gradient(135deg,var(--red),var(--red2))",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1619,12 +1861,20 @@ export default function LandingPage() {
                 </div>
                 <div style={{ textAlign: "left" }}>
                   <div
-                    style={{ fontSize: 14, fontWeight: 800, color: "var(--text1)" }}
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 800,
+                      color: "var(--text1)",
+                    }}
                   >
                     Jess, 22 - Melbourne
                   </div>
                   <div
-                    style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--text3)",
+                    }}
                   >
                     Junior Marketing Coordinator · Monash grad
                   </div>

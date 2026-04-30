@@ -1,17 +1,17 @@
-// AC 7.3.1 — Relapse pattern detection (rule-based, Iteration 1)
+// AC 7.3.1 - Relapse pattern detection (rule-based, Iteration 1)
 // Flags when user has 3+ urges within 48 h of a high-stress day (stress ≥ 7).
 // Runs at most once per 7 days to avoid duplicate records.
 import { withDb } from "./db/with-db";
 
 const TOOL_MAP: Record<string, string> = {
   breathing: "breathe",
-  breathe:   "breathe",
-  walk:      "walk",
-  walking:   "walk",
-  journal:   "journal",
-  journaling:"journal",
-  ice:       "cold",
-  cold:      "cold",
+  breathe: "breathe",
+  walk: "walk",
+  walking: "walk",
+  journal: "journal",
+  journaling: "journal",
+  ice: "cold",
+  cold: "cold",
 };
 
 function normaliseTool(raw: string): string {
@@ -20,13 +20,12 @@ function normaliseTool(raw: string): string {
 
 export async function checkRelapsePatterns(userId: string): Promise<void> {
   return withDb(async (db) => {
-    const { mlInsights, checkins, urgeEvents, copingSessions } = await import(
-      "@/lib/db/schema"
-    );
+    const { mlInsights, checkins, urgeEvents, copingSessions } =
+      await import("@/lib/db/schema");
     const { eq, and, gte, desc } = await import("drizzle-orm");
 
-    const now           = new Date();
-    const sevenDaysAgo  = new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Run at most once per 7 days
@@ -44,28 +43,40 @@ export async function checkRelapsePatterns(userId: string): Promise<void> {
       db
         .select()
         .from(checkins)
-        .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, thirtyDaysAgo)))
+        .where(
+          and(
+            eq(checkins.userId, userId),
+            gte(checkins.checkedInAt, thirtyDaysAgo),
+          ),
+        )
         .orderBy(desc(checkins.checkedInAt)),
       db
         .select()
         .from(urgeEvents)
-        .where(and(eq(urgeEvents.userId, userId), gte(urgeEvents.occurredAt, thirtyDaysAgo))),
+        .where(
+          and(
+            eq(urgeEvents.userId, userId),
+            gte(urgeEvents.occurredAt, thirtyDaysAgo),
+          ),
+        ),
     ]);
 
-    // Need enough history for a meaningful pattern (AC 7.3.1 — 30 days gate)
+    // Need enough history for a meaningful pattern (AC 7.3.1 - 30 days gate)
     if (allCheckins.length < 14 || allUrges.length < 5) return;
 
-    const highStressDays = allCheckins.filter(c => c.stressLevel >= 7 && c.checkedInAt);
+    const highStressDays = allCheckins.filter(
+      (c) => c.stressLevel >= 7 && c.checkedInAt,
+    );
 
     let maxUrgesIn48h = 0;
-    let topTrigger    = "stress";
-    let relapseFound  = false;
+    let topTrigger = "stress";
+    let relapseFound = false;
 
     for (const spike of highStressDays) {
       const spikeTs = new Date(spike.checkedInAt!).getTime();
-      const window  = spikeTs + 48 * 60 * 60 * 1000;
+      const window = spikeTs + 48 * 60 * 60 * 1000;
 
-      const inWindow = allUrges.filter(u => {
+      const inWindow = allUrges.filter((u) => {
         if (!u.occurredAt) return false;
         const ut = new Date(u.occurredAt).getTime();
         return ut >= spikeTs && ut <= window;
@@ -105,21 +116,24 @@ export async function checkRelapsePatterns(userId: string): Promise<void> {
       }
     }
 
-    let bestTool  = "breathe";
+    let bestTool = "breathe";
     let bestScore = Infinity;
     for (const [tool, deltas] of Object.entries(toolDeltas)) {
       const avg = deltas.reduce((a, b) => a + b, 0) / deltas.length;
-      if (avg < bestScore) { bestScore = avg; bestTool = normaliseTool(tool); }
+      if (avg < bestScore) {
+        bestScore = avg;
+        bestTool = normaliseTool(tool);
+      }
     }
 
     const confidence = Math.min(
-      0.90,
-      0.60 + Math.min(highStressDays.length, 10) / 10 * 0.30,
+      0.9,
+      0.6 + (Math.min(highStressDays.length, 10) / 10) * 0.3,
     );
 
     const insightText =
       `After ${highStressDays.length} high-stress day${highStressDays.length > 1 ? "s" : ""} ` +
-      `in the last 30 days, you logged ${maxUrgesIn48h}+ urges within 48 hours — ` +
+      `in the last 30 days, you logged ${maxUrgesIn48h}+ urges within 48 hours - ` +
       `a pattern worth watching. ${bestTool === "breathe" ? "Box breathing" : bestTool.charAt(0).toUpperCase() + bestTool.slice(1)} ` +
       `has helped you most in the past.`;
 

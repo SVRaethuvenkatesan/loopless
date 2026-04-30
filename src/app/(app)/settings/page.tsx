@@ -134,7 +134,10 @@ export default function SettingsPage() {
 
   // Demo data state
   const [demoLoading, setDemoLoading] = useState(false);
-  const [demoMsg, setDemoMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [demoMsg, setDemoMsg] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const [restoreLoading, setRestoreLoading] = useState(false);
 
   useEffect(() => {
@@ -187,10 +190,16 @@ export default function SettingsPage() {
         });
         setTimeout(() => router.push("/dashboard"), 2200);
       } else {
-        setDemoMsg({ type: "error", text: `❌ ${data.error || "Failed to load demo data"}` });
+        setDemoMsg({
+          type: "error",
+          text: `❌ ${data.error || "Failed to load demo data"}`,
+        });
       }
     } catch {
-      setDemoMsg({ type: "error", text: "❌ Network error. Is the server running?" });
+      setDemoMsg({
+        type: "error",
+        text: "❌ Network error. Is the server running?",
+      });
     }
     setDemoLoading(false);
   }
@@ -208,10 +217,16 @@ export default function SettingsPage() {
         });
         setTimeout(() => router.push("/dashboard"), 2000);
       } else {
-        setDemoMsg({ type: "error", text: `❌ ${data.error || "Failed to restore data"}` });
+        setDemoMsg({
+          type: "error",
+          text: `❌ ${data.error || "Failed to restore data"}`,
+        });
       }
     } catch {
-      setDemoMsg({ type: "error", text: "❌ Network error. Is the server running?" });
+      setDemoMsg({
+        type: "error",
+        text: "❌ Network error. Is the server running?",
+      });
     }
     setRestoreLoading(false);
   }
@@ -419,7 +434,9 @@ export default function SettingsPage() {
               value={notifTime}
               onChange={(e) => setNotifTime(e.target.value)}
             />
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text2)" }}>
+            <div
+              style={{ fontSize: 12, fontWeight: 600, color: "var(--text2)" }}
+            >
               Local time · {Intl.DateTimeFormat().resolvedOptions().timeZone}
             </div>
           </div>
@@ -450,9 +467,24 @@ export default function SettingsPage() {
           transition={{ delay: 0.32 }}
           className="settings-card"
         >
-          <div className="section-title" style={{ marginBottom: 4 }}>🧪 Demo Data</div>
-          <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text3)", marginBottom: 14, lineHeight: 1.5 }}>
-            Load 30 days of realistic demo data to explore the app — or restore your real data anytime. Demo data is tagged and <strong style={{ color: "var(--text2)" }}>never overwrites your real records</strong>.
+          <div className="section-title" style={{ marginBottom: 4 }}>
+            🧪 Demo Data
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: "var(--text3)",
+              marginBottom: 14,
+              lineHeight: 1.5,
+            }}
+          >
+            Load 30 days of realistic demo data to explore the app - or restore
+            your real data anytime. Demo data is tagged and{" "}
+            <strong style={{ color: "var(--text2)" }}>
+              never overwrites your real records
+            </strong>
+            .
           </div>
 
           {/* Feedback message */}
@@ -461,13 +493,15 @@ export default function SettingsPage() {
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               style={{
-                background: demoMsg.type === "success" ? "var(--mint3)" : "var(--coral3)",
+                background:
+                  demoMsg.type === "success" ? "var(--mint3)" : "var(--coral3)",
                 border: `2px solid ${demoMsg.type === "success" ? "var(--mint2)" : "var(--coral)"}`,
                 borderRadius: 12,
                 padding: "10px 14px",
                 fontSize: 12.5,
                 fontWeight: 700,
-                color: demoMsg.type === "success" ? "var(--mint2)" : "var(--coral)",
+                color:
+                  demoMsg.type === "success" ? "var(--mint2)" : "var(--coral)",
                 marginBottom: 12,
                 lineHeight: 1.45,
               }}
@@ -483,7 +517,14 @@ export default function SettingsPage() {
           >
             {demoLoading ? (
               <>
-                <span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⚙️</span>
+                <span
+                  style={{
+                    display: "inline-block",
+                    animation: "spin 1s linear infinite",
+                  }}
+                >
+                  ⚙️
+                </span>
                 Loading demo data…
               </>
             ) : (
@@ -498,7 +539,14 @@ export default function SettingsPage() {
           >
             {restoreLoading ? (
               <>
-                <span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⚙️</span>
+                <span
+                  style={{
+                    display: "inline-block",
+                    animation: "spin 1s linear infinite",
+                  }}
+                >
+                  ⚙️
+                </span>
                 Restoring real data…
               </>
             ) : (
@@ -552,7 +600,9 @@ export default function SettingsPage() {
                   >
                     {item.label}
                   </span>
-                  <span style={{ color: "var(--text3)", fontWeight: 700 }}>→</span>
+                  <span style={{ color: "var(--text3)", fontWeight: 700 }}>
+                    →
+                  </span>
                 </div>
               </Link>
             </div>

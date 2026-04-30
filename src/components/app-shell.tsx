@@ -9,31 +9,289 @@ import type { Session } from "next-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 // SVG nav icons as inline components
-const HomeIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-const CheckinIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
-const LoopIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>;
-const ProgressIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
-const InsightsIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
-const ToolkitIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>;
-const MythsIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
-const SupportIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
-const SettingsIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
-const UserIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-const BadgeIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>;
-const LogOutIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
-const TrashIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>;
-const FireIcon = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>;
-const StarIcon = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
-const MenuIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>;
-const SparkleIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>;
+const HomeIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9 22 9 12 15 12 15 22" />
+  </svg>
+);
+const CheckinIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9 11l3 3L22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+);
+const LoopIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="17 1 21 5 17 9" />
+    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+    <polyline points="7 23 3 19 7 15" />
+    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+  </svg>
+);
+const ProgressIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="18" y1="20" x2="18" y2="10" />
+    <line x1="12" y1="20" x2="12" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="14" />
+  </svg>
+);
+const InsightsIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </svg>
+);
+const ToolkitIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+  </svg>
+);
+const MythsIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+const SupportIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+const SettingsIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+  </svg>
+);
+const UserIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+const BadgeIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="8" r="6" />
+    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+  </svg>
+);
+const LogOutIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+const TrashIcon = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14H6L5 6" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+    <path d="M9 6V4h6v2" />
+  </svg>
+);
+const FireIcon = () => (
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+  </svg>
+);
+const StarIcon = () => (
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+const MenuIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+const SparkleIcon = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+  </svg>
+);
 
 const NAV = [
   { href: "/dashboard", Icon: HomeIcon, label: "Home", implemented: true },
   { href: "/checkin", Icon: CheckinIcon, label: "Check-in", implemented: true },
-  { href: "/awareness", Icon: SparkleIcon, label: "Awareness", implemented: true },
-  { href: "/insights", Icon: InsightsIcon, label: "Insights", implemented: true },
+  {
+    href: "/awareness",
+    Icon: SparkleIcon,
+    label: "Awareness",
+    implemented: true,
+  },
+  {
+    href: "/insights",
+    Icon: InsightsIcon,
+    label: "Insights",
+    implemented: true,
+  },
   { href: "/loop", Icon: LoopIcon, label: "Loop", implemented: false },
-  { href: "/progress", Icon: ProgressIcon, label: "Progress", implemented: false },
+  {
+    href: "/progress",
+    Icon: ProgressIcon,
+    label: "Progress",
+    implemented: false,
+  },
   { href: "/coping", Icon: ToolkitIcon, label: "Toolkit", implemented: true },
   { href: "/myths", Icon: MythsIcon, label: "Myth Cards", implemented: false },
   { href: "/support", Icon: SupportIcon, label: "Support", implemented: false },
@@ -41,8 +299,18 @@ const NAV = [
 const BOTTOM_NAV = [
   { href: "/dashboard", Icon: HomeIcon, label: "Home", implemented: true },
   { href: "/checkin", Icon: CheckinIcon, label: "Check-in", implemented: true },
-  { href: "/awareness", Icon: SparkleIcon, label: "Awareness", implemented: true },
-  { href: "/insights", Icon: InsightsIcon, label: "Insights", implemented: true },
+  {
+    href: "/awareness",
+    Icon: SparkleIcon,
+    label: "Awareness",
+    implemented: true,
+  },
+  {
+    href: "/insights",
+    Icon: InsightsIcon,
+    label: "Insights",
+    implemented: true,
+  },
   { href: "/support", Icon: SupportIcon, label: "More", implemented: false },
 ];
 
@@ -53,7 +321,13 @@ function deriveLevel(xpTotal: number) {
   return { level, xpInLvl, xpToNext: 500 };
 }
 
-export default function AppShell({ children, session: serverSession }: { children: React.ReactNode; session?: Session | null }) {
+export default function AppShell({
+  children,
+  session: serverSession,
+}: {
+  children: React.ReactNode;
+  session?: Session | null;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
@@ -100,10 +374,12 @@ export default function AppShell({ children, session: serverSession }: { childre
 
         if (profileRes.ok) {
           const p = await profileRes.json();
-          const userStreaks: { streakType: string; count: number | null }[] = p.userStreaks ?? [];
-          const streakCount = userStreaks.find((s) => s.streakType === "checkin")?.count ?? 0;
+          const userStreaks: { streakType: string; count: number | null }[] =
+            p.userStreaks ?? [];
+          const streakCount =
+            userStreaks.find((s) => s.streakType === "checkin")?.count ?? 0;
           setStreak(streakCount);
-          // Use server-computed XP directly — consistent with dashboard and profile
+          // Use server-computed XP directly - consistent with dashboard and profile
           setXpTotal(p.xp ?? 0);
         }
 
@@ -378,43 +654,75 @@ export default function AppShell({ children, session: serverSession }: { childre
 
           <nav className="nav-section">
             <div className="nav-group-label">Main</div>
-            {NAV.slice(0, 6).map((item) => (
+            {NAV.slice(0, 6).map((item) =>
               item.implemented ? (
                 <Link key={item.href} href={item.href} onClick={spawnParticles}>
-                  <div className={`nav-item${isActive(item.href) ? " active" : ""}`}>
-                    <span className="nav-icon"><item.Icon /></span>
+                  <div
+                    className={`nav-item${isActive(item.href) ? " active" : ""}`}
+                  >
+                    <span className="nav-icon">
+                      <item.Icon />
+                    </span>
                     <span>{item.label}</span>
                     {item.href === "/checkin" && !checkedToday && (
                       <span className="nav-badge">+20 XP</span>
                     )}
                     {item.href === "/checkin" && checkedToday && (
-                      <span style={{ marginLeft: "auto", color: "#5a8f6a" }}>✓</span>
+                      <span style={{ marginLeft: "auto", color: "#5a8f6a" }}>
+                        ✓
+                      </span>
                     )}
                   </div>
                 </Link>
               ) : (
-                <div key={item.href} className="nav-item" style={{ opacity: 0.4, cursor: "not-allowed", filter: "grayscale(100%)" }}>
-                  <span className="nav-icon"><item.Icon /></span>
+                <div
+                  key={item.href}
+                  className="nav-item"
+                  style={{
+                    opacity: 0.4,
+                    cursor: "not-allowed",
+                    filter: "grayscale(100%)",
+                  }}
+                >
+                  <span className="nav-icon">
+                    <item.Icon />
+                  </span>
                   <span>{item.label}</span>
                 </div>
-              )
-            ))}
-            <div className="nav-group-label" style={{ marginTop: 6 }}>Tools</div>
-            {NAV.slice(6).map((item) => (
+              ),
+            )}
+            <div className="nav-group-label" style={{ marginTop: 6 }}>
+              Tools
+            </div>
+            {NAV.slice(6).map((item) =>
               item.implemented ? (
                 <Link key={item.href} href={item.href} onClick={spawnParticles}>
-                  <div className={`nav-item${isActive(item.href) ? " active" : ""}`}>
-                    <span className="nav-icon"><item.Icon /></span>
+                  <div
+                    className={`nav-item${isActive(item.href) ? " active" : ""}`}
+                  >
+                    <span className="nav-icon">
+                      <item.Icon />
+                    </span>
                     <span>{item.label}</span>
                   </div>
                 </Link>
               ) : (
-                <div key={item.href} className="nav-item" style={{ opacity: 0.4, cursor: "not-allowed", filter: "grayscale(100%)" }}>
-                  <span className="nav-icon"><item.Icon /></span>
+                <div
+                  key={item.href}
+                  className="nav-item"
+                  style={{
+                    opacity: 0.4,
+                    cursor: "not-allowed",
+                    filter: "grayscale(100%)",
+                  }}
+                >
+                  <span className="nav-icon">
+                    <item.Icon />
+                  </span>
                   <span>{item.label}</span>
                 </div>
-              )
-            ))}
+              ),
+            )}
           </nav>
 
           <div className="sidebar-bottom">
@@ -460,7 +768,12 @@ export default function AppShell({ children, session: serverSession }: { childre
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {/* Streak pill - real */}
               <div className="streak-pill">
-                <span style={{ display: "inline-flex", animation: "pulseFire 2s ease-in-out infinite" }}>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    animation: "pulseFire 2s ease-in-out infinite",
+                  }}
+                >
                   <FireIcon />
                 </span>
                 <span>
@@ -527,86 +840,154 @@ export default function AppShell({ children, session: serverSession }: { childre
                 <ThemeToggle />
                 <div ref={profileRef} style={{ position: "relative" }}>
                   <button
-                  className="profile-btn"
-                  onClick={() => setProfileOpen(!profileOpen)}
-                >
-                  {initials}
-                  <span
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      right: 0,
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      background: checkedToday ? "#5a8f6a" : "#c9982a",
-                      border: "2px solid white",
-                    }}
-                  />
-                </button>
+                    className="profile-btn"
+                    onClick={() => setProfileOpen(!profileOpen)}
+                  >
+                    {initials}
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        right: 0,
+                        width: 10,
+                        height: 10,
+                        borderRadius: "50%",
+                        background: checkedToday ? "#5a8f6a" : "#c9982a",
+                        border: "2px solid white",
+                      }}
+                    />
+                  </button>
 
-                <AnimatePresence>
-                  {profileOpen && (
-                    <motion.div
-                      className="profile-dropdown"
-                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                      transition={{ duration: 0.18 }}
-                    >
-                      <div className="dropdown-header">
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text1)" }}>
-                          {rawName}
-                        </div>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)", marginTop: 2 }}>
-                          {isGuest ? "Guest account" : (session?.user?.email ?? "")}
-                        </div>
-                        <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                          <span style={{ background: "rgba(232,25,44,0.12)", border: "1.5px solid var(--red)", borderRadius: 50, padding: "3px 10px", fontSize: 10, fontWeight: 800, color: "var(--red2)" }}>
-                            Lv.{level}
-                          </span>
-                          <span style={{ background: "rgba(245,166,35,0.12)", border: "1.5px solid var(--amber)", borderRadius: 50, padding: "3px 10px", fontSize: 10, fontWeight: 800, color: "var(--amber2)" }}>
-                            {streak} streak
-                          </span>
-                          <span style={{ background: checkedToday ? "rgba(232,25,44,0.10)" : "rgba(167,139,250,0.10)", border: `1.5px solid ${checkedToday ? "var(--red)" : "var(--purple2)"}`, borderRadius: 50, padding: "3px 10px", fontSize: 10, fontWeight: 800, color: checkedToday ? "var(--red2)" : "var(--purple2)" }}>
-                            {checkedToday ? "Checked in" : "Check in today"}
-                          </span>
-                        </div>
-                      </div>
-                      {[
-                        { Icon: UserIcon, label: "Profile", path: "/profile" },
-                        { Icon: SettingsIcon, label: "Settings", path: "/settings" },
-                        { Icon: BadgeIcon, label: "My badges", path: "/profile" },
-                      ].map((item) => (
-                        <div
-                          key={item.path + item.label}
-                          className="dropdown-item"
-                          onClick={() => {
-                            router.push(item.path);
-                            setProfileOpen(false);
-                          }}
-                        >
-                          <item.Icon />
-                          {item.label}
-                        </div>
-                      ))}
-                      <div
-                        style={{
-                          height: 1,
-                          background: "rgba(26,18,8,.07)",
-                          margin: "6px 0",
-                        }}
-                      />
-                      <div
-                        className="dropdown-item danger"
-                        onClick={handleSignOut}
+                  <AnimatePresence>
+                    {profileOpen && (
+                      <motion.div
+                        className="profile-dropdown"
+                        initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                        transition={{ duration: 0.18 }}
                       >
-                        <LogOutIcon />
-                        {isGuest ? "Delete & exit" : "Sign out"}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        <div className="dropdown-header">
+                          <div
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 800,
+                              color: "var(--text1)",
+                            }}
+                          >
+                            {rawName}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: "var(--text3)",
+                              marginTop: 2,
+                            }}
+                          >
+                            {isGuest
+                              ? "Guest account"
+                              : (session?.user?.email ?? "")}
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 6,
+                              marginTop: 8,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <span
+                              style={{
+                                background: "rgba(232,25,44,0.12)",
+                                border: "1.5px solid var(--red)",
+                                borderRadius: 50,
+                                padding: "3px 10px",
+                                fontSize: 10,
+                                fontWeight: 800,
+                                color: "var(--red2)",
+                              }}
+                            >
+                              Lv.{level}
+                            </span>
+                            <span
+                              style={{
+                                background: "rgba(245,166,35,0.12)",
+                                border: "1.5px solid var(--amber)",
+                                borderRadius: 50,
+                                padding: "3px 10px",
+                                fontSize: 10,
+                                fontWeight: 800,
+                                color: "var(--amber2)",
+                              }}
+                            >
+                              {streak} streak
+                            </span>
+                            <span
+                              style={{
+                                background: checkedToday
+                                  ? "rgba(232,25,44,0.10)"
+                                  : "rgba(167,139,250,0.10)",
+                                border: `1.5px solid ${checkedToday ? "var(--red)" : "var(--purple2)"}`,
+                                borderRadius: 50,
+                                padding: "3px 10px",
+                                fontSize: 10,
+                                fontWeight: 800,
+                                color: checkedToday
+                                  ? "var(--red2)"
+                                  : "var(--purple2)",
+                              }}
+                            >
+                              {checkedToday ? "Checked in" : "Check in today"}
+                            </span>
+                          </div>
+                        </div>
+                        {[
+                          {
+                            Icon: UserIcon,
+                            label: "Profile",
+                            path: "/profile",
+                          },
+                          {
+                            Icon: SettingsIcon,
+                            label: "Settings",
+                            path: "/settings",
+                          },
+                          {
+                            Icon: BadgeIcon,
+                            label: "My badges",
+                            path: "/profile",
+                          },
+                        ].map((item) => (
+                          <div
+                            key={item.path + item.label}
+                            className="dropdown-item"
+                            onClick={() => {
+                              router.push(item.path);
+                              setProfileOpen(false);
+                            }}
+                          >
+                            <item.Icon />
+                            {item.label}
+                          </div>
+                        ))}
+                        <div
+                          style={{
+                            height: 1,
+                            background: "rgba(26,18,8,.07)",
+                            margin: "6px 0",
+                          }}
+                        />
+                        <div
+                          className="dropdown-item danger"
+                          onClick={handleSignOut}
+                        >
+                          <LogOutIcon />
+                          {isGuest ? "Delete & exit" : "Sign out"}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </div>
@@ -615,10 +996,39 @@ export default function AppShell({ children, session: serverSession }: { childre
           <main className="page-content">
             {children}
             {/* FOOTER */}
-            <footer style={{ marginTop: 60, padding: "24px 20px", borderTop: "2px dashed var(--border2)", textAlign: "center", color: "var(--text3)", fontSize: 12, fontWeight: 600, maxWidth: 1200, marginInline: "auto" }}>
-              <div style={{ marginBottom: 10, display: "flex", justifyContent: "center", gap: 16 }}>
-                <Link href="/privacy" style={{ textDecoration: "none", color: "var(--text2)" }}>Privacy Policy</Link>
-                <Link href="/terms" style={{ textDecoration: "none", color: "var(--text2)" }}>Terms of Service</Link>
+            <footer
+              style={{
+                marginTop: 60,
+                padding: "24px 20px",
+                borderTop: "2px dashed var(--border2)",
+                textAlign: "center",
+                color: "var(--text3)",
+                fontSize: 12,
+                fontWeight: 600,
+                maxWidth: 1200,
+                marginInline: "auto",
+              }}
+            >
+              <div
+                style={{
+                  marginBottom: 10,
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 16,
+                }}
+              >
+                <Link
+                  href="/privacy"
+                  style={{ textDecoration: "none", color: "var(--text2)" }}
+                >
+                  Privacy Policy
+                </Link>
+                <Link
+                  href="/terms"
+                  style={{ textDecoration: "none", color: "var(--text2)" }}
+                >
+                  Terms of Service
+                </Link>
               </div>
               <div>&copy; {new Date().getFullYear()} Loopless.</div>
             </footer>
@@ -632,9 +1042,21 @@ export default function AppShell({ children, session: serverSession }: { childre
           const on = isActive(item.href);
           if (!item.implemented) {
             return (
-              <div key={item.href} className="bnav-item" style={{ opacity: 0.4, cursor: "not-allowed", filter: "grayscale(100%)" }}>
-                <div style={{ color: "#a8936a", display: "flex" }}><item.Icon /></div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#a8936a" }}>
+              <div
+                key={item.href}
+                className="bnav-item"
+                style={{
+                  opacity: 0.4,
+                  cursor: "not-allowed",
+                  filter: "grayscale(100%)",
+                }}
+              >
+                <div style={{ color: "#a8936a", display: "flex" }}>
+                  <item.Icon />
+                </div>
+                <div
+                  style={{ fontSize: 10, fontWeight: 700, color: "#a8936a" }}
+                >
                   {item.label}
                 </div>
               </div>
@@ -642,11 +1064,31 @@ export default function AppShell({ children, session: serverSession }: { childre
           }
           return (
             <Link key={item.href} href={item.href} className="bnav-item">
-              <div style={{ color: on ? "#5a8f6a" : "#a8936a", display: "flex" }}><item.Icon /></div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: on ? "#5a8f6a" : "#a8936a" }}>
+              <div
+                style={{ color: on ? "#5a8f6a" : "#a8936a", display: "flex" }}
+              >
+                <item.Icon />
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: on ? "#5a8f6a" : "#a8936a",
+                }}
+              >
                 {item.label}
               </div>
-              {on && <div style={{ width: 20, height: 3, borderRadius: 2, background: "#5a8f6a", marginTop: 1 }} />}
+              {on && (
+                <div
+                  style={{
+                    width: 20,
+                    height: 3,
+                    borderRadius: 2,
+                    background: "#5a8f6a",
+                    marginTop: 1,
+                  }}
+                />
+              )}
             </Link>
           );
         })}
