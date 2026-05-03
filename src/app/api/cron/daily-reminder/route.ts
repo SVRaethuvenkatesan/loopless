@@ -18,7 +18,8 @@ export async function GET(req: Request) {
 
   try {
     const result = await withDb(async (db) => {
-      const { users, checkins, pushSubscriptions } = await import("@/lib/db/schema");
+      const { users, checkins, pushSubscriptions } =
+        await import("@/lib/db/schema");
       const { eq, gte, inArray } = await import("drizzle-orm");
 
       const todayUTC = new Date();

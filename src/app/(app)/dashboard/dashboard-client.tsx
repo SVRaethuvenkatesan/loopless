@@ -158,15 +158,33 @@ function XPBar({ pct }: { pct: number }) {
   );
 }
 
-function FloatingReaction({ emoji, delay, offsetX }: { emoji: string; delay: number; offsetX: number }) {
+function FloatingReaction({
+  emoji,
+  delay,
+  offsetX,
+}: {
+  emoji: string;
+  delay: number;
+  offsetX: number;
+}) {
   const rm = useReducedMotion();
   if (rm) return null;
   return (
     <motion.span
       aria-hidden
       initial={{ opacity: 0, y: 0, scale: 0.4 }}
-      animate={{ opacity: [0, 1, 0.85, 0], y: [0, -22, -58], scale: [0.4, 1.2, 0.65] }}
-      transition={{ duration: 2.2, delay, repeat: Infinity, repeatDelay: delay + 3.2, ease: "easeOut" }}
+      animate={{
+        opacity: [0, 1, 0.85, 0],
+        y: [0, -22, -58],
+        scale: [0.4, 1.2, 0.65],
+      }}
+      transition={{
+        duration: 2.2,
+        delay,
+        repeat: Infinity,
+        repeatDelay: delay + 3.2,
+        ease: "easeOut",
+      }}
       style={{
         position: "absolute",
         right: offsetX,
@@ -192,7 +210,11 @@ function moodEmoji(mood?: string) {
   return mood && m[mood] ? m[mood] : mood ? "📝" : "-";
 }
 
-function stressCue(s: number): { emoji: string; phrase: string; accent: string } {
+function stressCue(s: number): {
+  emoji: string;
+  phrase: string;
+  accent: string;
+} {
   if (s <= 3)
     return { emoji: "🌿", phrase: "Nicely grounded", accent: "#5a8f6a" };
   if (s <= 6)
@@ -201,7 +223,11 @@ function stressCue(s: number): { emoji: string; phrase: string; accent: string }
       phrase: "In the messy middle - normal",
       accent: "#c9982a",
     };
-  return { emoji: "🌋", phrase: "Running hot - noting it counts", accent: "#e07b5a" };
+  return {
+    emoji: "🌋",
+    phrase: "Running hot - noting it counts",
+    accent: "#e07b5a",
+  };
 }
 
 function WeekChart({ checkins }: { checkins: Checkin[] }) {
@@ -427,7 +453,9 @@ export default function DashboardClient({
   const [editing, setEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
-  const [pushState, setPushState] = useState<"idle" | "subscribed" | "denied" | "unsupported">("idle");
+  const [pushState, setPushState] = useState<
+    "idle" | "subscribed" | "denied" | "unsupported"
+  >("idle");
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -455,9 +483,9 @@ export default function DashboardClient({
   const streak = checkInStreak;
   const avgStress = recentCheckins.length
     ? (
-      recentCheckins.reduce((s, c) => s + c.stressLevel, 0) /
-      recentCheckins.length
-    ).toFixed(1)
+        recentCheckins.reduce((s, c) => s + c.stressLevel, 0) /
+        recentCheckins.length
+      ).toFixed(1)
     : "-";
   const money = Math.round(streak * 2.5);
   // Use server-computed XP to stay in sync with sidebar and profile API
@@ -540,8 +568,8 @@ export default function DashboardClient({
     );
     const dayStr = highest.checkedInAt
       ? new Date(highest.checkedInAt).toLocaleDateString("en-US", {
-        weekday: "short",
-      })
+          weekday: "short",
+        })
       : "";
     highestStress = highest.stressLevel
       ? `${moodEmoji(highest.mood)} ${highest.stressLevel}/10 (${dayStr})`
@@ -573,29 +601,40 @@ export default function DashboardClient({
         setEditing(false);
         if (streak > 0) setCelebrate(true);
       }
-    } catch { }
+    } catch {}
     setSubmitting(false);
   }
 
   async function subscribePush() {
     try {
       const perm = await Notification.requestPermission();
-      if (perm !== "granted") { setPushState("denied"); return; }
+      if (perm !== "granted") {
+        setPushState("denied");
+        return;
+      }
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
       });
       const json = sub.toJSON();
-      const gid = typeof window !== "undefined" ? localStorage.getItem("loopless_guest_id") : null;
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const gid =
+        typeof window !== "undefined"
+          ? localStorage.getItem("loopless_guest_id")
+          : null;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
       if (gid) headers["x-guest-id"] = gid;
       await fetch("/api/notifications/subscribe", {
-        method: "POST", headers,
+        method: "POST",
+        headers,
         body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
       });
       setPushState("subscribed");
-    } catch { setPushState("denied"); }
+    } catch {
+      setPushState("denied");
+    }
   }
 
   const streakAtRisk = !done && streak > 0;
@@ -797,7 +836,11 @@ export default function DashboardClient({
                     y: [0, -22, 10, 0],
                     opacity: [0.1, 0.2, 0.12],
                   }}
-                  transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 11,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                   style={{
                     position: "absolute",
                     top: "-22%",
@@ -805,7 +848,8 @@ export default function DashboardClient({
                     width: 210,
                     height: 210,
                     borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(93,219,168,0.55) 0%, transparent 70%)",
+                    background:
+                      "radial-gradient(circle, rgba(93,219,168,0.55) 0%, transparent 70%)",
                     filter: "blur(36px)",
                     pointerEvents: "none",
                     zIndex: 0,
@@ -818,7 +862,11 @@ export default function DashboardClient({
                     y: [0, 18, -12, 0],
                     opacity: [0.08, 0.16, 0.1],
                   }}
-                  transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 9,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                   style={{
                     position: "absolute",
                     bottom: "-28%",
@@ -826,7 +874,8 @@ export default function DashboardClient({
                     width: 220,
                     height: 220,
                     borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(224,123,90,0.4) 0%, transparent 70%)",
+                    background:
+                      "radial-gradient(circle, rgba(224,123,90,0.4) 0%, transparent 70%)",
                     filter: "blur(42px)",
                     pointerEvents: "none",
                     zIndex: 0,
@@ -845,12 +894,12 @@ export default function DashboardClient({
                     reduceMotion
                       ? undefined
                       : {
-                        boxShadow: [
-                          "0 0 0 0 rgba(93,219,168,0.45)",
-                          "0 0 0 8px rgba(93,219,168,0)",
-                          "0 0 0 0 rgba(93,219,168,0)",
-                        ],
-                      }
+                          boxShadow: [
+                            "0 0 0 0 rgba(93,219,168,0.45)",
+                            "0 0 0 8px rgba(93,219,168,0)",
+                            "0 0 0 0 rgba(93,219,168,0)",
+                          ],
+                        }
                   }
                   transition={
                     reduceMotion
@@ -874,7 +923,9 @@ export default function DashboardClient({
                   <motion.span
                     aria-hidden
                     animate={
-                      reduceMotion ? undefined : { rotate: [0, -12, 8, 0], scale: [1, 1.08, 1] }
+                      reduceMotion
+                        ? undefined
+                        : { rotate: [0, -12, 8, 0], scale: [1, 1.08, 1] }
                     }
                     transition={
                       reduceMotion
@@ -883,7 +934,11 @@ export default function DashboardClient({
                     }
                     style={{ display: "inline-flex", opacity: 0.95 }}
                   >
-                    <Sparkles size={14} strokeWidth={2.4} color="rgba(255,255,255,0.9)" />
+                    <Sparkles
+                      size={14}
+                      strokeWidth={2.4}
+                      color="rgba(255,255,255,0.9)"
+                    />
                   </motion.span>
                   <IcoStar />
                   Level {level} Loop Breaker
@@ -932,7 +987,9 @@ export default function DashboardClient({
                         background: "#5ddba8",
                         display: "inline-block",
                         flexShrink: 0,
-                        animation: reduceMotion ? "none" : "pulseDot 2s infinite",
+                        animation: reduceMotion
+                          ? "none"
+                          : "pulseDot 2s infinite",
                       }}
                     />
                     {greet}
@@ -957,7 +1014,9 @@ export default function DashboardClient({
                         lineHeight: 1.1,
                         display: "inline-flex",
                         alignItems: "baseline",
-                        animation: reduceMotion ? "none" : "nameGlow 3.8s ease-in-out 1.5s infinite",
+                        animation: reduceMotion
+                          ? "none"
+                          : "nameGlow 3.8s ease-in-out 1.5s infinite",
                       }}
                     >
                       {(name + "!").split("").map((char, i) => (
@@ -968,7 +1027,12 @@ export default function DashboardClient({
                           transition={
                             reduceMotion
                               ? { duration: 0 }
-                              : { delay: 0.28 + i * 0.07, type: "spring", bounce: 0.62, duration: 0.5 }
+                              : {
+                                  delay: 0.28 + i * 0.07,
+                                  type: "spring",
+                                  bounce: 0.62,
+                                  duration: 0.5,
+                                }
                           }
                           style={{
                             display: "inline-block",
@@ -982,7 +1046,9 @@ export default function DashboardClient({
                     <motion.span
                       aria-hidden
                       animate={
-                        reduceMotion ? undefined : { rotate: [0, 22, -12, 16, -8, 0] }
+                        reduceMotion
+                          ? undefined
+                          : { rotate: [0, 22, -12, 16, -8, 0] }
                       }
                       transition={{
                         repeat: Infinity,
@@ -993,8 +1059,7 @@ export default function DashboardClient({
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
-                        filter:
-                          "drop-shadow(0 3px 6px rgba(0,0,0,.38))",
+                        filter: "drop-shadow(0 3px 6px rgba(0,0,0,.38))",
                       }}
                     >
                       <Hand size={31} strokeWidth={2} color="#fff" />
@@ -1020,16 +1085,20 @@ export default function DashboardClient({
                         reduceMotion
                           ? undefined
                           : {
-                            y: [0, -5, 0],
-                            rotate: [0, -1.5, 1.5, 0],
-                            boxShadow: [
-                              "0 8px 24px rgba(0,0,0,.35), 0 0 0 0 rgba(93,219,168,.55)",
-                              "0 8px 24px rgba(0,0,0,.35), 0 0 0 10px rgba(93,219,168,0)",
-                              "0 8px 24px rgba(0,0,0,.35), 0 0 0 0 rgba(93,219,168,0)",
-                            ],
-                          }
+                              y: [0, -5, 0],
+                              rotate: [0, -1.5, 1.5, 0],
+                              boxShadow: [
+                                "0 8px 24px rgba(0,0,0,.35), 0 0 0 0 rgba(93,219,168,.55)",
+                                "0 8px 24px rgba(0,0,0,.35), 0 0 0 10px rgba(93,219,168,0)",
+                                "0 8px 24px rgba(0,0,0,.35), 0 0 0 0 rgba(93,219,168,0)",
+                              ],
+                            }
                       }
-                      transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+                      transition={{
+                        duration: 3.8,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
                       style={{
                         padding: "2px",
                         borderRadius: 16,
@@ -1058,34 +1127,72 @@ export default function DashboardClient({
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.5, type: "spring", bounce: 0.55 }}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 3,
+                    }}
                   >
                     <motion.div
                       animate={
                         reduceMotion
                           ? undefined
                           : {
-                            scaleY: [1, 1.07, 0.95, 1.05, 1],
-                            scaleX: [1, 0.96, 1.02, 0.97, 1],
-                          }
+                              scaleY: [1, 1.07, 0.95, 1.05, 1],
+                              scaleX: [1, 0.96, 1.02, 0.97, 1],
+                            }
                       }
-                      transition={{ duration: 1.9, repeat: Infinity, ease: "easeInOut" }}
+                      transition={{
+                        duration: 1.9,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
                       style={{ position: "relative", width: 44, height: 52 }}
                     >
-                      <svg width="44" height="52" viewBox="0 0 44 52" fill="none" style={{ display: "block" }}>
+                      <svg
+                        width="44"
+                        height="52"
+                        viewBox="0 0 44 52"
+                        fill="none"
+                        style={{ display: "block" }}
+                      >
                         <defs>
-                          <linearGradient id="outerFlame" x1="22" y1="2" x2="22" y2="44" gradientUnits="userSpaceOnUse">
+                          <linearGradient
+                            id="outerFlame"
+                            x1="22"
+                            y1="2"
+                            x2="22"
+                            y2="44"
+                            gradientUnits="userSpaceOnUse"
+                          >
                             <stop offset="0%" stopColor="#ffb300" />
                             <stop offset="55%" stopColor="#f55a1f" />
                             <stop offset="100%" stopColor="#e07b5a" />
                           </linearGradient>
-                          <linearGradient id="innerFlame" x1="22" y1="20" x2="22" y2="44" gradientUnits="userSpaceOnUse">
+                          <linearGradient
+                            id="innerFlame"
+                            x1="22"
+                            y1="20"
+                            x2="22"
+                            y2="44"
+                            gradientUnits="userSpaceOnUse"
+                          >
                             <stop offset="0%" stopColor="#fff9c4" />
                             <stop offset="100%" stopColor="#ffd54f" />
                           </linearGradient>
-                          <filter id="flameglow" x="-30%" y="-30%" width="160%" height="160%">
+                          <filter
+                            id="flameglow"
+                            x="-30%"
+                            y="-30%"
+                            width="160%"
+                            height="160%"
+                          >
                             <feGaussianBlur stdDeviation="2.5" result="blur" />
-                            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                            <feMerge>
+                              <feMergeNode in="blur" />
+                              <feMergeNode in="SourceGraphic" />
+                            </feMerge>
                           </filter>
                         </defs>
                         <path
@@ -1150,7 +1257,9 @@ export default function DashboardClient({
                 >
                   XP to Level {level + 1}
                 </span>
-                <span style={{ fontSize: 11, fontWeight: 800, color: "#5ddba8" }}>
+                <span
+                  style={{ fontSize: 11, fontWeight: 800, color: "#5ddba8" }}
+                >
                   {xpInLvl}/500
                 </span>
               </div>
@@ -1197,7 +1306,9 @@ export default function DashboardClient({
                 href="/insights"
                 style={{ textDecoration: "none", color: "inherit" }}
               >
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div
+                  style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
+                >
                   <span
                     style={{
                       fontSize: 28,
@@ -1349,7 +1460,11 @@ export default function DashboardClient({
                   {label}
                 </div>
                 <div
-                  style={{ fontSize: 10, fontWeight: 500, color: "var(--text2)" }}
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 500,
+                    color: "var(--text2)",
+                  }}
                 >
                   {sub}
                 </div>
@@ -1364,7 +1479,8 @@ export default function DashboardClient({
               animate={{ opacity: 1, y: 0 }}
               className="push-banner"
               style={{
-                background: "var(--bg2)", border: "2px solid #5a8f6a44",
+                background: "var(--bg2)",
+                border: "2px solid #5a8f6a44",
                 borderRadius: 16,
                 padding: "12px 16px",
                 marginBottom: 0,
@@ -1373,11 +1489,25 @@ export default function DashboardClient({
             >
               <span style={{ fontSize: 22, flexShrink: 0 }}>🔔</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text1)", marginBottom: 2 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: "var(--text1)",
+                    marginBottom: 2,
+                  }}
+                >
                   Enable daily reminders
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text2)" }}>
-                  We&apos;ll nudge you once a day if you haven&apos;t checked in.
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "var(--text2)",
+                  }}
+                >
+                  We&apos;ll nudge you once a day if you haven&apos;t checked
+                  in.
                 </div>
               </div>
               <button
@@ -1385,9 +1515,16 @@ export default function DashboardClient({
                 className="push-enable"
                 onClick={subscribePush}
                 style={{
-                  background: "#5a8f6a", color: "white", border: "2px solid rgba(0,0,0,.12)",
-                  borderRadius: 10, padding: "7px 14px", fontSize: 12, fontWeight: 800,
-                  cursor: "pointer", fontFamily: "'Nunito',sans-serif", flexShrink: 0,
+                  background: "#5a8f6a",
+                  color: "white",
+                  border: "2px solid rgba(0,0,0,.12)",
+                  borderRadius: 10,
+                  padding: "7px 14px",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  fontFamily: "'Nunito',sans-serif",
+                  flexShrink: 0,
                 }}
               >
                 Enable
@@ -1411,7 +1548,9 @@ export default function DashboardClient({
               boxShadow: "2px 2px 0 var(--shadow-amber)",
             }}
           >
-            <div style={{ color: "var(--amber2)", flexShrink: 0, marginTop: 2 }}>
+            <div
+              style={{ color: "var(--amber2)", flexShrink: 0, marginTop: 2 }}
+            >
               <IcoAlert />
             </div>
             <div>
@@ -1468,15 +1607,23 @@ export default function DashboardClient({
               </div>
               <div style={{ flex: 1, minWidth: "min(100%, 200px)" }}>
                 <div
-                  style={{ fontSize: 13, fontWeight: 800, color: "var(--text1)" }}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: "var(--text1)",
+                  }}
                 >
                   Your {streak}-day streak is at risk!
                 </div>
                 <div
-                  style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)" }}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "var(--text3)",
+                  }}
                 >
-                  Missing today will reset your streak to 0. You've worked hard -
-                  check in now.
+                  Missing today will reset your streak to 0. You've worked hard
+                  - check in now.
                 </div>
               </div>
               <Link
@@ -1621,7 +1768,9 @@ export default function DashboardClient({
                 </button>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
                 {!editing && (
                   <div className="qc-xp-pills" aria-hidden>
                     <span className="qc-xp-pill">+20 XP on log</span>
@@ -1710,12 +1859,13 @@ export default function DashboardClient({
                     style={{
                       width: "100%",
                       marginBottom: 0,
-                      background: `linear-gradient(to right,${stress <= 3
+                      background: `linear-gradient(to right,${
+                        stress <= 3
                           ? "#5a8f6a"
                           : stress <= 6
                             ? "#c9982a"
                             : "#e07b5a"
-                        } ${((stress - 1) / 9) * 100}%,#fde8c8 0%)`,
+                      } ${((stress - 1) / 9) * 100}%,#fde8c8 0%)`,
                     }}
                   />
                 </div>
@@ -1775,7 +1925,9 @@ export default function DashboardClient({
                       exit={{ opacity: 0 }}
                     >
                       <span aria-hidden>👆</span> Pick how you feel - unlocks{" "}
-                      <strong style={{ color: "var(--text1)" }}>Log check-in</strong>
+                      <strong style={{ color: "var(--text1)" }}>
+                        Log check-in
+                      </strong>
                       .
                     </motion.div>
                   )}
@@ -2008,7 +2160,9 @@ export default function DashboardClient({
                             >
                               {title}
                             </div>
-                            <div style={{ fontSize: 11, color: "var(--text2)" }}>
+                            <div
+                              style={{ fontSize: 11, color: "var(--text2)" }}
+                            >
                               {desc}
                             </div>
                           </div>

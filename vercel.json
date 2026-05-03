@@ -9,10 +9,6 @@
       "schedule": "0 9 * * *"
     },
     {
-      "path": "/api/cron/urge-followup",
-      "schedule": "*/30 * * * *"
-    },
-    {
       "path": "/api/cron/risk-monitor",
       "schedule": "0 6 * * *"
     }

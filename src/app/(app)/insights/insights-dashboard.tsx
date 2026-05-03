@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { CorrelationInsightData } from "@/lib/insights-engine";
 
 // Decomposed tabs
-import InsightsTabBar, { type InsightsTab } from "@/components/insights/tabs/InsightsTabBar";
+import InsightsTabBar, {
+  type InsightsTab,
+} from "@/components/insights/tabs/InsightsTabBar";
 import TabToday from "@/components/insights/tabs/TabToday";
 import TabTrends from "@/components/insights/tabs/TabTrends";
 import TabDeepScan from "@/components/insights/tabs/TabDeepScan";
@@ -75,8 +77,7 @@ const TAB_HINTS: Record<InsightsTab, string> = {
     "See how stress, urges, and timing line up when you have enough history.",
   trends:
     "Charts and habits over the last month - scroll one section at a time.",
-  deepscan:
-    "Extra transparency: model notes and how your data is handled.",
+  deepscan: "Extra transparency: model notes and how your data is handled.",
 };
 
 // ── Main dashboard ─────────────────────────────────────────────────────────────

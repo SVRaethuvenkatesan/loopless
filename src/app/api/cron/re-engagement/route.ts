@@ -7,7 +7,9 @@ import { withDb } from "@/lib/db/with-db";
 import { sendPushToUser } from "@/lib/push";
 
 function authOk(req: Request) {
-  return req.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`;
+  return (
+    req.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`
+  );
 }
 
 export async function GET(req: Request) {
@@ -17,7 +19,8 @@ export async function GET(req: Request) {
 
   try {
     const result = await withDb(async (db) => {
-      const { checkins, pushSubscriptions, nudgeLogs } = await import("@/lib/db/schema");
+      const { checkins, pushSubscriptions, nudgeLogs } =
+        await import("@/lib/db/schema");
       const { eq, gte, lt, and, inArray } = await import("drizzle-orm");
 
       const now = new Date();
@@ -45,10 +48,12 @@ export async function GET(req: Request) {
       const olderActivity = await db
         .selectDistinct({ userId: checkins.userId })
         .from(checkins)
-        .where(and(
-          gte(checkins.checkedInAt, fourDaysAgo),
-          lt(checkins.checkedInAt, threeDaysAgo),
-        ));
+        .where(
+          and(
+            gte(checkins.checkedInAt, fourDaysAgo),
+            lt(checkins.checkedInAt, threeDaysAgo),
+          ),
+        );
 
       const olderIds = new Set(olderActivity.map((c) => c.userId));
 
@@ -56,15 +61,18 @@ export async function GET(req: Request) {
       const recentNudges = await db
         .selectDistinct({ userId: nudgeLogs.userId })
         .from(nudgeLogs)
-        .where(and(
-          eq(nudgeLogs.nudgeType, "re-engagement"),
-          gte(nudgeLogs.sentAt, threeDaysAgo),
-        ));
+        .where(
+          and(
+            eq(nudgeLogs.nudgeType, "re-engagement"),
+            gte(nudgeLogs.sentAt, threeDaysAgo),
+          ),
+        );
 
       const recentlySentIds = new Set(recentNudges.map((n) => n.userId));
 
       const toNotify = userIds.filter(
-        (id) => !activeIds.has(id) && olderIds.has(id) && !recentlySentIds.has(id),
+        (id) =>
+          !activeIds.has(id) && olderIds.has(id) && !recentlySentIds.has(id),
       );
 
       let sent = 0;
@@ -75,7 +83,9 @@ export async function GET(req: Request) {
           url: "/checkin",
         });
         if (n > 0) {
-          await db.insert(nudgeLogs).values({ userId, nudgeType: "re-engagement" });
+          await db
+            .insert(nudgeLogs)
+            .values({ userId, nudgeType: "re-engagement" });
           sent++;
         }
       }

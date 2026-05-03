@@ -21,14 +21,20 @@ export async function sendPushToUser(
   const subs = await withDb(async (db) => {
     const { pushSubscriptions } = await import("@/lib/db/schema");
     const { eq } = await import("drizzle-orm");
-    return db.select().from(pushSubscriptions).where(eq(pushSubscriptions.userId, userId));
+    return db
+      .select()
+      .from(pushSubscriptions)
+      .where(eq(pushSubscriptions.userId, userId));
   });
 
   let sent = 0;
   for (const sub of subs) {
     try {
       await webPush.sendNotification(
-        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dhKey, auth: sub.authKey } },
+        {
+          endpoint: sub.endpoint,
+          keys: { p256dh: sub.p256dhKey, auth: sub.authKey },
+        },
         JSON.stringify({ ...payload, icon: payload.icon ?? "/icon.png" }),
       );
       sent++;
@@ -38,7 +44,9 @@ export async function sendPushToUser(
         await withDb(async (db) => {
           const { pushSubscriptions } = await import("@/lib/db/schema");
           const { eq } = await import("drizzle-orm");
-          await db.delete(pushSubscriptions).where(eq(pushSubscriptions.id, sub.id));
+          await db
+            .delete(pushSubscriptions)
+            .where(eq(pushSubscriptions.id, sub.id));
         });
       }
     }

@@ -544,15 +544,37 @@ function MiniChart({ history }: { history: CheckInRecord[] }) {
 }
 
 /* ─── Streak milestone configs ──────────── */
-const STREAK_MILESTONES: Record<number, { emoji: string; title: string; sub: string }> = {
-  7: { emoji: "🫁", title: "7-day streak!", sub: "Lung cilia are already recovering. Science is on your side." },
-  12: { emoji: "💨", title: "12-day streak!", sub: "Airways less inflamed - breathing is measurably easier." },
-  30: { emoji: "🏆", title: "30-day streak!", sub: "Lung function up to 30% better this month. Incredible." },
-  100: { emoji: "🔥", title: "100 days!", sub: "Your lung cancer risk has started to fall. You changed your biology." },
+const STREAK_MILESTONES: Record<
+  number,
+  { emoji: string; title: string; sub: string }
+> = {
+  7: {
+    emoji: "🫁",
+    title: "7-day streak!",
+    sub: "Lung cilia are already recovering. Science is on your side.",
+  },
+  12: {
+    emoji: "💨",
+    title: "12-day streak!",
+    sub: "Airways less inflamed - breathing is measurably easier.",
+  },
+  30: {
+    emoji: "🏆",
+    title: "30-day streak!",
+    sub: "Lung function up to 30% better this month. Incredible.",
+  },
+  100: {
+    emoji: "🔥",
+    title: "100 days!",
+    sub: "Your lung cancer risk has started to fall. You changed your biology.",
+  },
 };
 
 /* ─── Badge unlock modal ─────────────────── */
-const BADGE_DISPLAY: Record<string, { emoji: string; name: string; color: string }> = {
+const BADGE_DISPLAY: Record<
+  string,
+  { emoji: string; name: string; color: string }
+> = {
   first_checkin: { emoji: "🌱", name: "First Breath", color: "#5a8f6a" },
   streak_7: { emoji: "🫁", name: "Deep Breath", color: "#5bb8f5" },
   streak_12: { emoji: "💨", name: "Clear Airways", color: "#7b6fa0" },
@@ -560,31 +582,115 @@ const BADGE_DISPLAY: Record<string, { emoji: string; name: string; color: string
   streak_100: { emoji: "🔥", name: "Lung Champion", color: "#e07b5a" },
 };
 
-function BadgeUnlockModal({ badgeType, milestoneMsg, onClose }: { badgeType: string; milestoneMsg: string; onClose: () => void }) {
-  const meta = BADGE_DISPLAY[badgeType] ?? { emoji: "🎖️", name: "New Badge", color: "#5a8f6a" };
+function BadgeUnlockModal({
+  badgeType,
+  milestoneMsg,
+  onClose,
+}: {
+  badgeType: string;
+  milestoneMsg: string;
+  onClose: () => void;
+}) {
+  const meta = BADGE_DISPLAY[badgeType] ?? {
+    emoji: "🎖️",
+    name: "New Badge",
+    color: "#5a8f6a",
+  };
   return (
     <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2000,
+        background: "rgba(0,0,0,0.65)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+      }}
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.7, y: 40 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.85, opacity: 0 }}
+        initial={{ scale: 0.7, y: 40 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.85, opacity: 0 }}
         transition={{ type: "spring", bounce: 0.45 }}
         onClick={(e) => e.stopPropagation()}
-        style={{ background: "var(--bg2)", border: `3px solid ${meta.color}`, borderRadius: 28, padding: "32px 28px", maxWidth: 340, width: "100%", textAlign: "center", boxShadow: `0 0 40px ${meta.color}44, 0 20px 60px rgba(0,0,0,0.3)` }}
+        style={{
+          background: "var(--bg2)",
+          border: `3px solid ${meta.color}`,
+          borderRadius: 28,
+          padding: "32px 28px",
+          maxWidth: 340,
+          width: "100%",
+          textAlign: "center",
+          boxShadow: `0 0 40px ${meta.color}44, 0 20px 60px rgba(0,0,0,0.3)`,
+        }}
       >
         <motion.div
-          animate={{ scale: [1, 1.3, 0.9, 1.15, 1], rotate: [0, -12, 12, -6, 0] }}
+          animate={{
+            scale: [1, 1.3, 0.9, 1.15, 1],
+            rotate: [0, -12, 12, -6, 0],
+          }}
           transition={{ duration: 0.7 }}
           style={{ fontSize: 80, display: "inline-block", marginBottom: 12 }}
         >
           {meta.emoji}
         </motion.div>
-        <div style={{ fontSize: 11, fontWeight: 800, color: meta.color, textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 6 }}>Badge unlocked!</div>
-        <div style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 26, fontWeight: 600, color: "var(--text1)", marginBottom: 8 }}>{meta.name}</div>
-        {milestoneMsg && <p style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text2)", lineHeight: 1.6, marginBottom: 20 }}>{milestoneMsg}</p>}
-        <button onClick={onClose} style={{ background: meta.color, color: "white", border: "2.5px solid rgba(0,0,0,.15)", borderRadius: 14, padding: "12px 28px", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Nunito',sans-serif", boxShadow: "3px 3px 0 rgba(0,0,0,.15)" }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 800,
+            color: meta.color,
+            textTransform: "uppercase",
+            letterSpacing: ".1em",
+            marginBottom: 6,
+          }}
+        >
+          Badge unlocked!
+        </div>
+        <div
+          style={{
+            fontFamily: "'Fredoka',sans-serif",
+            fontSize: 26,
+            fontWeight: 600,
+            color: "var(--text1)",
+            marginBottom: 8,
+          }}
+        >
+          {meta.name}
+        </div>
+        {milestoneMsg && (
+          <p
+            style={{
+              fontSize: 13.5,
+              fontWeight: 600,
+              color: "var(--text2)",
+              lineHeight: 1.6,
+              marginBottom: 20,
+            }}
+          >
+            {milestoneMsg}
+          </p>
+        )}
+        <button
+          onClick={onClose}
+          style={{
+            background: meta.color,
+            color: "white",
+            border: "2.5px solid rgba(0,0,0,.15)",
+            borderRadius: 14,
+            padding: "12px 28px",
+            fontSize: 15,
+            fontWeight: 800,
+            cursor: "pointer",
+            fontFamily: "'Nunito',sans-serif",
+            boxShadow: "3px 3px 0 rgba(0,0,0,.15)",
+          }}
+        >
           Keep it up! 💪
         </button>
       </motion.div>
@@ -592,26 +698,107 @@ function BadgeUnlockModal({ badgeType, milestoneMsg, onClose }: { badgeType: str
   );
 }
 
-function LevelUpModal({ newLevel, onClose }: { newLevel: number; onClose: () => void }) {
+function LevelUpModal({
+  newLevel,
+  onClose,
+}: {
+  newLevel: number;
+  onClose: () => void;
+}) {
   return (
     <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: "fixed", inset: 0, zIndex: 2100, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2100,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+      }}
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.5, y: 60 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}
+        initial={{ scale: 0.5, y: 60 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: "spring", bounce: 0.5 }}
         onClick={(e) => e.stopPropagation()}
-        style={{ background: "linear-gradient(135deg,#1a3d28,#2d5a3d)", border: "3px solid #5ddba8", borderRadius: 28, padding: "36px 28px", maxWidth: 320, width: "100%", textAlign: "center", boxShadow: "0 0 60px rgba(93,219,168,.35), 0 20px 60px rgba(0,0,0,.4)" }}
+        style={{
+          background: "linear-gradient(135deg,#1a3d28,#2d5a3d)",
+          border: "3px solid #5ddba8",
+          borderRadius: 28,
+          padding: "36px 28px",
+          maxWidth: 320,
+          width: "100%",
+          textAlign: "center",
+          boxShadow:
+            "0 0 60px rgba(93,219,168,.35), 0 20px 60px rgba(0,0,0,.4)",
+        }}
       >
-        <motion.div animate={{ scale: [1, 1.4, 0.85, 1.2, 1], rotate: [0, 20, -20, 10, 0] }} transition={{ duration: 0.9 }} style={{ fontSize: 80, display: "inline-block", marginBottom: 10 }}>⚡</motion.div>
-        <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(255,255,255,.6)", textTransform: "uppercase", letterSpacing: ".12em", marginBottom: 4 }}>Level up!</div>
-        <div style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 52, fontWeight: 600, color: "#5ddba8", lineHeight: 1 }}>Lv {newLevel}</div>
-        <p style={{ fontSize: 13.5, fontWeight: 600, color: "rgba(255,255,255,.75)", marginTop: 12, marginBottom: 24, lineHeight: 1.6 }}>
+        <motion.div
+          animate={{
+            scale: [1, 1.4, 0.85, 1.2, 1],
+            rotate: [0, 20, -20, 10, 0],
+          }}
+          transition={{ duration: 0.9 }}
+          style={{ fontSize: 80, display: "inline-block", marginBottom: 10 }}
+        >
+          ⚡
+        </motion.div>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 800,
+            color: "rgba(255,255,255,.6)",
+            textTransform: "uppercase",
+            letterSpacing: ".12em",
+            marginBottom: 4,
+          }}
+        >
+          Level up!
+        </div>
+        <div
+          style={{
+            fontFamily: "'Fredoka',sans-serif",
+            fontSize: 52,
+            fontWeight: 600,
+            color: "#5ddba8",
+            lineHeight: 1,
+          }}
+        >
+          Lv {newLevel}
+        </div>
+        <p
+          style={{
+            fontSize: 13.5,
+            fontWeight: 600,
+            color: "rgba(255,255,255,.75)",
+            marginTop: 12,
+            marginBottom: 24,
+            lineHeight: 1.6,
+          }}
+        >
           Your consistency is paying off. Every check-in rewires the loop.
         </p>
-        <button onClick={onClose} style={{ background: "#5ddba8", color: "#0a1a10", border: "none", borderRadius: 14, padding: "12px 28px", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Nunito',sans-serif" }}>
+        <button
+          onClick={onClose}
+          style={{
+            background: "#5ddba8",
+            color: "#0a1a10",
+            border: "none",
+            borderRadius: 14,
+            padding: "12px 28px",
+            fontSize: 15,
+            fontWeight: 800,
+            cursor: "pointer",
+            fontFamily: "'Nunito',sans-serif",
+          }}
+        >
           Let&apos;s go! 🚀
         </button>
       </motion.div>
@@ -660,7 +847,11 @@ export default function CheckInPage() {
   const [badgeQueue, setBadgeQueue] = useState<string[]>([]);
   const [currentBadge, setCurrentBadge] = useState<string | null>(null);
   const [milestoneMsg, setMilestoneMsg] = useState("");
-  const [streakCelebration, setStreakCelebration] = useState<{ emoji: string; title: string; sub: string } | null>(null);
+  const [streakCelebration, setStreakCelebration] = useState<{
+    emoji: string;
+    title: string;
+    sub: string;
+  } | null>(null);
   const [levelUp, setLevelUp] = useState<number | null>(null);
 
   // Direct stress hint - no useEffect needed
@@ -676,7 +867,7 @@ export default function CheckInPage() {
           setAlreadyDone(true);
           setTodayEntry(d.checkin);
         }
-      } catch { }
+      } catch {}
     })();
   }, []);
 
@@ -699,7 +890,7 @@ export default function CheckInPage() {
           const id = await ir.json();
           if (id.insight) setAiInsight(id.insight);
         }
-      } catch { }
+      } catch {}
       setHistLoading(false);
       setInsightLoading(false);
     })();
@@ -756,7 +947,7 @@ export default function CheckInPage() {
       });
       const d = await r.json();
       if (d.message) setMilestoneMsg(d.message);
-    } catch { }
+    } catch {}
   }
 
   async function submit(e: React.MouseEvent) {
@@ -816,10 +1007,10 @@ export default function CheckInPage() {
                 }
               }
             })
-            .catch(() => { });
+            .catch(() => {});
         }
       }
-    } catch { }
+    } catch {}
     setLoading(false);
     setSubmitted(true);
   }
@@ -829,8 +1020,8 @@ export default function CheckInPage() {
   // History analytics
   const avgStress = history.length
     ? +(
-      history.reduce((s, h) => s + h.stressLevel, 0) / history.length
-    ).toFixed(1)
+        history.reduce((s, h) => s + h.stressLevel, 0) / history.length
+      ).toFixed(1)
     : 0;
   const totalDays = history.length;
   const highDays = history.filter((h) => h.stressLevel >= 7).length;
@@ -905,7 +1096,16 @@ export default function CheckInPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ position: "fixed", inset: 0, zIndex: 1900, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1900,
+              background: "rgba(0,0,0,0.55)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 20,
+            }}
             onClick={() => setStreakCelebration(null)}
           >
             <motion.div
@@ -914,14 +1114,65 @@ export default function CheckInPage() {
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", bounce: 0.4 }}
               onClick={(e) => e.stopPropagation()}
-              style={{ background: "var(--bg2)", border: "3px solid #f5c842", borderRadius: 28, padding: "32px 28px", maxWidth: 340, width: "100%", textAlign: "center", boxShadow: "0 0 40px rgba(245,200,66,.4), 0 20px 60px rgba(0,0,0,.3)" }}
+              style={{
+                background: "var(--bg2)",
+                border: "3px solid #f5c842",
+                borderRadius: 28,
+                padding: "32px 28px",
+                maxWidth: 340,
+                width: "100%",
+                textAlign: "center",
+                boxShadow:
+                  "0 0 40px rgba(245,200,66,.4), 0 20px 60px rgba(0,0,0,.3)",
+              }}
             >
-              <motion.div animate={{ scale: [1, 1.25, 0.9, 1.1, 1] }} transition={{ duration: 0.7 }} style={{ fontSize: 72, display: "inline-block", marginBottom: 12 }}>
+              <motion.div
+                animate={{ scale: [1, 1.25, 0.9, 1.1, 1] }}
+                transition={{ duration: 0.7 }}
+                style={{
+                  fontSize: 72,
+                  display: "inline-block",
+                  marginBottom: 12,
+                }}
+              >
                 {streakCelebration.emoji}
               </motion.div>
-              <div style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 26, fontWeight: 600, color: "#c9982a", marginBottom: 8 }}>{streakCelebration.title}</div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text2)", lineHeight: 1.6, marginBottom: 20 }}>{streakCelebration.sub}</p>
-              <button onClick={() => setStreakCelebration(null)} style={{ background: "#f5c842", color: "#1a1208", border: "2.5px solid rgba(0,0,0,.12)", borderRadius: 14, padding: "12px 28px", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Nunito',sans-serif" }}>
+              <div
+                style={{
+                  fontFamily: "'Fredoka',sans-serif",
+                  fontSize: 26,
+                  fontWeight: 600,
+                  color: "#c9982a",
+                  marginBottom: 8,
+                }}
+              >
+                {streakCelebration.title}
+              </div>
+              <p
+                style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "var(--text2)",
+                  lineHeight: 1.6,
+                  marginBottom: 20,
+                }}
+              >
+                {streakCelebration.sub}
+              </p>
+              <button
+                onClick={() => setStreakCelebration(null)}
+                style={{
+                  background: "#f5c842",
+                  color: "#1a1208",
+                  border: "2.5px solid rgba(0,0,0,.12)",
+                  borderRadius: 14,
+                  padding: "12px 28px",
+                  fontSize: 15,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  fontFamily: "'Nunito',sans-serif",
+                }}
+              >
                 Keep going! 🔥
               </button>
             </motion.div>
@@ -952,7 +1203,11 @@ export default function CheckInPage() {
       {/* Level-up modal */}
       <AnimatePresence>
         {levelUp !== null && !currentBadge && (
-          <LevelUpModal key="levelup" newLevel={levelUp} onClose={() => setLevelUp(null)} />
+          <LevelUpModal
+            key="levelup"
+            newLevel={levelUp}
+            onClose={() => setLevelUp(null)}
+          />
         )}
       </AnimatePresence>
 
@@ -1574,9 +1829,9 @@ export default function CheckInPage() {
                               animate={
                                 sel
                                   ? {
-                                    scale: [1, 1.4, 0.85, 1.15, 1],
-                                    rotate: [0, -14, 14, -6, 0],
-                                  }
+                                      scale: [1, 1.4, 0.85, 1.15, 1],
+                                      rotate: [0, -14, 14, -6, 0],
+                                    }
                                   : { scale: 1, rotate: 0 }
                               }
                               transition={{ duration: 0.4, ease: "easeOut" }}

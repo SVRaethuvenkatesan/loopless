@@ -5,16 +5,24 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
 const MILESTONE_FALLBACKS: Record<string, string> = {
-  first_checkin: "You took the first step. That takes courage - most people never even start. 🌱",
-  streak_7: "One full week. Your lung cilia are already recovering. The hardest part is behind you. 💪",
-  streak_12: "12 days. Your airways are measurably less inflamed right now. This is science, not just motivation. 🫁",
-  streak_30: "A whole month. Lung function improves up to 30% in the first 30 days - you're living proof. 🏆",
-  streak_100: "100 days. Your lung cancer risk has already started dropping. You didn't just break a habit - you changed your biology. 🔥",
-  level_up: "Level up! Your consistency is paying off - you're building the neural pathways of a non-smoker. ⚡",
+  first_checkin:
+    "You took the first step. That takes courage - most people never even start. 🌱",
+  streak_7:
+    "One full week. Your lung cilia are already recovering. The hardest part is behind you. 💪",
+  streak_12:
+    "12 days. Your airways are measurably less inflamed right now. This is science, not just motivation. 🫁",
+  streak_30:
+    "A whole month. Lung function improves up to 30% in the first 30 days - you're living proof. 🏆",
+  streak_100:
+    "100 days. Your lung cancer risk has already started dropping. You didn't just break a habit - you changed your biology. 🔥",
+  level_up:
+    "Level up! Your consistency is paying off - you're building the neural pathways of a non-smoker. ⚡",
 };
 
 export async function POST(req: Request) {
-  let milestone = "", streak = 0, userName = "there";
+  let milestone = "",
+    streak = 0,
+    userName = "there";
   try {
     const session = await auth();
     userName = session?.user?.name?.split(" ")[0] ?? "there";
@@ -22,7 +30,10 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ message: MILESTONE_FALLBACKS[milestone] ?? MILESTONE_FALLBACKS.first_checkin });
+      return NextResponse.json({
+        message:
+          MILESTONE_FALLBACKS[milestone] ?? MILESTONE_FALLBACKS.first_checkin,
+      });
     }
 
     const descriptions: Record<string, string> = {
@@ -35,12 +46,17 @@ export async function POST(req: Request) {
     };
 
     const lungFacts: Record<string, string> = {
-      first_checkin: "After 20 minutes of not smoking, heart rate and blood pressure drop.",
-      streak_7: "After 1 week, lung cilia (tiny hair-like structures) begin to recover and regrow.",
-      streak_12: "After 12 days, airways are less inflamed and breathing becomes noticeably easier.",
+      first_checkin:
+        "After 20 minutes of not smoking, heart rate and blood pressure drop.",
+      streak_7:
+        "After 1 week, lung cilia (tiny hair-like structures) begin to recover and regrow.",
+      streak_12:
+        "After 12 days, airways are less inflamed and breathing becomes noticeably easier.",
       streak_30: "After 30 days, lung function can improve by up to 30%.",
-      streak_100: "After 100 days, the risk of lung cancer starts to fall significantly.",
-      level_up: "Every day without nicotine, the brain's reward pathways slowly rewire toward healthier patterns.",
+      streak_100:
+        "After 100 days, the risk of lung cancer starts to fall significantly.",
+      level_up:
+        "Every day without nicotine, the brain's reward pathways slowly rewire toward healthier patterns.",
     };
 
     const prompt = `You are a warm, science-backed wellness coach for Loopless, a quit-nicotine app.
@@ -66,7 +82,10 @@ Respond with ONLY the message - no labels, no quotes.`;
           generationConfig: { maxOutputTokens: 120, temperature: 0.85 },
           safetySettings: [
             { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_NONE",
+            },
           ],
         }),
       },
@@ -75,9 +94,14 @@ Respond with ONLY the message - no labels, no quotes.`;
     if (!res.ok) throw new Error(`Gemini ${res.status}`);
     const data = await res.json();
     const message = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-    return NextResponse.json({ message: message || MILESTONE_FALLBACKS[milestone] });
+    return NextResponse.json({
+      message: message || MILESTONE_FALLBACKS[milestone],
+    });
   } catch (err) {
     console.error("milestone-message:", err);
-    return NextResponse.json({ message: MILESTONE_FALLBACKS[milestone] ?? MILESTONE_FALLBACKS.first_checkin });
+    return NextResponse.json({
+      message:
+        MILESTONE_FALLBACKS[milestone] ?? MILESTONE_FALLBACKS.first_checkin,
+    });
   }
 }

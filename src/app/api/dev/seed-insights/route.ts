@@ -65,11 +65,16 @@ export async function GET(req: Request) {
         ),
       db
         .delete(mlInsights)
-        .where(and(eq(mlInsights.userId, userId), eq(mlInsights.source, "seed"))),
+        .where(
+          and(eq(mlInsights.userId, userId), eq(mlInsights.source, "seed")),
+        ),
       db
         .delete(dailyInsights)
         .where(
-          and(eq(dailyInsights.userId, userId), eq(dailyInsights.source, "seed")),
+          and(
+            eq(dailyInsights.userId, userId),
+            eq(dailyInsights.source, "seed"),
+          ),
         ),
       db
         .delete(riskPredictions)
@@ -164,9 +169,10 @@ export async function GET(req: Request) {
         const stressTrigs = ["stress", "anxiety", "social"];
         const otherTrigs = triggers.filter((t) => !stressTrigs.includes(t));
         // On high-stress days, bias triggers toward stress-related ones
-        const t1 = stress >= 6
-          ? stressTrigs[Math.floor(Math.random() * stressTrigs.length)]
-          : otherTrigs[Math.floor(Math.random() * otherTrigs.length)];
+        const t1 =
+          stress >= 6
+            ? stressTrigs[Math.floor(Math.random() * stressTrigs.length)]
+            : otherTrigs[Math.floor(Math.random() * otherTrigs.length)];
         const t2 = triggers[Math.floor(Math.random() * triggers.length)];
 
         urgeData.push({
@@ -175,7 +181,8 @@ export async function GET(req: Request) {
           triggers: [...new Set([t1, t2])],
           preStress: Math.min(10, stress + Math.floor(Math.random() * 2)),
           intensity: Math.floor(Math.random() * 4) + 5,
-          activityBefore: activities[Math.floor(Math.random() * activities.length)],
+          activityBefore:
+            activities[Math.floor(Math.random() * activities.length)],
           socialContext: "__seed__", // ← TAG
           occurredAt: u,
         });

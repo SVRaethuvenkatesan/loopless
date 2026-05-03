@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RotateCcw, Info, Wind, Footprints, Snowflake, NotebookPen, ChevronRight, Search } from "lucide-react";
+import {
+  RotateCcw,
+  Info,
+  Wind,
+  Footprints,
+  Snowflake,
+  NotebookPen,
+  ChevronRight,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
 
 // AC 7.3.1 - Relapse Pattern Detection with coping tool suggestion
@@ -142,7 +151,9 @@ export default function RelapsePatternCard({
       </p>
 
       {/* Stats chips */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+      <div
+        style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}
+      >
         <div
           style={{
             padding: "6px 12px",
@@ -339,7 +350,9 @@ export default function RelapsePatternCard({
                   Key Risk Factors
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                >
                   {[
                     { label: "High Stress Peak (≥7)", pct: 45 },
                     { label: `Trigger: ${topTrigger}`, pct: 30 },
@@ -372,7 +385,11 @@ export default function RelapsePatternCard({
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${pct}%` }}
-                          transition={{ delay: i * 0.1, duration: 0.6, ease: "easeOut" }}
+                          transition={{
+                            delay: i * 0.1,
+                            duration: 0.6,
+                            ease: "easeOut",
+                          }}
                           style={{
                             height: "100%",
                             background: "var(--coral)",

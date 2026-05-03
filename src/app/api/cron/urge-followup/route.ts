@@ -8,7 +8,9 @@ import { withDb } from "@/lib/db/with-db";
 import { sendPushToUser } from "@/lib/push";
 
 function authOk(req: Request) {
-  return req.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`;
+  return (
+    req.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`
+  );
 }
 
 export async function GET(req: Request) {
@@ -24,7 +26,7 @@ export async function GET(req: Request) {
 
       const now = new Date();
       const windowStart = new Date(now.getTime() - 35 * 60 * 1000); // 35 min ago
-      const windowEnd = new Date(now.getTime() - 25 * 60 * 1000);   // 25 min ago
+      const windowEnd = new Date(now.getTime() - 25 * 60 * 1000); // 25 min ago
       const todayStart = new Date(now);
       todayStart.setUTCHours(0, 0, 0, 0);
 
@@ -32,10 +34,12 @@ export async function GET(req: Request) {
       const recentUrges = await db
         .select()
         .from(urgeEvents)
-        .where(and(
-          gte(urgeEvents.occurredAt, windowStart),
-          lte(urgeEvents.occurredAt, windowEnd),
-        ));
+        .where(
+          and(
+            gte(urgeEvents.occurredAt, windowStart),
+            lte(urgeEvents.occurredAt, windowEnd),
+          ),
+        );
 
       let sent = 0;
       for (const urge of recentUrges) {
@@ -60,11 +64,13 @@ export async function GET(req: Request) {
         const todayNudges = await db
           .select()
           .from(nudgeLogs)
-          .where(and(
-            eq(nudgeLogs.userId, userId),
-            eq(nudgeLogs.nudgeType, "urge-followup"),
-            gte(nudgeLogs.sentAt, todayStart),
-          ));
+          .where(
+            and(
+              eq(nudgeLogs.userId, userId),
+              eq(nudgeLogs.nudgeType, "urge-followup"),
+              gte(nudgeLogs.sentAt, todayStart),
+            ),
+          );
         if (todayNudges.length >= 2) continue;
 
         const n = await sendPushToUser(userId, {

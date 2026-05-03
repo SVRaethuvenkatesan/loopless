@@ -53,7 +53,14 @@ export default function PreviewBanner({ checkinCount }: PreviewBannerProps) {
           </button>
 
           {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 10,
+            }}
+          >
             <div
               style={{
                 width: 36,
@@ -82,8 +89,11 @@ export default function PreviewBanner({ checkinCount }: PreviewBannerProps) {
               >
                 Preview Mode
               </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text2)" }}>
-                Showing example data - your real patterns unlock after {needed} check-ins
+              <div
+                style={{ fontSize: 12, fontWeight: 600, color: "var(--text2)" }}
+              >
+                Showing example data - your real patterns unlock after {needed}{" "}
+                check-ins
               </div>
             </div>
           </div>
@@ -100,8 +110,14 @@ export default function PreviewBanner({ checkinCount }: PreviewBannerProps) {
                 marginBottom: 6,
               }}
             >
-              <span>{checkinCount} of {needed} check-ins</span>
-              <span style={{ color: remaining === 0 ? "var(--mint)" : "var(--amber)" }}>
+              <span>
+                {checkinCount} of {needed} check-ins
+              </span>
+              <span
+                style={{
+                  color: remaining === 0 ? "var(--mint)" : "var(--amber)",
+                }}
+              >
                 {remaining === 0 ? "Unlocked!" : `${remaining} to go`}
               </span>
             </div>
@@ -129,7 +145,14 @@ export default function PreviewBanner({ checkinCount }: PreviewBannerProps) {
               />
             </div>
             {/* Progress dots */}
-            <div style={{ display: "flex", gap: 6, marginTop: 8, justifyContent: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                marginTop: 8,
+                justifyContent: "center",
+              }}
+            >
               {Array.from({ length: needed }).map((_, i) => (
                 <div
                   key={i}
@@ -138,7 +161,8 @@ export default function PreviewBanner({ checkinCount }: PreviewBannerProps) {
                     height: 8,
                     borderRadius: "50%",
                     background: i < checkinCount ? "var(--mint)" : "var(--bg1)",
-                    border: i < checkinCount ? "none" : "1.5px solid var(--border2)",
+                    border:
+                      i < checkinCount ? "none" : "1.5px solid var(--border2)",
                     transition: "background 0.3s",
                   }}
                 />

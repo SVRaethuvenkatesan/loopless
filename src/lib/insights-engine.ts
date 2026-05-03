@@ -127,8 +127,14 @@ export async function computeUserInsights(
         .from(checkins)
         .where(
           seedOnly
-            ? and(eq(checkins.userId, userId), eq(checkins.timezoneOffset, "__seed__"))
-            : and(eq(checkins.userId, userId), ne(checkins.timezoneOffset, "__seed__")),
+            ? and(
+                eq(checkins.userId, userId),
+                eq(checkins.timezoneOffset, "__seed__"),
+              )
+            : and(
+                eq(checkins.userId, userId),
+                ne(checkins.timezoneOffset, "__seed__"),
+              ),
         )
         .orderBy(asc(checkins.checkedInAt)),
       db
@@ -136,8 +142,14 @@ export async function computeUserInsights(
         .from(urgeEvents)
         .where(
           seedOnly
-            ? and(eq(urgeEvents.userId, userId), eq(urgeEvents.socialContext, "__seed__"))
-            : and(eq(urgeEvents.userId, userId), ne(urgeEvents.socialContext, "__seed__")),
+            ? and(
+                eq(urgeEvents.userId, userId),
+                eq(urgeEvents.socialContext, "__seed__"),
+              )
+            : and(
+                eq(urgeEvents.userId, userId),
+                ne(urgeEvents.socialContext, "__seed__"),
+              ),
         )
         .orderBy(asc(urgeEvents.occurredAt)),
     ]);
