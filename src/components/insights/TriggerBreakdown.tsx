@@ -1,57 +1,68 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Zap, SmilePlus, Users, ShieldAlert, Clock, Sun, Coffee, Droplets, Wine, Flame } from "lucide-react";
 
 interface TriggerBreakdownProps {
   triggerCounts: Record<string, number>;
 }
 
-const TRIGGER_DISPLAY: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+const TRIGGER_DISPLAY: Record<string, { label: string; iconColor: string; icon: React.ReactNode }> = {
   stress: {
-    label: "Stress", color: "#e07b5a", bg: "#ffe8e4",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="#e07b5a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    label: "Stress",
+    iconColor: "var(--coral)",
+    icon: <Zap size={14} strokeWidth={2.5} />,
   },
   boredom: {
-    label: "Boredom", color: "#c9982a", bg: "#fffbef",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><circle cx="12" cy="12" r="10" stroke="#c9982a" strokeWidth="2"/><path d="M8 15s1.5-2 4-2 4 2 4 2M9 9h.01M15 9h.01" stroke="#c9982a" strokeWidth="2" strokeLinecap="round"/></svg>,
+    label: "Boredom",
+    iconColor: "var(--amber)",
+    icon: <SmilePlus size={14} strokeWidth={2.5} />,
   },
   social: {
-    label: "Social", color: "#5bb8f5", bg: "#dff0fd",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#5bb8f5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    label: "Social",
+    iconColor: "var(--mint)",
+    icon: <Users size={14} strokeWidth={2.5} />,
   },
   anxiety: {
-    label: "Anxiety", color: "#7b6fa0", bg: "#f0edf8",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#7b6fa0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    label: "Anxiety",
+    iconColor: "var(--text2)",
+    icon: <ShieldAlert size={14} strokeWidth={2.5} />,
   },
   routine: {
-    label: "Routine", color: "#a8936a", bg: "#fef9f0",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><circle cx="12" cy="12" r="10" stroke="#a8936a" strokeWidth="2"/><path d="M12 6v6l4 2" stroke="#a8936a" strokeWidth="2" strokeLinecap="round"/></svg>,
+    label: "Routine",
+    iconColor: "var(--text3)",
+    icon: <Clock size={14} strokeWidth={2.5} />,
   },
   loneliness: {
-    label: "Loneliness", color: "#5bb8f5", bg: "#dff0fd",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="#5bb8f5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="17" y1="11" x2="22" y2="6" stroke="#5bb8f5" strokeWidth="2" strokeLinecap="round"/></svg>,
+    label: "Loneliness",
+    iconColor: "var(--mint)",
+    icon: <Users size={14} strokeWidth={2.5} />,
   },
   "waking-up": {
-    label: "Waking Up", color: "#c9982a", bg: "#fffbef",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><circle cx="12" cy="12" r="4" stroke="#c9982a" strokeWidth="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="#c9982a" strokeWidth="2" strokeLinecap="round"/></svg>,
+    label: "Waking Up",
+    iconColor: "var(--amber)",
+    icon: <Sun size={14} strokeWidth={2.5} />,
   },
   "after-eating": {
-    label: "After Eating", color: "#5a8f6a", bg: "#e8f5ec",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3" stroke="#5a8f6a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    label: "After Eating",
+    iconColor: "var(--mint)",
+    icon: <Coffee size={14} strokeWidth={2.5} />,
   },
   alcohol: {
-    label: "Drinking", color: "#e07b5a", bg: "#ffe8e4",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><path d="M8 22h8M12 11v11M5 2l2 20h10L19 2H5zM5 8h14" stroke="#e07b5a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    label: "Drinking",
+    iconColor: "var(--coral)",
+    icon: <Droplets size={14} strokeWidth={2.5} />,
   },
   excitement: {
-    label: "Excitement", color: "#f5a623", bg: "#fff0c8",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={14} height={14}><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="#f5a623" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    label: "Excitement",
+    iconColor: "var(--amber)",
+    icon: <Flame size={14} strokeWidth={2.5} />,
   },
 };
 
 export default function TriggerBreakdown({ triggerCounts }: TriggerBreakdownProps) {
-  const entries = Object.entries(triggerCounts)
-    .sort(([, a], [, b]) => b - a)
+  const entries = Object.entries(triggerCounts || {})
+    .sort(([, a], [, b]) => Number(b) - Number(a))
     .slice(0, 6);
   const maxCount = Math.max(...entries.map(([, c]) => c), 1);
 
@@ -64,25 +75,47 @@ export default function TriggerBreakdown({ triggerCounts }: TriggerBreakdownProp
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="mb-6"
+      whileHover={{ y: -2 }}
+      className="mb-6 relative overflow-hidden"
       style={{
-        background: "white",
-        border: "2.5px solid #1a1208",
+        background: "var(--bg2)",
+        backdropFilter: "blur(12px)",
+        border: "1.5px solid var(--border3)",
         borderRadius: 20,
-        padding: "22px 20px",
-        boxShadow: "5px 5px 0 rgba(26,18,8,0.1)",
+        padding: "24px 20px",
+        boxShadow: "var(--shadow-card-lg)",
       }}
     >
-      <div style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 18, fontWeight: 600, color: "#1a1208", marginBottom: 4 }}>
+      <div
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: 18,
+          fontWeight: 700,
+          color: "var(--text1)",
+          marginBottom: 4,
+          letterSpacing: "-0.01em",
+        }}
+      >
         What sets you off
       </div>
-      <div style={{ fontSize: 12, fontWeight: 600, color: "#a8936a", marginBottom: 18 }}>
+      <div
+        style={{
+          fontSize: 12,
+          fontWeight: 600,
+          color: "var(--text2)",
+          marginBottom: 20,
+        }}
+      >
         Your top craving triggers this month
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {entries.map(([key, count], i) => {
-          const info = TRIGGER_DISPLAY[key] || { label: key, color: "#a8936a", bg: "#fef9f0", icon: null };
+          const info = TRIGGER_DISPLAY[key] || {
+            label: key,
+            iconColor: "var(--text3)",
+            icon: <Flame size={14} strokeWidth={2.5} />,
+          };
           const pct = Math.round((count / maxCount) * 100);
 
           return (
@@ -92,37 +125,78 @@ export default function TriggerBreakdown({ triggerCounts }: TriggerBreakdownProp
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 + i * 0.07 }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <div style={{
-                    width: 24, height: 24, borderRadius: 7,
-                    background: info.bg, border: `1.5px solid ${info.color}33`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 7,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 8,
+                      background: "var(--bg1)",
+                      border: "1px solid var(--border2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: info.iconColor,
+                      flexShrink: 0,
+                    }}
+                  >
                     {info.icon}
                   </div>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: "#1a1208" }}>{info.label}</span>
+                  <span
+                    style={{
+                      fontSize: 13.5,
+                      fontWeight: 700,
+                      color: "var(--text1)",
+                    }}
+                  >
+                    {info.label}
+                  </span>
                 </div>
-                <span style={{
-                  fontSize: 12, fontWeight: 800, color: info.color,
-                  background: info.bg, padding: "2px 9px",
-                  borderRadius: 50, border: `1.5px solid ${info.color}44`,
-                }}>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: info.iconColor,
+                    background: "var(--bg1)",
+                    padding: "4px 10px",
+                    borderRadius: 50,
+                    border: "1px solid var(--border2)",
+                  }}
+                >
                   {count}×
                 </span>
               </div>
               {/* Animated bar */}
-              <div style={{
-                height: 8, background: "#f5f0e8",
-                borderRadius: 50, overflow: "hidden",
-              }}>
+              <div
+                style={{
+                  height: 8,
+                  background: "var(--bg1)",
+                  borderRadius: 50,
+                  overflow: "hidden",
+                  border: "1px solid var(--border2)",
+                }}
+              >
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
-                  transition={{ delay: 0.2 + i * 0.07, duration: 0.6, ease: "easeOut" }}
+                  transition={{
+                    delay: 0.2 + i * 0.07,
+                    duration: 0.7,
+                    ease: "easeOut",
+                  }}
                   style={{
-                    height: "100%", borderRadius: 50,
-                    background: `linear-gradient(90deg, ${info.color}99, ${info.color})`,
+                    height: "100%",
+                    borderRadius: 50,
+                    background: info.iconColor,
+                    opacity: 0.85,
                   }}
                 />
               </div>

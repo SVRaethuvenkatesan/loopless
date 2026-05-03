@@ -166,15 +166,13 @@ function strengthLabel(rho: number): { label: string; colour: string } {
 
 // ── Shared card chrome ────────────────────────────────────────────────────────
 
-const C = "white",
-  B = "rgba(26,18,8,.1)";
 function card(p: object = {}) {
   return {
-    background: C,
-    border: `2px solid ${B}`,
+    background: "var(--bg2)",
+    border: "1.5px solid var(--border2)",
     borderRadius: 22,
     padding: 18,
-    boxShadow: "4px 4px 0 rgba(26,18,8,.08)",
+    boxShadow: "var(--shadow-card)",
     ...p,
   };
 }
@@ -196,13 +194,13 @@ function SectionHeader({
     <div
       style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}
     >
-      <span style={{ color: "#5a8f6a" }}>{icon}</span>
+      <span style={{ color: "var(--mint)" }}>{icon}</span>
       <span
         style={{
-          fontFamily: "'Fredoka',sans-serif",
+          fontFamily: "var(--font-display)",
           fontSize: 19,
           fontWeight: 600,
-          color: "#1a1208",
+          color: "var(--text1)",
         }}
       >
         {title}
@@ -211,13 +209,13 @@ function SectionHeader({
         <span
           style={{
             marginLeft: "auto",
-            background: tagBg ?? "#e8f5ec",
-            border: `1.5px solid ${tagColor ?? "#5a8f6a"}44`,
+            background: tagBg ?? "var(--bg1)",
+            border: `1.5px solid ${tagColor ?? "var(--mint)"}44`,
             borderRadius: 50,
             padding: "2px 10px",
             fontSize: 10,
             fontWeight: 800,
-            color: tagColor ?? "#3d6b4f",
+            color: tagColor ?? "var(--mint)",
           }}
         >
           {tag}
@@ -252,7 +250,7 @@ function LockedCard({
           marginBottom: 6,
         }}
       >
-        <span style={{ fontSize: 12, fontWeight: 700, color: "#6b5c3e" }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)" }}>
           {current} of {target} {unit}
         </span>
         <div
@@ -260,14 +258,14 @@ function LockedCard({
             display: "flex",
             alignItems: "center",
             gap: 4,
-            background: "#fdf6ef",
-            border: "1.5px solid #e8d5b0",
+            background: "var(--bg1)",
+            border: "1.5px solid var(--border2)",
             borderRadius: 50,
             padding: "2px 8px",
           }}
         >
           <IcoLock />
-          <span style={{ fontSize: 10, fontWeight: 800, color: "#a8936a" }}>
+          <span style={{ fontSize: 10, fontWeight: 800, color: "var(--text3)" }}>
             Locked
           </span>
         </div>
@@ -275,7 +273,7 @@ function LockedCard({
       <div
         style={{
           height: 10,
-          background: "rgba(26,18,8,.07)",
+          background: "var(--bg1)",
           borderRadius: 6,
           overflow: "hidden",
           marginBottom: 8,
@@ -288,14 +286,14 @@ function LockedCard({
           style={{
             height: "100%",
             borderRadius: 6,
-            background: "linear-gradient(90deg,#c9982a,#e0a830)",
+            background: "linear-gradient(90deg,var(--amber),var(--coral))",
           }}
         />
       </div>
       <p
         style={{
           fontSize: 12,
-          color: "#6b5c3e",
+          color: "var(--text2)",
           fontWeight: 500,
           lineHeight: 1.5,
         }}
@@ -327,19 +325,19 @@ function CorrelationCard({ data }: { data: CorrelationInsightData }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.08 }}
-      style={card({ background: "#fff7ed", border: "2px solid #fed7aa" })}
+      style={card()}
     >
       <SectionHeader
         icon={<IcoCorrelation />}
         title="Stress ↔ Urge Link"
         tag={isUnlocked ? "Unlocked" : "14 days"}
-        tagBg={isUnlocked ? "#e8f5ec" : "#fdf6ef"}
-        tagColor={isUnlocked ? "#3d6b4f" : "#b45309"}
+        tagBg={isUnlocked ? "var(--bg1)" : "var(--bg1)"}
+        tagColor={isUnlocked ? "var(--mint)" : "var(--amber)"}
       />
       <p
         style={{
           fontSize: 11,
-          color: "#a8936a",
+          color: "var(--text3)",
           fontWeight: 500,
           marginBottom: 14,
         }}
@@ -364,12 +362,12 @@ function CorrelationCard({ data }: { data: CorrelationInsightData }) {
             gap: 10,
             alignItems: "flex-start",
             padding: "12px 14px",
-            background: "#fdf6ef",
-            border: "1.5px solid #e8d5b0",
+            background: "var(--bg1)",
+            border: "1.5px solid var(--border2)",
             borderRadius: 14,
           }}
         >
-          <span style={{ color: "#c9982a", flexShrink: 0, marginTop: 1 }}>
+          <span style={{ color: "var(--amber)", flexShrink: 0, marginTop: 1 }}>
             <IcoAlert />
           </span>
           <div>
@@ -377,13 +375,13 @@ function CorrelationCard({ data }: { data: CorrelationInsightData }) {
               style={{
                 fontSize: 13,
                 fontWeight: 700,
-                color: "#6b5c3e",
+                color: "var(--text1)",
                 marginBottom: 2,
               }}
             >
               Not enough variation in your data yet for a reliable pattern.
             </p>
-            <p style={{ fontSize: 11, color: "#a8936a", fontWeight: 500 }}>
+            <p style={{ fontSize: 11, color: "var(--text3)", fontWeight: 500 }}>
               Keep logging check-ins with varied stress levels - the engine
               needs contrast to find a signal.
             </p>
@@ -397,19 +395,18 @@ function CorrelationCard({ data }: { data: CorrelationInsightData }) {
           <div
             style={{
               padding: "14px 16px",
-              background: "white",
-              border: "2px solid #fed7aa",
+              background: "var(--bg1)",
+              border: "1.5px solid var(--border2)",
               borderRadius: 16,
               marginBottom: 14,
-              boxShadow: "2px 2px 0 rgba(180,83,9,.08)",
             }}
           >
             <p
               style={{
-                fontFamily: "'Fredoka',sans-serif",
+                fontFamily: "var(--font-display)",
                 fontSize: 16,
                 fontWeight: 600,
-                color: "#7c2d12",
+                color: "var(--coral)",
                 lineHeight: 1.45,
               }}
             >
@@ -426,13 +423,13 @@ function CorrelationCard({ data }: { data: CorrelationInsightData }) {
                 marginBottom: 4,
               }}
             >
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#a8936a" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)" }}>
                 −1.0 Inverse
               </span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#a8936a" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)" }}>
                 No link 0
               </span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#a8936a" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)" }}>
                 Positive +1.0
               </span>
             </div>
@@ -455,7 +452,7 @@ function CorrelationCard({ data }: { data: CorrelationInsightData }) {
                   transform: "translate(-50%,-50%)",
                   width: 20,
                   height: 20,
-                  background: "white",
+                  background: "var(--bg2)",
                   border: `3px solid ${strColour}`,
                   borderRadius: "50%",
                   boxShadow: `0 0 0 3px ${strColour}44`,
@@ -479,15 +476,15 @@ function CorrelationCard({ data }: { data: CorrelationInsightData }) {
                   display: "flex",
                   alignItems: "center",
                   gap: 4,
-                  background: "#e8f5ec",
-                  border: "1.5px solid #5a8f6a44",
+                  background: "var(--bg1)",
+                  border: "1.5px solid var(--border2)",
                   borderRadius: 50,
                   padding: "2px 8px",
                 }}
               >
                 <IcoCheck />
                 <span
-                  style={{ fontSize: 10, fontWeight: 800, color: "#3d6b4f" }}
+                  style={{ fontSize: 10, fontWeight: 800, color: "var(--mint)" }}
                 >
                   p = {pValue!.toFixed(3)}
                 </span>
@@ -521,19 +518,19 @@ function TriggerCard({ data }: { data: CorrelationInsightData }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.16 }}
-      style={card({ background: "#dff0fd", border: "2px solid #5bb8f544" })}
+      style={card()}
     >
       <SectionHeader
         icon={<IcoTrigger />}
         title="Trigger Probability"
         tag={isLocked ? "10 urges" : "Unlocked"}
-        tagBg={isLocked ? "#fdf6ef" : "#e8f5ec"}
-        tagColor={isLocked ? "#b45309" : "#3d6b4f"}
+        tagBg={isLocked ? "var(--bg1)" : "var(--bg1)"}
+        tagColor={isLocked ? "var(--amber)" : "var(--mint)"}
       />
       <p
         style={{
           fontSize: 11,
-          color: "#4a7a99",
+          color: "var(--text3)",
           fontWeight: 500,
           marginBottom: 14,
         }}
@@ -555,19 +552,18 @@ function TriggerCard({ data }: { data: CorrelationInsightData }) {
             <div
               style={{
                 padding: "12px 14px",
-                background: "white",
-                border: "2px solid #5bb8f544",
+                background: "var(--bg1)",
+                border: "1.5px solid var(--border2)",
                 borderRadius: 14,
                 marginBottom: 14,
-                boxShadow: "2px 2px 0 rgba(91,184,245,.12)",
               }}
             >
               <p
                 style={{
-                  fontFamily: "'Fredoka',sans-serif",
+                  fontFamily: "var(--font-display)",
                   fontSize: 15,
                   fontWeight: 600,
-                  color: "#1a4a66",
+                  color: "var(--text1)",
                   lineHeight: 1.4,
                 }}
               >
@@ -596,7 +592,7 @@ function TriggerCard({ data }: { data: CorrelationInsightData }) {
                     style={{
                       fontSize: 11,
                       fontWeight: 700,
-                      color: "#3a6b8a",
+                      color: "var(--text2)",
                       minWidth: 110,
                     }}
                   >
@@ -616,7 +612,7 @@ function TriggerCard({ data }: { data: CorrelationInsightData }) {
                 <div
                   style={{
                     height: 8,
-                    background: "rgba(26,18,8,.07)",
+                    background: "var(--bg1)",
                     borderRadius: 5,
                     overflow: "hidden",
                   }}
@@ -643,7 +639,7 @@ function TriggerCard({ data }: { data: CorrelationInsightData }) {
           <p
             style={{
               fontSize: 10,
-              color: "#7aabcc",
+              color: "var(--text3)",
               fontWeight: 600,
               marginTop: 12,
             }}
@@ -699,19 +695,19 @@ function TimeCard({ data }: { data: CorrelationInsightData }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.24 }}
-      style={card({ background: "#f0edf8", border: "2px solid #7b6fa044" })}
+      style={card()}
     >
       <SectionHeader
         icon={<IcoClock />}
         title="Time-of-Day Risk Profile"
         tag={isLocked ? "14 days + 10 urges" : "Unlocked"}
-        tagBg={isLocked ? "#fdf6ef" : "#e8f5ec"}
-        tagColor={isLocked ? "#b45309" : "#3d6b4f"}
+        tagBg={isLocked ? "var(--bg1)" : "var(--bg1)"}
+        tagColor={isLocked ? "var(--amber)" : "var(--mint)"}
       />
       <p
         style={{
           fontSize: 11,
-          color: "#7b6fa0",
+          color: "var(--text3)",
           fontWeight: 500,
           marginBottom: 14,
         }}
@@ -732,19 +728,18 @@ function TimeCard({ data }: { data: CorrelationInsightData }) {
             <div
               style={{
                 padding: "12px 14px",
-                background: "white",
-                border: "2px solid #7b6fa044",
+                background: "var(--bg1)",
+                border: "1.5px solid var(--border2)",
                 borderRadius: 14,
                 marginBottom: 16,
-                boxShadow: "2px 2px 0 rgba(123,111,160,.1)",
               }}
             >
               <p
                 style={{
-                  fontFamily: "'Fredoka',sans-serif",
+                  fontFamily: "var(--font-display)",
                   fontSize: 15,
                   fontWeight: 600,
-                  color: "#3d1f6e",
+                  color: "var(--text1)",
                   lineHeight: 1.4,
                 }}
               >
@@ -789,7 +784,7 @@ function TimeCard({ data }: { data: CorrelationInsightData }) {
                     style={{
                       fontSize: 9,
                       fontWeight: 800,
-                      color: isTop ? BUCKET_COLORS[key] : "#a8936a",
+                      color: isTop ? BUCKET_COLORS[key] : "var(--text3)",
                       visibility: count > 0 ? "visible" : "hidden",
                     }}
                   >
@@ -821,13 +816,13 @@ function TimeCard({ data }: { data: CorrelationInsightData }) {
                       style={{
                         fontSize: 9,
                         fontWeight: 800,
-                        color: isTop ? BUCKET_COLORS[key] : "#6b5c3e",
+                        color: isTop ? BUCKET_COLORS[key] : "var(--text2)",
                       }}
                     >
                       {label}
                     </div>
                     <div
-                      style={{ fontSize: 8, fontWeight: 500, color: "#a8936a" }}
+                      style={{ fontSize: 8, fontWeight: 500, color: "var(--text3)" }}
                     >
                       {hours}
                     </div>
@@ -840,7 +835,7 @@ function TimeCard({ data }: { data: CorrelationInsightData }) {
           <p
             style={{
               fontSize: 10,
-              color: "#a89ac8",
+              color: "var(--text3)",
               fontWeight: 600,
               marginTop: 12,
             }}
@@ -857,8 +852,10 @@ function TimeCard({ data }: { data: CorrelationInsightData }) {
 
 export default function InsightsClient({
   data: initialData,
+  isDemoMode = false,
 }: {
   data: CorrelationInsightData;
+  isDemoMode?: boolean;
 }) {
   const [data, setData] = useState<CorrelationInsightData>(initialData);
   const [refreshing, setRefreshing] = useState(false);
@@ -909,7 +906,7 @@ export default function InsightsClient({
                   fontFamily: "'Fredoka',sans-serif",
                   fontSize: 26,
                   fontWeight: 700,
-                  color: "#1a1208",
+                  color: "var(--text1)",
                   margin: 0,
                   lineHeight: 1.2,
                 }}
@@ -919,7 +916,7 @@ export default function InsightsClient({
               <p
                 style={{
                   fontSize: 12,
-                  color: "#a8936a",
+                  color: "var(--text2)",
                   fontWeight: 500,
                   marginTop: 3,
                 }}
@@ -943,11 +940,11 @@ export default function InsightsClient({
                   display: "flex",
                   alignItems: "center",
                   gap: 5,
-                  background: "white",
-                  border: "1.5px solid rgba(26,18,8,.1)",
+                  background: "var(--bg2)",
+                  border: "1.5px solid var(--border2)",
                   borderRadius: 50,
                   padding: "4px 10px",
-                  boxShadow: "2px 2px 0 rgba(26,18,8,.06)",
+                  boxShadow: "var(--shadow-card)",
                   cursor: refreshing ? "default" : "pointer",
                   opacity: refreshing ? 0.6 : 1,
                   transition: "opacity 0.2s",
@@ -962,7 +959,7 @@ export default function InsightsClient({
                   <IcoRefresh />
                 </span>
                 <span
-                  style={{ fontSize: 10, fontWeight: 700, color: "#6b5c3e" }}
+                  style={{ fontSize: 10, fontWeight: 700, color: "var(--text2)" }}
                 >
                   {refreshing
                     ? "Refreshing..."
@@ -1006,8 +1003,8 @@ export default function InsightsClient({
               style={{
                 marginTop: 14,
                 padding: "10px 14px",
-                background: "white",
-                border: "2px solid rgba(26,18,8,.08)",
+                background: "var(--bg2)",
+                border: "2px solid var(--border2)",
                 borderRadius: 14,
                 display: "flex",
                 alignItems: "center",
@@ -1062,7 +1059,7 @@ export default function InsightsClient({
           transition={{ delay: 0.6 }}
           style={{
             fontSize: 10,
-            color: "#c8b89a",
+            color: "var(--text3)",
             fontWeight: 500,
             textAlign: "center",
             marginTop: 24,

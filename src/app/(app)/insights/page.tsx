@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
@@ -9,7 +10,7 @@ import {
   dailyInsights,
   nudgeLogs,
 } from "@/lib/db/schema";
-import { eq, desc, and, gte } from "drizzle-orm";
+import { eq, desc, and, gte, ne, isNull, or } from "drizzle-orm";
 import { getOrComputeInsights } from "@/lib/insights-engine";
 import { getOrComputeDailyInsight } from "@/lib/daily-insight-engine";
 import { getOrComputeRiskPrediction } from "@/lib/risk-predictor";
@@ -24,9 +25,17 @@ export default async function InsightsPage() {
   const userId = session?.user?.id;
   if (!userId) redirect("/dashboard");
 
-  // Run all engines in parallel (each is a no-op if cache is fresh)
+  // Detect if seed/demo data exists for this user
+  const seedCheck = await db
+    .select({ id: checkins.id })
+    .from(checkins)
+    .where(and(eq(checkins.userId, userId!), eq(checkins.timezoneOffset, "__seed__")))
+    .limit(1);
+  const isDemoMode = seedCheck.length > 0;
+
+  // Run all engines in parallel (engine is scoped to seed or real data, not both)
   const [correlationData] = await Promise.all([
-    getOrComputeInsights(userId).catch(() => ({
+    getOrComputeInsights(userId, { seedOnly: isDemoMode }).catch(() => ({
       checkinDays: 0,
       urgeEventCount: 0,
       spearmanCoef: null,
@@ -62,6 +71,9 @@ export default async function InsightsPage() {
       .where(
         and(
           eq(checkins.userId, userId),
+          isDemoMode 
+            ? eq(checkins.timezoneOffset, "__seed__") 
+            : or(ne(checkins.timezoneOffset, "__seed__"), isNull(checkins.timezoneOffset)),
           gte(checkins.checkedInAt, thirtyDaysAgo),
         ),
       )
@@ -74,6 +86,9 @@ export default async function InsightsPage() {
       .where(
         and(
           eq(urgeEvents.userId, userId),
+          isDemoMode 
+            ? eq(urgeEvents.socialContext, "__seed__") 
+            : or(ne(urgeEvents.socialContext, "__seed__"), isNull(urgeEvents.socialContext)),
           gte(urgeEvents.occurredAt, thirtyDaysAgo),
         ),
       )
@@ -176,12 +191,8 @@ export default async function InsightsPage() {
         return {
           insightText: rawPrimary.insightText,
           insightDate: isDailyInsight
-            ? (
-                rawPrimary as { insightDate: Date | null }
-              ).insightDate?.toString()
-            : (
-                rawPrimary as { generatedAt: Date | null }
-              ).generatedAt?.toString(),
+            ? (rawPrimary as { insightDate: Date | null }).insightDate?.toString() ?? null
+            : (rawPrimary as { generatedAt: Date | null }).generatedAt?.toString() ?? null,
           patternType: isDailyInsight
             ? ((rawPrimary as { patternType?: string | null }).patternType ??
               "stress_peak")
@@ -251,8 +262,8 @@ export default async function InsightsPage() {
     date: c.checkedInAt?.toString() || new Date().toString(),
     stressLevel: c.stressLevel,
     mood: c.mood,
-    sleepQuality: c.sleepQuality || undefined,
-    energyLevel: c.energyLevel || undefined,
+    sleepQuality: c.sleepQuality ?? null,
+    energyLevel: c.energyLevel ?? null,
   }));
 
   return (
@@ -312,7 +323,7 @@ export default async function InsightsPage() {
             <div>
               <div className="metric-label !mb-0 text-[10px]">Days tracked</div>
               <div className="font-display font-bold text-xl text-[var(--mint2)]">
-                {checkinHistory.length}
+                {correlationData.checkinDays}
               </div>
             </div>
             <div className="h-8 w-px bg-[var(--border2)]" />
@@ -330,26 +341,33 @@ export default async function InsightsPage() {
 
       {/* Dashboard with tabs */}
       <div className="page-content relative z-10">
-        <InsightsDashboard
-          correlationData={correlationData}
-          hasEnoughData={hasEnoughData}
-          checkinCount={checkinHistory.length}
-          urgeCount={urgeHistory.length}
-          risk={risk}
-          canSendNudge={canSendNudge}
-          primaryInsight={primaryInsight}
-          top3HighStress={top3HighStress}
-          relapseInsight={relapseInsight}
-          chartData={chartData}
-          triggerCounts={triggerCounts}
-          avgSleep={avgSleep}
-          avgEnergy={avgEnergy}
-          sleepTrend={calcTrend("sleepQuality")}
-          energyTrend={calcTrend("energyLevel")}
-        />
+        <Suspense fallback={
+          <div style={{ padding: 40, textAlign: "center", color: "var(--text3)" }}>
+            <p>Initialising insights...</p>
+          </div>
+        }>
+          <InsightsDashboard
+            correlationData={correlationData}
+            hasEnoughData={hasEnoughData}
+            checkinCount={checkinHistory.length}
+            urgeCount={urgeHistory.length}
+            risk={risk}
+            canSendNudge={canSendNudge}
+            primaryInsight={primaryInsight}
+            top3HighStress={top3HighStress}
+            relapseInsight={relapseInsight}
+            chartData={chartData}
+            triggerCounts={triggerCounts}
+            avgSleep={avgSleep}
+            avgEnergy={avgEnergy}
+            sleepTrend={calcTrend("sleepQuality")}
+            energyTrend={calcTrend("energyLevel")}
+            isDemoMode={isDemoMode}
+          />
+        </Suspense>
       </div>
 
-      {process.env.NODE_ENV !== "production" && <DevDataToolbar />}
+      <DevDataToolbar />
     </div>
   );
 }

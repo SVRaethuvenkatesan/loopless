@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Zap, Moon, Users, Calendar, RotateCcw, Sparkles, ChevronDown, Info } from "lucide-react";
 
 // AC 7.1.1 + AC 7.1.2 + AC 7.3.3
 interface DataPoint {
@@ -17,13 +18,13 @@ interface DailyInsightCardProps {
   patternType?: string;
 }
 
-const PATTERN_ICONS: Record<string, string> = {
-  stress_peak: "⚡",
-  sleep_urge_link: "🌙",
-  social_trigger: "👥",
-  weekend_recovery: "🌿",
-  relapse_trigger: "🔁",
-  default: "✨",
+const PATTERN_ICONS: Record<string, React.ReactNode> = {
+  stress_peak: <Zap size={20} strokeWidth={2.5} />,
+  sleep_urge_link: <Moon size={20} strokeWidth={2.5} />,
+  social_trigger: <Users size={20} strokeWidth={2.5} />,
+  weekend_recovery: <Calendar size={20} strokeWidth={2.5} />,
+  relapse_trigger: <RotateCcw size={20} strokeWidth={2.5} />,
+  default: <Sparkles size={20} strokeWidth={2.5} />,
 };
 
 const PATTERN_EXPLANATIONS: Record<string, string> = {
@@ -51,8 +52,7 @@ export default function DailyInsightCard({
   const [showExplanation, setShowExplanation] = useState(false);
 
   const icon = PATTERN_ICONS[patternType] || PATTERN_ICONS.default;
-  const explanation =
-    PATTERN_EXPLANATIONS[patternType] || PATTERN_EXPLANATIONS.default;
+  const explanation = PATTERN_EXPLANATIONS[patternType] || PATTERN_EXPLANATIONS.default;
 
   const formattedDate = insightDate
     ? new Date(insightDate).toLocaleDateString("en-AU", {
@@ -67,54 +67,41 @@ export default function DailyInsightCard({
       });
 
   return (
-    <div
+    <motion.div
+      whileHover={{ y: -2 }}
       className="mb-6 relative overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #edfff7, #d8fdf0)",
-        border: "2.5px solid #3bc98e",
+        background: "var(--bg2)",
+        backdropFilter: "blur(12px)",
+        border: "1.5px solid var(--border3)",
         borderRadius: 20,
         padding: "24px 24px 20px",
-        boxShadow: "5px 5px 0 rgba(61,180,126,0.2)",
+        boxShadow: "var(--shadow-card-lg)",
       }}
     >
-      {/* Decorative floating sparkle */}
-      <motion.div
-        animate={{ y: [0, -8, 0], rotate: [0, 10, 0] }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          fontSize: 32,
-          opacity: 0.35,
-          pointerEvents: "none",
-        }}
-      >
-        ✨
-      </motion.div>
-
       {/* Header */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 10,
-          marginBottom: 14,
+          gap: 12,
+          marginBottom: 16,
         }}
       >
         <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 2.5, repeat: Infinity }}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            background: "#3bc98e",
+            width: 44,
+            height: 44,
+            borderRadius: 14,
+            background: "var(--mint-light)",
+            color: "var(--mint-dark)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 20,
-            boxShadow: "3px 3px 0 rgba(26,18,8,0.12)",
+            border: "1.5px solid var(--border2)",
+            boxShadow: "var(--shadow-card)",
           }}
         >
           {icon}
@@ -122,20 +109,20 @@ export default function DailyInsightCard({
         <div>
           <div
             style={{
-              fontFamily: "'Fredoka',sans-serif",
-              fontSize: 16,
-              fontWeight: 600,
-              color: "#0a3d2a",
+              fontFamily: "var(--font-display)",
+              fontSize: 18,
+              fontWeight: 700,
+              color: "var(--text1)",
+              letterSpacing: "-0.01em",
             }}
           >
             Today's pattern
           </div>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 700,
-              color: "#5a8f6a",
-              letterSpacing: ".04em",
+              color: "var(--text3)",
             }}
           >
             Updated {formattedDate}
@@ -143,26 +130,27 @@ export default function DailyInsightCard({
         </div>
       </div>
 
-      {/* Main insight text - AC 7.1.1 */}
+      {/* Main insight text */}
       <p
         style={{
-          fontSize: 16,
+          fontSize: 15,
           fontWeight: 700,
-          color: "#1a1208",
+          color: "var(--text1)",
           lineHeight: 1.6,
-          marginBottom: 18,
-          fontFamily: "'Nunito',sans-serif",
+          marginBottom: 20,
         }}
       >
         {insightText}
       </p>
 
-      {/* Action buttons */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {/* AC 7.1.2 - "Show me the data" */}
+      {/* Action buttons (Progressive Disclosure) */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <motion.button
           whileTap={{ scale: 0.95 }}
-          onClick={() => setShowData(!showData)}
+          onClick={() => {
+            setShowData(!showData);
+            if (!showData) setShowExplanation(false);
+          }}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -171,30 +159,30 @@ export default function DailyInsightCard({
             borderRadius: 12,
             fontWeight: 700,
             fontSize: 12.5,
-            background: showData ? "#3bc98e" : "rgba(59,201,142,0.12)",
-            color: showData ? "white" : "#0a3d2a",
-            border: `2px solid ${showData ? "#3bc98e" : "rgba(59,201,142,0.3)"}`,
+            background: showData ? "var(--mint)" : "var(--bg1)",
+            color: showData ? "var(--bg0)" : "var(--text2)",
+            border: `1.5px solid ${showData ? "var(--mint)" : "var(--border2)"}`,
             cursor: "pointer",
-            fontFamily: "'Nunito',sans-serif",
             transition: "all .15s",
           }}
         >
-          <svg viewBox="0 0 24 24" fill="none" width={14} height={14}>
-            <path
-              d="M3 3v18h18M9 9l3 3 4-4 3 3"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          {showData ? "Hide the proof" : "Show me the data"}
+          <ChevronDown
+            size={14}
+            strokeWidth={2.5}
+            style={{
+              transform: showData ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s",
+            }}
+          />
+          View Data
         </motion.button>
 
-        {/* AC 7.3.3 - "How is this calculated?" */}
         <motion.button
           whileTap={{ scale: 0.95 }}
-          onClick={() => setShowExplanation(!showExplanation)}
+          onClick={() => {
+            setShowExplanation(!showExplanation);
+            if (!showExplanation) setShowData(false);
+          }}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -203,67 +191,38 @@ export default function DailyInsightCard({
             borderRadius: 12,
             fontWeight: 700,
             fontSize: 12.5,
-            background: "transparent",
-            color: "#5a8f6a",
-            border: "2px solid rgba(90,143,106,0.25)",
+            background: showExplanation ? "var(--text2)" : "transparent",
+            color: showExplanation ? "var(--bg0)" : "var(--text3)",
+            border: `1.5px solid ${showExplanation ? "transparent" : "var(--border2)"}`,
             cursor: "pointer",
-            fontFamily: "'Nunito',sans-serif",
           }}
         >
-          <svg viewBox="0 0 24 24" fill="none" width={14} height={14}>
-            <circle
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-            <path
-              d="M12 16v-4m0-4h.01"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-          How did we find this?
+          <Info size={14} strokeWidth={2.5} />
+          How we found this
         </motion.button>
       </div>
 
-      {/* Data Reference Panel - AC 7.1.2 */}
+      {/* Data Reference Panel */}
       <AnimatePresence>
         {showData && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             style={{ overflow: "hidden" }}
           >
             <div
               style={{
                 marginTop: 16,
                 padding: "16px",
-                background: "rgba(255,255,255,0.8)",
+                background: "var(--bg0)",
                 borderRadius: 14,
-                border: "2px solid rgba(59,201,142,0.2)",
+                border: "1.5px solid var(--border3)",
               }}
             >
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 800,
-                  color: "#0a3d2a",
-                  marginBottom: 12,
-                  textTransform: "uppercase",
-                  letterSpacing: ".05em",
-                }}
-              >
-                Here's what we saw 👇
-              </div>
               {dataPoints.length > 0 ? (
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                >
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {dataPoints.map((pt, i) => (
                     <div
                       key={i}
@@ -271,36 +230,18 @@ export default function DailyInsightCard({
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        padding: "8px 12px",
-                        background: "#f0fdf6",
+                        padding: "10px 14px",
+                        background: "var(--bg1)",
                         borderRadius: 10,
-                        border: "1.5px solid rgba(59,201,142,0.2)",
+                        border: "1px solid var(--border2)",
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: "#1a1208",
-                        }}
-                      >
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text1)" }}>
                         {pt.label}
                       </span>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         {pt.date && (
-                          <span
-                            style={{
-                              fontSize: 11,
-                              color: "#5a8f6a",
-                              fontWeight: 600,
-                            }}
-                          >
+                          <span style={{ fontSize: 11, color: "var(--text3)", fontWeight: 600 }}>
                             {pt.date}
                           </span>
                         )}
@@ -308,11 +249,10 @@ export default function DailyInsightCard({
                           style={{
                             fontSize: 13,
                             fontWeight: 800,
-                            color: "#0a3d2a",
-                            background: "#d0fde8",
-                            padding: "2px 10px",
+                            color: "var(--mint-dark)",
+                            background: "var(--mint-light)",
+                            padding: "4px 10px",
                             borderRadius: 50,
-                            border: "1.5px solid #3bc98e",
                           }}
                         >
                           {pt.value}
@@ -322,7 +262,7 @@ export default function DailyInsightCard({
                   ))}
                 </div>
               ) : (
-                <p style={{ fontSize: 13, color: "#5a8f6a", fontWeight: 600 }}>
+                <p style={{ fontSize: 13, color: "var(--text3)", fontWeight: 600 }}>
                   Keep checking in daily - more data means sharper insights.
                 </p>
               )}
@@ -331,62 +271,32 @@ export default function DailyInsightCard({
         )}
       </AnimatePresence>
 
-      {/* Explanation Panel - AC 7.3.3 */}
+      {/* Explanation Panel */}
       <AnimatePresence>
         {showExplanation && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             style={{ overflow: "hidden" }}
           >
             <div
               style={{
-                marginTop: 12,
-                padding: "14px 16px",
-                background: "rgba(255,255,255,0.7)",
+                marginTop: 16,
+                padding: "16px",
+                background: "var(--bg0)",
                 borderRadius: 14,
-                border: "2px solid rgba(59,201,142,0.15)",
+                border: "1.5px solid var(--border3)",
               }}
             >
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 800,
-                  color: "#0a3d2a",
-                  marginBottom: 8,
-                  textTransform: "uppercase",
-                  letterSpacing: ".05em",
-                }}
-              >
-                How we found this
-              </div>
-              <p
-                style={{
-                  fontSize: 13.5,
-                  color: "#1a4a2a",
-                  fontWeight: 600,
-                  lineHeight: 1.6,
-                }}
-              >
+              <p style={{ fontSize: 13.5, color: "var(--text1)", fontWeight: 600, lineHeight: 1.6 }}>
                 {explanation}
-              </p>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "#5a8f6a",
-                  fontWeight: 600,
-                  marginTop: 8,
-                }}
-              >
-                No guessing - every insight comes directly from your own data.
-                Nothing else.
               </p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

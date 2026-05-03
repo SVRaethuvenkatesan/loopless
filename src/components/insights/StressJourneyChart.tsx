@@ -36,8 +36,8 @@ const CustomDot = (props: any) => {
       cx={cx}
       cy={cy}
       r={isHigh || isLow ? 5 : 3}
-      fill={isHigh ? "#e07b5a" : isLow ? "#3bc98e" : "#5bb8f5"}
-      stroke="white"
+      fill={isHigh ? "var(--coral)" : isLow ? "var(--mint)" : "var(--text3)"}
+      stroke="var(--bg0)"
       strokeWidth={2}
     />
   );
@@ -47,23 +47,23 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   const stress = d?.stressLevel;
-  const color = stress >= 7 ? "#e07b5a" : stress <= 3 ? "#3bc98e" : "#5bb8f5";
+  const color = stress >= 7 ? "var(--coral)" : stress <= 3 ? "var(--mint)" : "var(--text2)";
   return (
     <div
       style={{
-        background: "white",
+        background: "var(--bg0)",
         border: `2px solid ${color}`,
         borderRadius: 12,
         padding: "10px 14px",
-        boxShadow: "4px 4px 0 rgba(26,18,8,0.12)",
-        fontFamily: "'Nunito',sans-serif",
+        boxShadow: "var(--shadow-card)",
+        fontFamily: "var(--font-sans)",
       }}
     >
       <div
         style={{
           fontSize: 12,
           fontWeight: 800,
-          color: "#a8936a",
+          color: "var(--text3)",
           marginBottom: 4,
         }}
       >
@@ -77,7 +77,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
           style={{
             fontSize: 12,
             fontWeight: 600,
-            color: "#6b5c3e",
+            color: "var(--text2)",
             marginTop: 2,
             textTransform: "capitalize",
           }}
@@ -124,13 +124,15 @@ export default function StressJourneyChart({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="mb-6"
+      whileHover={{ y: -2 }}
+      className="mb-6 relative overflow-hidden"
       style={{
-        background: "white",
-        border: "2.5px solid #1a1208",
+        background: "var(--bg2)",
+        backdropFilter: "blur(12px)",
+        border: "1.5px solid var(--border3)",
         borderRadius: 20,
-        padding: "22px 20px 16px",
-        boxShadow: "5px 5px 0 rgba(26,18,8,0.1)",
+        padding: "24px 20px 20px",
+        boxShadow: "var(--shadow-card-lg)",
       }}
     >
       {/* Header */}
@@ -145,16 +147,17 @@ export default function StressJourneyChart({
         <div>
           <div
             style={{
-              fontFamily: "'Fredoka',sans-serif",
+              fontFamily: "var(--font-display)",
               fontSize: 18,
-              fontWeight: 600,
-              color: "#1a1208",
-              marginBottom: 2,
+              fontWeight: 700,
+              color: "var(--text1)",
+              marginBottom: 4,
+              letterSpacing: "-0.01em",
             }}
           >
             Your stress over 30 days
           </div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#a8936a" }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)" }}>
             Scroll to see the full picture
           </div>
         </div>
@@ -162,32 +165,32 @@ export default function StressJourneyChart({
           <div
             style={{
               textAlign: "center",
-              padding: "6px 10px",
-              background: "#ffe8e4",
+              padding: "6px 12px",
+              background: "var(--bg1)",
               borderRadius: 10,
-              border: "1.5px solid #e07b5a",
+              border: "1px solid var(--coral)",
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#e07b5a" }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--coral)" }}>
               {highDays}
             </div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#7a2a0a" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--coral)", opacity: 0.8 }}>
               tough days
             </div>
           </div>
           <div
             style={{
               textAlign: "center",
-              padding: "6px 10px",
-              background: "#d8fdf0",
+              padding: "6px 12px",
+              background: "var(--bg1)",
               borderRadius: 10,
-              border: "1.5px solid #3bc98e",
+              border: "1px solid var(--mint)",
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#3bc98e" }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--mint)" }}>
               {lowDays}
             </div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#0a3d2a" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--mint)", opacity: 0.8 }}>
               calm days
             </div>
           </div>
@@ -203,22 +206,22 @@ export default function StressJourneyChart({
           >
             <defs>
               <linearGradient id="stressGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#5bb8f5" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#5bb8f5" stopOpacity={0.02} />
+                <stop offset="5%" stopColor="var(--text3)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--text3)" stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="rgba(26,18,8,0.06)"
+              stroke="var(--border2)"
               vertical={false}
             />
             <XAxis
               dataKey="date"
               tick={{
                 fontSize: 10,
-                fontFamily: "'Nunito',sans-serif",
+                fontFamily: "var(--font-sans)",
                 fontWeight: 600,
-                fill: "#a8936a",
+                fill: "var(--text3)",
               }}
               tickLine={false}
               axisLine={false}
@@ -228,9 +231,9 @@ export default function StressJourneyChart({
               domain={[0, 10]}
               tick={{
                 fontSize: 10,
-                fontFamily: "'Nunito',sans-serif",
+                fontFamily: "var(--font-sans)",
                 fontWeight: 600,
-                fill: "#a8936a",
+                fill: "var(--text3)",
               }}
               tickLine={false}
               axisLine={false}
@@ -239,80 +242,80 @@ export default function StressJourneyChart({
             <Tooltip content={<CustomTooltip />} />
             <ReferenceLine
               y={7}
-              stroke="#e07b5a"
+              stroke="var(--coral)"
               strokeDasharray="4 4"
               strokeWidth={1.5}
             />
             <ReferenceLine
               y={avgStress}
-              stroke="#5bb8f5"
+              stroke="var(--text3)"
               strokeDasharray="4 4"
               strokeWidth={1.5}
             />
             <Area
               type="monotone"
               dataKey="stressLevel"
-              stroke="#5bb8f5"
+              stroke="var(--text3)"
               strokeWidth={2.5}
               fill="url(#stressGrad)"
               dot={<CustomDot />}
-              activeDot={{ r: 6, stroke: "#1a1208", strokeWidth: 2 }}
+              activeDot={{ r: 6, stroke: "var(--text1)", strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
       {/* Legend */}
-      <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+      <div style={{ display: "flex", gap: 12, marginTop: 16, flexWrap: "wrap", padding: "12px", background: "var(--bg1)", borderRadius: 12, border: "1px solid var(--border2)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div
             style={{
               width: 20,
               height: 2,
-              background: "#e07b5a",
+              background: "var(--coral)",
               borderRadius: 2,
             }}
           />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#a8936a" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text2)" }}>
             High stress line (7+)
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div
             style={{
               width: 20,
               height: 2,
-              background: "#5bb8f5",
+              background: "var(--text3)",
               borderRadius: 2,
             }}
           />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#a8936a" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text2)" }}>
             Your average
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div
             style={{
               width: 8,
               height: 8,
               borderRadius: "50%",
-              background: "#e07b5a",
+              background: "var(--coral)",
             }}
           />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#a8936a" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text2)" }}>
             Tough day
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div
             style={{
               width: 8,
               height: 8,
               borderRadius: "50%",
-              background: "#3bc98e",
+              background: "var(--mint)",
             }}
           />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#a8936a" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text2)" }}>
             Calm day
           </span>
         </div>

@@ -106,25 +106,39 @@ Output the sentence only - no quotes, no explanation.`;
   }
 }
 
+// ── Core computation ──────────────────────────────────────────────────────────
+// opts.seedOnly = true  → only reads '__seed__' tagged rows (demo mode)
+// opts.seedOnly = false → only reads real rows (excludes '__seed__')
 export async function computeUserInsights(
   userId: string,
+  opts: { seedOnly?: boolean } = {},
 ): Promise<CorrelationInsightData> {
+  const { seedOnly = false } = opts;
+
   return withDb(async (db) => {
     const { checkins, urgeEvents, correlationInsights } =
       await import("@/lib/db/schema");
-    const { eq, asc } = await import("drizzle-orm");
+    const { eq, asc, ne, and } = await import("drizzle-orm");
 
-    // Fetch all user data
+    // Scoped fetch: seed-only OR real-only — never mixed
     const [allCheckins, allUrges] = await Promise.all([
       db
         .select()
         .from(checkins)
-        .where(eq(checkins.userId, userId))
+        .where(
+          seedOnly
+            ? and(eq(checkins.userId, userId), eq(checkins.timezoneOffset, "__seed__"))
+            : and(eq(checkins.userId, userId), ne(checkins.timezoneOffset, "__seed__")),
+        )
         .orderBy(asc(checkins.checkedInAt)),
       db
         .select()
         .from(urgeEvents)
-        .where(eq(urgeEvents.userId, userId))
+        .where(
+          seedOnly
+            ? and(eq(urgeEvents.userId, userId), eq(urgeEvents.socialContext, "__seed__"))
+            : and(eq(urgeEvents.userId, userId), ne(urgeEvents.socialContext, "__seed__")),
+        )
         .orderBy(asc(urgeEvents.occurredAt)),
     ]);
 
@@ -250,26 +264,12 @@ export async function computeUserInsights(
 
     const now = new Date();
 
-    // ── Upsert to DB ─────────────────────────────────────────────────
-    await db
-      .insert(correlationInsights)
-      .values({
-        userId,
-        checkinDays,
-        urgeEventCount,
-        spearmanCoef,
-        pValue,
-        highStressUrgePct,
-        stressUrgeSentence,
-        triggerRanking: triggerRanking.length > 0 ? triggerRanking : null,
-        topTriggerSentence,
-        timeOfDayRisk,
-        topTimeSentence,
-        computedAt: now,
-      })
-      .onConflictDoUpdate({
-        target: correlationInsights.userId,
-        set: {
+    // Only persist to cache for real-data mode; demo mode never pollutes the cache
+    if (!seedOnly) {
+      await db
+        .insert(correlationInsights)
+        .values({
+          userId,
           checkinDays,
           urgeEventCount,
           spearmanCoef,
@@ -281,8 +281,24 @@ export async function computeUserInsights(
           timeOfDayRisk,
           topTimeSentence,
           computedAt: now,
-        },
-      });
+        })
+        .onConflictDoUpdate({
+          target: correlationInsights.userId,
+          set: {
+            checkinDays,
+            urgeEventCount,
+            spearmanCoef,
+            pValue,
+            highStressUrgePct,
+            stressUrgeSentence,
+            triggerRanking: triggerRanking.length > 0 ? triggerRanking : null,
+            topTriggerSentence,
+            timeOfDayRisk,
+            topTimeSentence,
+            computedAt: now,
+          },
+        });
+    }
 
     return {
       checkinDays,
@@ -312,7 +328,15 @@ export async function invalidateInsightsCache(userId: string): Promise<void> {
 
 export async function getOrComputeInsights(
   userId: string,
+  opts: { seedOnly?: boolean } = {},
 ): Promise<CorrelationInsightData> {
+  const { seedOnly = false } = opts;
+
+  // Demo mode: always compute fresh from seed rows only, never touch cache
+  if (seedOnly) {
+    return computeUserInsights(userId, { seedOnly: true });
+  }
+
   return withDb(async (db) => {
     const { correlationInsights } = await import("@/lib/db/schema");
     const { eq } = await import("drizzle-orm");
@@ -344,6 +368,6 @@ export async function getOrComputeInsights(
       };
     }
 
-    return computeUserInsights(userId);
+    return computeUserInsights(userId, { seedOnly: false });
   });
 }

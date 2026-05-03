@@ -1,66 +1,61 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { Flame, Activity, Users, Moon, Zap, Clock, ShieldCheck } from "lucide-react";
 
 const FACTORS = [
   {
     id: "intensity",
     front: {
-      icon: "🔥",
+      icon: <Flame size={20} strokeWidth={2.5} />,
       title: "How bad it feels",
-      color: "#e07b5a",
-      bg: "#ffe8e4",
+      color: "var(--coral)",
     },
     back: "When you rate a craving as really intense, it's a strong signal. High-intensity moments tend to predict tougher days ahead.",
   },
   {
     id: "activity",
     front: {
-      icon: "🎯",
+      icon: <Activity size={20} strokeWidth={2.5} />,
       title: "What you were doing",
-      color: "#c9982a",
-      bg: "#fffbef",
+      color: "var(--amber)",
     },
     back: "The activity right before an urge matters a lot. Scrolling, waking up, or studying before a craving? We track that.",
   },
   {
     id: "social",
     front: {
-      icon: "👥",
+      icon: <Users size={20} strokeWidth={2.5} />,
       title: "Who you're with",
-      color: "#5bb8f5",
-      bg: "#dff0fd",
+      color: "var(--mint)",
     },
     back: "Being alone vs. with people can change your risk level completely. We look at social context every time you log.",
   },
   {
     id: "sleep",
     front: {
-      icon: "🌙",
+      icon: <Moon size={20} strokeWidth={2.5} />,
       title: "How well you slept",
-      color: "#7b6fa0",
-      bg: "#f0edf8",
+      color: "var(--text2)",
     },
     back: "One rough night can raise your next-day craving risk. Your sleep score is one of the strongest predictors we track.",
   },
   {
     id: "energy",
     front: {
-      icon: "⚡",
+      icon: <Zap size={20} strokeWidth={2.5} />,
       title: "Your energy levels",
-      color: "#3bc98e",
-      bg: "#edfff7",
+      color: "var(--amber)",
     },
     back: "Low energy often means lower resistance to cravings. Your daily energy score helps us spot vulnerable windows.",
   },
   {
     id: "time",
     front: {
-      icon: "🕐",
+      icon: <Clock size={20} strokeWidth={2.5} />,
       title: "Time of day",
-      color: "#a8936a",
-      bg: "#fef9f0",
+      color: "var(--text2)",
     },
     back: "Most people have a 'peak craving hour'. Afternoons and evenings are common. We track when urges happen to find yours.",
   },
@@ -81,10 +76,11 @@ function FlipCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.05 * index }}
       style={{
-        perspective: 600,
+        perspective: 800,
         cursor: "pointer",
       }}
       onClick={() => setFlipped(!flipped)}
+      whileHover={{ y: -2 }}
     >
       <motion.div
         animate={{ rotateY: flipped ? 180 : 0 }}
@@ -92,7 +88,7 @@ function FlipCard({
         style={{
           position: "relative",
           transformStyle: "preserve-3d",
-          minHeight: 110,
+          minHeight: 120,
         }}
       >
         {/* Front */}
@@ -103,11 +99,12 @@ function FlipCard({
             inset: 0,
             padding: "16px 14px",
             borderRadius: 16,
-            background: factor.front.bg,
-            border: `2px solid ${factor.front.color}33`,
+            background: "var(--bg1)",
+            border: `1.5px solid var(--border2)`,
             display: "flex",
             flexDirection: "column",
             gap: 8,
+            boxShadow: "var(--shadow-card)",
           }}
         >
           <div
@@ -115,13 +112,12 @@ function FlipCard({
               width: 40,
               height: 40,
               borderRadius: 12,
-              background: "white",
-              border: `2px solid ${factor.front.color}22`,
+              background: "var(--bg2)",
+              color: factor.front.color,
+              border: `1.5px solid var(--border2)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 20,
-              boxShadow: "2px 2px 0 rgba(26,18,8,0.06)",
             }}
           >
             {factor.front.icon}
@@ -130,7 +126,7 @@ function FlipCard({
             style={{
               fontSize: 13.5,
               fontWeight: 800,
-              color: "#1a1208",
+              color: "var(--text1)",
               lineHeight: 1.3,
             }}
           >
@@ -140,9 +136,10 @@ function FlipCard({
             style={{
               fontSize: 10,
               fontWeight: 700,
-              color: factor.front.color,
+              color: "var(--text3)",
               textTransform: "uppercase",
               letterSpacing: ".04em",
+              marginTop: "auto",
             }}
           >
             Tap to learn more →
@@ -158,18 +155,19 @@ function FlipCard({
             inset: 0,
             padding: "14px",
             borderRadius: 16,
-            background: "#1a1208",
+            background: "var(--text1)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
+            boxShadow: "var(--shadow-card-lg)",
           }}
         >
           <p
             style={{
               fontSize: 12.5,
-              fontWeight: 700,
-              color: "rgba(255,255,255,0.9)",
-              lineHeight: 1.6,
+              fontWeight: 600,
+              color: "var(--bg0)",
+              lineHeight: 1.5,
               margin: 0,
             }}
           >
@@ -179,7 +177,8 @@ function FlipCard({
             style={{
               fontSize: 10,
               fontWeight: 800,
-              color: "rgba(255,255,255,0.4)",
+              color: "var(--bg1)",
+              opacity: 0.8,
               marginTop: 8,
               textTransform: "uppercase",
             }}
@@ -198,40 +197,40 @@ export default function PatternFactorsGrid() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
-      className="mb-6"
+      className="mb-6 relative overflow-hidden"
       style={{
-        background: "white",
-        border: "2.5px solid #1a1208",
+        background: "var(--bg2)",
+        backdropFilter: "blur(12px)",
+        border: "1.5px solid var(--border3)",
         borderRadius: 20,
-        padding: "22px 20px",
-        boxShadow: "5px 5px 0 rgba(26,18,8,0.1)",
+        padding: "24px 20px",
+        boxShadow: "var(--shadow-card-lg)",
       }}
     >
       <div
         style={{
-          fontFamily: "'Fredoka',sans-serif",
+          fontFamily: "var(--font-display)",
           fontSize: 18,
-          fontWeight: 600,
-          color: "#1a1208",
+          fontWeight: 700,
+          color: "var(--text1)",
           marginBottom: 4,
+          letterSpacing: "-0.01em",
         }}
       >
         What shapes your patterns
       </div>
       <div
         style={{
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: 600,
-          color: "#a8936a",
-          marginBottom: 18,
+          color: "var(--text2)",
+          marginBottom: 20,
         }}
       >
         6 things we look at - tap each to find out why
       </div>
 
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}
-      >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
         {FACTORS.map((f, i) => (
           <FlipCard key={f.id} factor={f} index={i} />
         ))}
@@ -239,28 +238,20 @@ export default function PatternFactorsGrid() {
 
       <div
         style={{
-          marginTop: 16,
-          padding: "10px 14px",
-          background: "#fef9f0",
+          marginTop: 20,
+          padding: "12px 16px",
+          background: "var(--bg1)",
           borderRadius: 12,
-          border: "1.5px solid rgba(168,147,106,0.2)",
-          fontSize: 12,
-          fontWeight: 700,
-          color: "#a8936a",
+          border: "1.5px solid var(--border2)",
+          fontSize: 12.5,
+          fontWeight: 600,
+          color: "var(--text2)",
           display: "flex",
           alignItems: "center",
-          gap: 8,
+          gap: 10,
         }}
       >
-        <svg viewBox="0 0 24 24" fill="none" width={14} height={14}>
-          <path
-            d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
-            stroke="#a8936a"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <ShieldCheck size={18} strokeWidth={2.5} color="var(--mint)" />
         Every pattern is built from your data only - nothing is assumed.
       </div>
     </motion.div>

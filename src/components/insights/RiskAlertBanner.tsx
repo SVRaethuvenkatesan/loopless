@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { AlertTriangle, Heart, Clock, X } from "lucide-react";
+import Link from "next/link";
 
 // AC 7.2.1 + AC 7.2.3 - Risk Window Alert with dismiss/snooze
 interface RiskAlertBannerProps {
@@ -80,18 +82,20 @@ export default function RiskAlertBanner({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -16, scale: 0.97 }}
           transition={{ type: "spring", bounce: 0.35 }}
+          whileHover={{ y: -2 }}
           className="mb-6 relative overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, #fff3f0, #ffe8e4)",
-            border: "2.5px solid #e07b5a",
+            background: "var(--bg2)",
+            backdropFilter: "blur(12px)",
+            border: "1.5px solid var(--border3)",
             borderRadius: 20,
-            padding: "20px 22px",
-            boxShadow: "5px 5px 0 rgba(224,123,90,0.2)",
+            padding: "24px 22px",
+            boxShadow: "var(--shadow-card-lg)",
           }}
         >
           {/* Animated pulse ring */}
           <motion.div
-            animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.15, 0.4] }}
+            animate={{ scale: [1, 1.08, 1], opacity: [0.3, 0.1, 0.3] }}
             transition={{ duration: 2.5, repeat: Infinity }}
             style={{
               position: "absolute",
@@ -100,7 +104,7 @@ export default function RiskAlertBanner({
               width: 100,
               height: 100,
               borderRadius: "50%",
-              background: "rgba(224,123,90,0.3)",
+              background: "var(--coral)",
               pointerEvents: "none",
             }}
           />
@@ -113,31 +117,24 @@ export default function RiskAlertBanner({
               position: "relative",
             }}
           >
-            {/* Animated warning SVG */}
+            {/* Animated warning icon */}
             <motion.div
               animate={{ rotate: [0, -5, 5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               style={{
                 width: 44,
                 height: 44,
-                borderRadius: 12,
-                background: "#e07b5a",
+                borderRadius: 14,
+                background: "var(--coral)",
+                color: "var(--bg0)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                boxShadow: "3px 3px 0 rgba(26,18,8,0.15)",
+                boxShadow: "var(--shadow-card)",
               }}
             >
-              <svg viewBox="0 0 24 24" fill="none" width={22} height={22}>
-                <path
-                  d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <AlertTriangle size={24} strokeWidth={2.5} />
             </motion.div>
 
             <div style={{ flex: 1 }}>
@@ -145,16 +142,17 @@ export default function RiskAlertBanner({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 8,
-                  marginBottom: 4,
+                  gap: 10,
+                  marginBottom: 6,
                 }}
               >
                 <span
                   style={{
-                    fontFamily: "'Fredoka',sans-serif",
-                    fontSize: 17,
-                    fontWeight: 600,
-                    color: "#7a2a0a",
+                    fontFamily: "var(--font-display)",
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: "var(--coral)",
+                    letterSpacing: "-0.01em",
                   }}
                 >
                   Heads up - tough window ahead
@@ -164,9 +162,9 @@ export default function RiskAlertBanner({
                     style={{
                       fontSize: 11,
                       fontWeight: 800,
-                      background: "#e07b5a",
-                      color: "white",
-                      padding: "2px 8px",
+                      background: "var(--coral)",
+                      color: "var(--bg0)",
+                      padding: "4px 10px",
                       borderRadius: 50,
                     }}
                   >
@@ -176,90 +174,91 @@ export default function RiskAlertBanner({
               </div>
               <p
                 style={{
-                  fontSize: 13.5,
-                  color: "#6b3020",
+                  fontSize: 14,
+                  color: "var(--text2)",
                   fontWeight: 600,
                   lineHeight: 1.5,
-                  marginBottom: 14,
+                  marginBottom: 20,
                 }}
               >
                 Based on your recent patterns, this is usually a challenging
                 time.{" "}
                 {timeLeft && (
                   <span>
-                    You have about <strong>{timeLeft}</strong> left in this
+                    You have about <strong style={{ color: "var(--text1)" }}>{timeLeft}</strong> left in this
                     window.
                   </span>
                 )}{" "}
                 A quick coping tool now could make a real difference.
               </p>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <motion.a
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <Link
                   href="/coping"
-                  whileTap={{ scale: 0.95 }}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 6,
-                    padding: "9px 16px",
+                    gap: 8,
+                    padding: "10px 16px",
                     borderRadius: 12,
-                    fontWeight: 700,
+                    fontWeight: 800,
                     fontSize: 13,
-                    background: "#e07b5a",
-                    color: "white",
-                    border: "2px solid #1a1208",
+                    background: "var(--coral)",
+                    color: "var(--bg0)",
+                    border: "none",
                     cursor: "pointer",
-                    boxShadow: "3px 3px 0 rgba(26,18,8,0.2)",
+                    boxShadow: "var(--shadow-card)",
                     textDecoration: "none",
-                    fontFamily: "'Nunito',sans-serif",
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" width={15} height={15}>
-                    <path
-                      d="M4.318 6.318a4.5 4.5 0 0 0 0 6.364L12 20.364l7.682-7.682a4.5 4.5 0 0 0-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 0 0-6.364 0z"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <Heart size={16} strokeWidth={2.5} />
                   Use a coping tool
-                </motion.a>
+                </Link>
                 <motion.button
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleAction("snooze")}
                   disabled={loading}
                   style={{
-                    padding: "9px 16px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 16px",
                     borderRadius: 12,
                     fontWeight: 700,
                     fontSize: 13,
                     background: "transparent",
-                    color: "#7a2a0a",
-                    border: "2px solid #e07b5a",
+                    color: "var(--text2)",
+                    border: "1.5px solid var(--border3)",
                     cursor: "pointer",
-                    fontFamily: "'Nunito',sans-serif",
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
+                  <Clock size={16} strokeWidth={2.5} />
                   Snooze 15 min
                 </motion.button>
                 <motion.button
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleAction("dismiss")}
                   disabled={loading}
                   style={{
-                    padding: "9px 16px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 16px",
                     borderRadius: 12,
                     fontWeight: 700,
                     fontSize: 13,
                     background: "transparent",
-                    color: "#a8936a",
-                    border: "2px solid rgba(168,147,106,0.3)",
+                    color: "var(--text2)",
+                    border: "1.5px solid var(--border3)",
                     cursor: "pointer",
-                    fontFamily: "'Nunito',sans-serif",
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
+                  <X size={16} strokeWidth={2.5} />
                   Dismiss
                 </motion.button>
               </div>

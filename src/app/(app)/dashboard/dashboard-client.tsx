@@ -18,7 +18,7 @@ import {
   IcoWind2,
   IcoArrow,
 } from "./dash-icons";
-import { computeXP, computeLevel } from "@/lib/xp";
+import { computeLevel } from "@/lib/xp";
 
 interface Checkin {
   id: string;
@@ -33,6 +33,7 @@ interface Props {
   userName: string;
   userId: string;
   recentCheckins: Checkin[];
+  serverXP: number;
   checkInStreak: number;
   checkedInToday: boolean;
   todayEntry: Checkin | null;
@@ -248,6 +249,7 @@ export default function DashboardClient({
   userName,
   userId,
   recentCheckins,
+  serverXP,
   checkInStreak,
   checkedInToday,
   todayEntry,
@@ -296,8 +298,8 @@ export default function DashboardClient({
       ).toFixed(1)
     : "-";
   const money = Math.round(streak * 2.5);
-  const xp = computeXP(earnedBadges, streak, recentCheckins);
-  const { level, xpInLevel: xpInLvl } = computeLevel(xp);
+  // Use server-computed XP to stay in sync with sidebar and profile API
+  const { level, xpInLevel: xpInLvl } = computeLevel(serverXP);
 
   const quests = [
     {

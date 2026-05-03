@@ -78,11 +78,11 @@ const JOURNAL_PROMPTS = [
 ];
 
 const cs: React.CSSProperties = {
-  background: "white",
-  border: "2px solid rgba(26,18,8,.1)",
+  background: "var(--bg1)",
+  border: "2px solid var(--border2)",
   borderRadius: 22,
   padding: 24,
-  boxShadow: "4px 4px 0 rgba(26,18,8,.08)",
+  boxShadow: "var(--shadow-card)",
 };
 
 // ── Stress picker ──────────────────────────────────────────────────────────
@@ -100,19 +100,15 @@ function StressPicker({
       {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => {
         const sel = value === n;
         const bg = sel
-          ? (accent ?? "#e07b5a")
+          ? (accent ?? "var(--coral)")
           : n <= 3
-            ? "#e8f5ec"
+            ? "var(--bg3)"
             : n <= 6
-              ? "#fffbef"
-              : "#fff0ed";
+              ? "var(--bg2)"
+              : "var(--bg0)";
         const clr = sel
-          ? "white"
-          : n <= 3
-            ? "#3d6b4f"
-            : n <= 6
-              ? "#6b5c3e"
-              : "#7c2d12";
+          ? "var(--bg0)"
+          : "var(--text1)";
         return (
           <button
             key={n}
@@ -216,7 +212,7 @@ function BreatheSession({ onDone }: { onDone: (sec: number) => void }) {
           style={{
             fontSize: 40,
             fontWeight: 900,
-            color: "#1a1208",
+            color: "var(--text1)",
             lineHeight: 1,
           }}
         >
@@ -249,7 +245,7 @@ function BreatheSession({ onDone }: { onDone: (sec: number) => void }) {
         style={{
           width: "100%",
           height: 6,
-          background: "rgba(26,18,8,.07)",
+          background: "var(--bg3)",
           borderRadius: 4,
           overflow: "hidden",
         }}
@@ -311,7 +307,7 @@ function WalkSession({ onDone }: { onDone: (sec: number) => void }) {
             cy="64"
             r="54"
             fill="none"
-            stroke="rgba(26,18,8,.07)"
+            stroke="var(--border2)"
             strokeWidth="10"
           />
           <motion.circle
@@ -342,7 +338,7 @@ function WalkSession({ onDone }: { onDone: (sec: number) => void }) {
             style={{
               fontSize: 42,
               fontWeight: 900,
-              color: "#1a1208",
+              color: "var(--text1)",
               lineHeight: 1,
             }}
           >
@@ -366,7 +362,7 @@ function WalkSession({ onDone }: { onDone: (sec: number) => void }) {
           fontSize: 15,
           fontWeight: 700,
           cursor: "pointer",
-          boxShadow: "3px 3px 0 rgba(90,143,106,.15)",
+          boxShadow: "var(--shadow-card)",
           fontFamily: "'Fredoka',sans-serif",
         }}
       >
@@ -427,9 +423,9 @@ function ColdSession({ onDone }: { onDone: (sec: number) => void }) {
           height: 130,
           borderRadius: "50%",
           background: started
-            ? "linear-gradient(135deg,#dff0fd,#f0edf8)"
-            : "#f5f5f5",
-          border: `4px solid ${started ? "#7b6fa0" : "rgba(26,18,8,.1)"}`,
+            ? "var(--bg3)"
+            : "var(--bg2)",
+          border: `4px solid ${started ? "#7b6fa0" : "var(--border2)"}`,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -442,7 +438,7 @@ function ColdSession({ onDone }: { onDone: (sec: number) => void }) {
           style={{
             fontSize: 44,
             fontWeight: 900,
-            color: "#7b6fa0",
+            color: "var(--text1)",
             lineHeight: 1,
           }}
         >
@@ -457,7 +453,7 @@ function ColdSession({ onDone }: { onDone: (sec: number) => void }) {
         style={{
           width: "100%",
           height: 8,
-          background: "rgba(26,18,8,.07)",
+          background: "var(--bg3)",
           borderRadius: 5,
           overflow: "hidden",
         }}
@@ -481,7 +477,7 @@ function ColdSession({ onDone }: { onDone: (sec: number) => void }) {
             borderRadius: 14,
             border: "none",
             background: "#7b6fa0",
-            color: "white",
+            color: "var(--bg0)",
             fontSize: 15,
             fontWeight: 700,
             cursor: "pointer",
@@ -519,8 +515,8 @@ function JournalSession({ onDone }: { onDone: (sec: number) => void }) {
       <div
         style={{
           padding: "12px 14px",
-          background: "#fffbef",
-          border: "2px solid #c9982a33",
+          background: "var(--bg2)",
+          border: "2px solid var(--border2)",
           borderRadius: 14,
         }}
       >
@@ -528,7 +524,7 @@ function JournalSession({ onDone }: { onDone: (sec: number) => void }) {
           style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#6b5c3e",
+            color: "var(--text3)",
             marginBottom: 4,
           }}
         >
@@ -539,7 +535,7 @@ function JournalSession({ onDone }: { onDone: (sec: number) => void }) {
             fontFamily: "'Fredoka',sans-serif",
             fontSize: 16,
             fontWeight: 600,
-            color: "#1a1208",
+            color: "var(--text1)",
             lineHeight: 1.45,
           }}
         >
@@ -558,8 +554,8 @@ function JournalSession({ onDone }: { onDone: (sec: number) => void }) {
           border: "2px solid rgba(26,18,8,.1)",
           padding: "12px 14px",
           fontSize: 14,
-          color: "#1a1208",
-          background: "white",
+          color: "var(--text1)",
+          background: "var(--bg1)",
           resize: "none",
           outline: "none",
           fontFamily: "inherit",
@@ -589,8 +585,8 @@ function JournalSession({ onDone }: { onDone: (sec: number) => void }) {
             borderRadius: 50,
             border: "none",
             background:
-              text.trim().length >= 5 ? "#c9982a" : "rgba(26,18,8,.08)",
-            color: text.trim().length >= 5 ? "white" : "#a8936a",
+              text.trim().length >= 5 ? "var(--text1)" : "var(--bg3)",
+            color: text.trim().length >= 5 ? "var(--bg0)" : "var(--text3)",
             fontSize: 12,
             fontWeight: 700,
             cursor: text.trim().length >= 5 ? "pointer" : "default",
@@ -646,7 +642,7 @@ function GroundSession({ onDone }: { onDone: (sec: number) => void }) {
               borderRadius: 4,
               transition: "all 0.3s",
               width: i === stepIdx ? 24 : 8,
-              background: i <= stepIdx ? "#3bc98e" : "rgba(26,18,8,.1)",
+              background: i <= stepIdx ? "#3bc98e" : "var(--bg3)",
             }}
           />
         ))}
@@ -662,7 +658,7 @@ function GroundSession({ onDone }: { onDone: (sec: number) => void }) {
           style={{
             fontSize: 52,
             fontWeight: 900,
-            color: "#3bc98e",
+            color: "var(--text1)",
             lineHeight: 1,
             marginBottom: 2,
           }}
@@ -685,7 +681,7 @@ function GroundSession({ onDone }: { onDone: (sec: number) => void }) {
             fontFamily: "'Fredoka',sans-serif",
             fontSize: 17,
             fontWeight: 600,
-            color: "#1a1208",
+            color: "var(--text1)",
             lineHeight: 1.4,
           }}
         >
@@ -709,8 +705,8 @@ function GroundSession({ onDone }: { onDone: (sec: number) => void }) {
               height: 14,
               borderRadius: "50%",
               transition: "all 0.2s",
-              background: i < tapped ? "#3bc98e" : "rgba(26,18,8,.08)",
-              border: i < tapped ? "none" : "2px solid rgba(26,18,8,.12)",
+              background: i < tapped ? "#3bc98e" : "var(--bg3)",
+              border: i < tapped ? "none" : "2px solid var(--border3)",
               boxShadow: i < tapped ? "0 0 6px #3bc98e88" : "none",
             }}
           />
@@ -723,9 +719,9 @@ function GroundSession({ onDone }: { onDone: (sec: number) => void }) {
           width: "100%",
           padding: "15px",
           borderRadius: 16,
-          background: "#edfff7",
-          border: "2px solid #3bc98e44",
-          color: "#1a5c3a",
+          background: "var(--bg2)",
+          border: "2px solid var(--border2)",
+          color: "var(--text1)",
           fontSize: 15,
           fontWeight: 700,
           cursor: "pointer",
@@ -805,28 +801,28 @@ export default function CopingClient() {
       <div style={{ maxWidth: 540, margin: "0 auto", padding: "24px 16px 0" }}>
         <div style={{ marginBottom: 20 }}>
           <Link
-            href="/awareness"
+            href="/insights"
             style={{
               fontSize: 12,
-              color: "#a8936a",
-              fontWeight: 600,
+              color: "var(--text3)",
+              fontWeight: 700,
               textDecoration: "none",
             }}
           >
-            ← Back
+            ← Back to Insights
           </Link>
           <h1
             style={{
               fontFamily: "'Fredoka',sans-serif",
               fontSize: 28,
               fontWeight: 700,
-              color: "#1a1208",
+              color: "var(--text1)",
               margin: "8px 0 2px",
             }}
           >
             Coping Tools
           </h1>
-          <p style={{ fontSize: 12, color: "#a8936a", fontWeight: 500 }}>
+          <p style={{ fontSize: 12, color: "var(--text3)", fontWeight: 500 }}>
             Science-backed ways to move through an urge
           </p>
         </div>
@@ -846,7 +842,7 @@ export default function CopingClient() {
                     fontFamily: "'Fredoka',sans-serif",
                     fontSize: 18,
                     fontWeight: 700,
-                    color: "#1a1208",
+                    color: "var(--text1)",
                     marginBottom: 14,
                   }}
                 >
@@ -916,7 +912,7 @@ export default function CopingClient() {
                           fontFamily: "'Fredoka',sans-serif",
                           fontSize: 16,
                           fontWeight: 700,
-                          color: preStress ? "#1a1208" : "#a8936a",
+                          color: preStress ? "var(--text1)" : "var(--text3)",
                         }}
                       >
                         {t.name}
@@ -1002,7 +998,7 @@ export default function CopingClient() {
                       fontFamily: "'Fredoka',sans-serif",
                       fontSize: 19,
                       fontWeight: 700,
-                      color: "#1a1208",
+                      color: "var(--text1)",
                     }}
                   >
                     {tool.name}
@@ -1082,13 +1078,13 @@ export default function CopingClient() {
                     fontFamily: "'Fredoka',sans-serif",
                     fontSize: 22,
                     fontWeight: 700,
-                    color: "#1a1208",
+                    color: "var(--text1)",
                   }}
                 >
                   Nice work!
                 </div>
                 <div
-                  style={{ fontSize: 12, color: "#a8936a", fontWeight: 500 }}
+                  style={{ fontSize: 12, color: "var(--text3)", fontWeight: 500 }}
                 >
                   How do you feel now?
                 </div>
@@ -1100,7 +1096,7 @@ export default function CopingClient() {
                     fontFamily: "'Fredoka',sans-serif",
                     fontSize: 17,
                     fontWeight: 700,
-                    color: "#1a1208",
+                    color: "var(--text1)",
                     marginBottom: 14,
                   }}
                 >
@@ -1154,8 +1150,8 @@ export default function CopingClient() {
                   background:
                     postStress !== null
                       ? "linear-gradient(135deg,#3bc98e,#5bb8f5)"
-                      : "rgba(26,18,8,.08)",
-                  color: postStress !== null ? "white" : "#a8936a",
+                      : "var(--bg3)",
+                  color: postStress !== null ? "var(--bg1)" : "var(--text3)",
                   fontSize: 15,
                   fontWeight: 700,
                   cursor: postStress !== null ? "pointer" : "default",
@@ -1191,7 +1187,7 @@ export default function CopingClient() {
                   fontFamily: "'Fredoka',sans-serif",
                   fontSize: 24,
                   fontWeight: 700,
-                  color: "#1a1208",
+                  color: "var(--text1)",
                   marginBottom: 6,
                 }}
               >
@@ -1245,12 +1241,12 @@ export default function CopingClient() {
                     padding: "11px 20px",
                     borderRadius: 50,
                     border: "2px solid rgba(26,18,8,.1)",
-                    background: "white",
+                    background: "var(--bg1)",
                     fontSize: 13,
                     fontWeight: 700,
-                    color: "#1a1208",
+                    color: "var(--text1)",
                     cursor: "pointer",
-                    boxShadow: "2px 2px 0 rgba(26,18,8,.08)",
+                    boxShadow: "2px 2px 0 var(--border2)",
                   }}
                 >
                   Use another tool
