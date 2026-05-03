@@ -158,33 +158,12 @@ function XPBar({ pct }: { pct: number }) {
   );
 }
 
-function FloatingReaction({
-  emoji,
-  delay,
-  offsetX,
-}: {
-  emoji: string;
-  delay: number;
-  offsetX: number;
-}) {
+function FloatingReaction({ emoji, delay, offsetX }: { emoji: string; delay: number; offsetX: number }) {
   const rm = useReducedMotion();
   if (rm) return null;
   return (
-    <motion.span
+    <span
       aria-hidden
-      initial={{ opacity: 0, y: 0, scale: 0.4 }}
-      animate={{
-        opacity: [0, 1, 0.85, 0],
-        y: [0, -22, -58],
-        scale: [0.4, 1.2, 0.65],
-      }}
-      transition={{
-        duration: 2.2,
-        delay,
-        repeat: Infinity,
-        repeatDelay: delay + 3.2,
-        ease: "easeOut",
-      }}
       style={{
         position: "absolute",
         right: offsetX,
@@ -193,10 +172,13 @@ function FloatingReaction({
         pointerEvents: "none",
         zIndex: 3,
         lineHeight: 1,
+        opacity: 0,
+        animation: `floatReact 8s ${delay}s ease-out infinite`,
+        willChange: "transform, opacity",
       }}
     >
       {emoji}
-    </motion.span>
+    </span>
   );
 }
 
@@ -655,8 +637,11 @@ export default function DashboardClient({
       @keyframes shimmerPulse{0%,100%{opacity:.4;}50%{opacity:.85;}}
       @keyframes confetti{0%{transform:translateY(-10px) rotate(0);opacity:1;}100%{transform:translateY(100px) rotate(360deg);opacity:0;}}
       @keyframes urgePulse{0%,100%{box-shadow:0 0 0 0 rgba(224,123,90,.5),4px 4px 0 rgba(26,18,8,.25);}70%{box-shadow:0 0 0 12px rgba(224,123,90,0),4px 4px 0 rgba(26,18,8,.25);}}
-      @keyframes floatReact{0%{transform:translateY(0) scale(0.4);opacity:0;}15%{opacity:1;}100%{transform:translateY(-58px) scale(0.65);opacity:0;}}
+      @keyframes floatReact{0%,100%{transform:translateY(0) scale(0.4);opacity:0;}5%{opacity:1;}30%{transform:translateY(-56px) scale(0.65);opacity:0;}}
       @keyframes nameGlow{0%,100%{filter:none;}50%{filter:drop-shadow(0 0 10px rgba(93,219,168,.65));}}
+      @keyframes blobDrift1{0%,100%{transform:translate(0,0);opacity:.1;}33%{transform:translate(36px,-22px);opacity:.2;}66%{transform:translate(-18px,10px);opacity:.12;}}
+      @keyframes blobDrift2{0%,100%{transform:translate(0,0);opacity:.08;}33%{transform:translate(-26px,18px);opacity:.16;}66%{transform:translate(20px,-12px);opacity:.1;}}
+      @keyframes flameFlicker{0%,100%{transform:scaleY(1) scaleX(1);}20%{transform:scaleY(1.07) scaleX(0.96);}40%{transform:scaleY(0.95) scaleX(1.02);}60%{transform:scaleY(1.05) scaleX(0.97);}80%{transform:scaleY(0.98) scaleX(1.01);}}
       .dash{margin-inline:auto;width:100%;max-width:1200px;box-sizing:border-box;padding:clamp(14px,3vw,24px);padding-bottom:clamp(96px,12vh,112px);}
       @media(max-width:768px){
         .dash{
@@ -746,12 +731,14 @@ export default function DashboardClient({
       @media(max-width:480px){.push-banner .push-enable{margin-left:0;width:100%;flex:1 1 100%;}}
       .streak-warn-banner .streak-warn-cta{margin-left:auto;flex-shrink:0;}
       @media(max-width:480px){.streak-warn-banner .streak-warn-cta{margin-left:0;width:100%;flex:1 1 100%;text-align:center;}}
-      .urge-fab{z-index:150;position:fixed;right:max(18px,env(safe-area-inset-right));left:auto;}
+      .urge-fab{z-index:150;position:fixed;right:max(18px,env(safe-area-inset-right));left:auto;bottom:28px;}
+      @media(max-width:768px){.urge-fab{display:none;}}
+      .fab-row{z-index:150;position:fixed;display:none;}
       @media(max-width:768px){
-        .urge-fab{bottom:max(92px,calc(68px + env(safe-area-inset-bottom)));right:max(14px,env(safe-area-inset-right));left:auto;}
+        .fab-row{display:flex;gap:10px;left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));bottom:max(92px,calc(68px + env(safe-area-inset-bottom)));}
       }
-      @media(min-width:769px){.urge-fab{bottom:28px}}
-      @media(max-width:768px){.urge-fab .urge-fab-btn{padding:11px 17px;font-size:13px;gap:8px}}
+      .fab-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border-radius:50px;padding:13px 16px;font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;border:2.5px solid #1a1208;box-shadow:4px 4px 0 rgba(26,18,8,.25);-webkit-tap-highlight-color:transparent;}
+      @media(prefers-reduced-motion:reduce){.fab-btn,.blobDrift1,.blobDrift2,.flameFlicker{animation:none!important;}}
     `}</style>
 
       {/* Celebration overlay */}
@@ -829,18 +816,8 @@ export default function DashboardClient({
           >
             {!reduceMotion && (
               <>
-                <motion.div
+                <div
                   aria-hidden
-                  animate={{
-                    x: [0, 36, -18, 0],
-                    y: [0, -22, 10, 0],
-                    opacity: [0.1, 0.2, 0.12],
-                  }}
-                  transition={{
-                    duration: 11,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
                   style={{
                     position: "absolute",
                     top: "-22%",
@@ -848,25 +825,16 @@ export default function DashboardClient({
                     width: 210,
                     height: 210,
                     borderRadius: "50%",
-                    background:
-                      "radial-gradient(circle, rgba(93,219,168,0.55) 0%, transparent 70%)",
+                    background: "radial-gradient(circle, rgba(93,219,168,0.55) 0%, transparent 70%)",
                     filter: "blur(36px)",
                     pointerEvents: "none",
                     zIndex: 0,
+                    animation: "blobDrift1 11s ease-in-out infinite",
+                    willChange: "transform",
                   }}
                 />
-                <motion.div
+                <div
                   aria-hidden
-                  animate={{
-                    x: [0, -26, 20, 0],
-                    y: [0, 18, -12, 0],
-                    opacity: [0.08, 0.16, 0.1],
-                  }}
-                  transition={{
-                    duration: 9,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
                   style={{
                     position: "absolute",
                     bottom: "-28%",
@@ -874,11 +842,12 @@ export default function DashboardClient({
                     width: 220,
                     height: 220,
                     borderRadius: "50%",
-                    background:
-                      "radial-gradient(circle, rgba(224,123,90,0.4) 0%, transparent 70%)",
+                    background: "radial-gradient(circle, rgba(224,123,90,0.4) 0%, transparent 70%)",
                     filter: "blur(42px)",
                     pointerEvents: "none",
                     zIndex: 0,
+                    animation: "blobDrift2 9s ease-in-out infinite",
+                    willChange: "transform",
                   }}
                 />
               </>
@@ -889,23 +858,7 @@ export default function DashboardClient({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.25 }}
               >
-                <motion.div
-                  animate={
-                    reduceMotion
-                      ? undefined
-                      : {
-                          boxShadow: [
-                            "0 0 0 0 rgba(93,219,168,0.45)",
-                            "0 0 0 8px rgba(93,219,168,0)",
-                            "0 0 0 0 rgba(93,219,168,0)",
-                          ],
-                        }
-                  }
-                  transition={
-                    reduceMotion
-                      ? { duration: 0 }
-                      : { duration: 2.8, repeat: Infinity, repeatDelay: 4 }
-                  }
+                <div
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -920,26 +873,7 @@ export default function DashboardClient({
                     marginBottom: 10,
                   }}
                 >
-                  <motion.span
-                    aria-hidden
-                    animate={
-                      reduceMotion
-                        ? undefined
-                        : { rotate: [0, -12, 8, 0], scale: [1, 1.08, 1] }
-                    }
-                    transition={
-                      reduceMotion
-                        ? undefined
-                        : { repeat: Infinity, duration: 3.5, repeatDelay: 6 }
-                    }
-                    style={{ display: "inline-flex", opacity: 0.95 }}
-                  >
-                    <Sparkles
-                      size={14}
-                      strokeWidth={2.4}
-                      color="rgba(255,255,255,0.9)"
-                    />
-                  </motion.span>
+                  <Sparkles size={14} strokeWidth={2.4} color="rgba(255,255,255,0.9)" />
                   <IcoStar />
                   Level {level} Loop Breaker
                   <span
@@ -952,7 +886,7 @@ export default function DashboardClient({
                       animation: reduceMotion ? "none" : "pulseDot 2s infinite",
                     }}
                   />
-                </motion.div>
+                </div>
               </motion.div>
 
               <div
@@ -1084,15 +1018,7 @@ export default function DashboardClient({
                       animate={
                         reduceMotion
                           ? undefined
-                          : {
-                              y: [0, -5, 0],
-                              rotate: [0, -1.5, 1.5, 0],
-                              boxShadow: [
-                                "0 8px 24px rgba(0,0,0,.35), 0 0 0 0 rgba(93,219,168,.55)",
-                                "0 8px 24px rgba(0,0,0,.35), 0 0 0 10px rgba(93,219,168,0)",
-                                "0 8px 24px rgba(0,0,0,.35), 0 0 0 0 rgba(93,219,168,0)",
-                              ],
-                            }
+                          : { y: [0, -5, 0], rotate: [0, -1.5, 1.5, 0] }
                       }
                       transition={{
                         duration: 3.8,
@@ -1105,6 +1031,7 @@ export default function DashboardClient({
                         background:
                           "linear-gradient(140deg,rgba(255,255,255,.45),rgba(93,219,168,.55))",
                         boxShadow: "0 8px 24px rgba(0,0,0,.35)",
+                        willChange: "transform",
                       }}
                     >
                       <Image
@@ -1134,25 +1061,19 @@ export default function DashboardClient({
                       gap: 3,
                     }}
                   >
-                    <motion.div
-                      animate={
-                        reduceMotion
-                          ? undefined
-                          : {
-                              scaleY: [1, 1.07, 0.95, 1.05, 1],
-                              scaleX: [1, 0.96, 1.02, 0.97, 1],
-                            }
-                      }
-                      transition={{
-                        duration: 1.9,
-                        repeat: Infinity,
-                        ease: "easeInOut",
+                    <div
+                      style={{
+                        position: "relative",
+                        width: 40,
+                        height: 48,
+                        animation: reduceMotion ? "none" : "flameFlicker 1.9s ease-in-out infinite",
+                        willChange: "transform",
+                        transformOrigin: "bottom center",
                       }}
-                      style={{ position: "relative", width: 44, height: 52 }}
                     >
                       <svg
-                        width="44"
-                        height="52"
+                        width="40"
+                        height="48"
                         viewBox="0 0 44 52"
                         fill="none"
                         style={{ display: "block" }}
@@ -1181,24 +1102,10 @@ export default function DashboardClient({
                             <stop offset="0%" stopColor="#fff9c4" />
                             <stop offset="100%" stopColor="#ffd54f" />
                           </linearGradient>
-                          <filter
-                            id="flameglow"
-                            x="-30%"
-                            y="-30%"
-                            width="160%"
-                            height="160%"
-                          >
-                            <feGaussianBlur stdDeviation="2.5" result="blur" />
-                            <feMerge>
-                              <feMergeNode in="blur" />
-                              <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                          </filter>
                         </defs>
                         <path
                           d="M22 3C22 3 10 16 10 26C10 35.9 15.4 43 22 43C28.6 43 34 35.9 34 26C34 16 22 3 22 3Z"
                           fill="url(#outerFlame)"
-                          filter="url(#flameglow)"
                         />
                         <path
                           d="M22 21C22 21 17 28 17 33C17 37.4 19.2 41 22 41C24.8 41 27 37.4 27 33C27 28 22 21 22 21Z"
@@ -1223,7 +1130,7 @@ export default function DashboardClient({
                       >
                         {streak}
                       </div>
-                    </motion.div>
+                    </div>
                     <div
                       style={{
                         fontSize: 9,
@@ -1232,6 +1139,7 @@ export default function DashboardClient({
                         textTransform: "uppercase",
                         letterSpacing: ".07em",
                         lineHeight: 1,
+                        marginTop: 4,
                       }}
                     >
                       day streak
@@ -2324,7 +2232,38 @@ export default function DashboardClient({
         </div>
       </div>
 
-      {/* FLOATING URGE BUTTON - cleared above bottom nav on mobile */}
+      {/* MOBILE FAB ROW — support + urge side by side */}
+      <motion.div
+        className="fab-row"
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.8, type: "spring", bounce: 0.4 }}
+      >
+        <Link href="/support" style={{ flex: 1, textDecoration: "none" }}>
+          <motion.button
+            className="fab-btn"
+            whileTap={{ scale: 0.93 }}
+            style={{ background: "#3b7dd8", color: "white" }}
+          >
+            💙 Support
+          </motion.button>
+        </Link>
+        <Link href="/urge" style={{ flex: 1, textDecoration: "none" }}>
+          <motion.button
+            className="fab-btn"
+            whileTap={{ scale: 0.93 }}
+            style={{
+              background: "#e07b5a",
+              color: "white",
+              animation: "urgePulse 2.5s ease-out 2s 3",
+            }}
+          >
+            <IcoZap /> Log Urge
+          </motion.button>
+        </Link>
+      </motion.div>
+
+      {/* DESKTOP URGE FAB only */}
       <motion.div
         className="urge-fab"
         initial={{ scale: 0, opacity: 0 }}
@@ -2333,7 +2272,6 @@ export default function DashboardClient({
       >
         <Link href="/urge">
           <motion.button
-            className="urge-fab-btn"
             whileHover={{ scale: 1.08, y: -3 }}
             whileTap={{ scale: 0.93 }}
             style={{
