@@ -134,12 +134,14 @@
       "storyA": {
         "id": "story1A_BigSwitch",
         "title": "The Big Switch",
-        "subtitle": "Youth smoking is dying. Vaping replaced it."
+        "subtitle": "Youth smoking is dying. Vaping replaced it.",
+        "analysis": "The data reveals a dramatic structural shift in nicotine consumption over the past decade. While traditional smoking rates have steadily declined to single digits, the sudden spike in vaping has more than offset these public health gains. We are witnessing an unprecedented generational replacement of one addictive behavior with another, largely driven by flavored products."
       },
       "storyB": {
         "id": "story1B_AgeDrop",
         "title": "The Age Drop",
-        "subtitle": "The alarming drop in the age of first-time nicotine users."
+        "subtitle": "The alarming drop in the age of first-time nicotine users.",
+        "analysis": "This dataset highlights a deeply concerning demographic trend: the critical window of exposure is narrowing. Where previous generations encountered combustible cigarettes in their late teens, Gen Z is being introduced to high-concentration nicotine vapes during early adolescence. This premature exposure significantly heightens the risk of long-term dependency and impacts developing neural pathways."
       }
     },
     {
@@ -150,12 +152,14 @@
       "storyA": {
         "id": "story2A_MindTrap",
         "title": "The Mind Trap",
-        "subtitle": "How vaping distorts your mental wellbeing across the board."
+        "subtitle": "How vaping distorts your mental wellbeing across the board.",
+        "analysis": "Cross-referencing nicotine usage with mental health indicators exposes a stark correlation. Users consistently report higher baselines for severe stress, irritability, and sleep disruption. This challenges the common misconception of vaping as a stress-relief mechanism, suggesting it instead acts as a biological stressor that exacerbates underlying psychological friction."
       },
       "storyB": {
         "id": "story2B_AnxietySpiral",
         "title": "The Anxiety Spiral",
-        "subtitle": "The more you vape, the worse your anxiety and depression get."
+        "subtitle": "The more you vape, the worse your anxiety and depression get.",
+        "analysis": "The frequency of use directly correlates with compounding psychological distress. As occasional use accelerates into daily dependency, we observe a proportional steepening in reported anxiety and depressive symptoms. This dose-response relationship strongly implies that chronic nicotine cycling creates a continuous withdrawal loop, artificially inflating baseline anxiety."
       }
     },
     {
@@ -166,12 +170,14 @@
       "storyA": {
         "id": "story3A_GlobalOutliers",
         "title": "Global Outliers",
-        "subtitle": "Australia has some of the strictest laws, yet massive youth usage."
+        "subtitle": "Australia has some of the strictest laws, yet massive youth usage.",
+        "analysis": "Comparing international regulatory frameworks against actual usage rates reveals a paradox in the Australian context. Despite enacting some of the world's most stringent access controls, youth uptake remains disproportionately high. This divergence suggests that enforcement mechanisms and border controls have struggled to match the agility of the informal distribution networks."
       },
       "storyB": {
         "id": "story3B_BlackMarket",
         "title": "The Black Market Surge",
-        "subtitle": "How strict bans inadvertently fuelled the unregulated trade."
+        "subtitle": "How strict bans inadvertently fuelled the unregulated trade.",
+        "analysis": "The supply-side data maps the rapid expansion of an unregulated illicit market operating in the shadow of the prescription model. As legitimate clinical access pathways remained narrow, a highly lucrative black market scaled exponentially to meet consumer demand. This underscores the complex challenge of regulating addictive substances in a globally connected gray economy."
       }
     },
     {
@@ -182,12 +188,14 @@
       "storyA": {
         "id": "story4A_HealthRisks",
         "title": "Body Under Attack",
-        "subtitle": "The physical multipliers of inhaling aerosolised chemicals."
+        "subtitle": "The physical multipliers of inhaling aerosolised chemicals.",
+        "analysis": "Respiratory health data indicates that aerosolized chemical inhalation carries significant physical risk multipliers. Symptoms such as chronic cough, bronchitis, and asthma exacerbation are markedly elevated compared to baseline non-users. These acute physiological responses dismantle the 'harmless water vapor' narrative, pointing to measurable pulmonary stress."
       },
       "storyB": {
         "id": "story4B_FitnessToll",
         "title": "The Fitness Toll",
-        "subtitle": "How vaping directly degrades physical performance and stamina."
+        "subtitle": "How vaping directly degrades physical performance and stamina.",
+        "analysis": "Performance metrics demonstrate a quantifiable degradation in cardiovascular efficiency among daily users. Reduced lung capacity and delayed recovery times translate to a tangible drop in overall athletic stamina. This data is particularly relevant for youth populations, where sports and active lifestyles are frequently disrupted by compromised respiratory function."
       }
     },
     {
@@ -198,12 +206,14 @@
       "storyA": {
         "id": "story5A_ReformEffect",
         "title": "The Reform Effect",
-        "subtitle": "Australia's 2024 vaping reforms are working. Youth rates are dropping."
+        "subtitle": "Australia's 2024 vaping reforms are working. Youth rates are dropping.",
+        "analysis": "Recent longitudinal waves show the first signs of a trend reversal following the implementation of comprehensive 2024 reforms. The downward inflection in prevalence rates suggests that choking off the supply of disposable, youth-oriented products is beginning to have a measurable impact. Sustained monitoring will be critical to determine if this is a permanent structural decline."
       },
       "storyB": {
         "id": "story5B_AdExposurePlunge",
         "title": "Ad Exposure Plunge",
-        "subtitle": "Teens seeing vape ads on social media has halved since regulation."
+        "subtitle": "Teens seeing vape ads on social media has halved since regulation.",
+        "analysis": "The sharp reduction in reported social media exposure directly aligns with tightened digital advertising regulations and platform crackdowns. As algorithmic promotion of vaping content is suppressed on networks like TikTok and Instagram, the normalization of the behavior decreases. This highlights the vital role of digital environments in shaping real-world consumption patterns."
       }
     },
     {
@@ -214,12 +224,14 @@
       "storyA": {
         "id": "story6A_ScreenTimeTrap",
         "title": "The Screen Time Trap",
-        "subtitle": "3+ hours of daily social media doubles psychological distress in teens."
+        "subtitle": "3+ hours of daily social media doubles psychological distress in teens.",
+        "analysis": "The intersection of high digital consumption and psychological distress is unmistakable in this cohort. Heavy social media usage exceeding three hours daily serves as an aggressive multiplier for loneliness and low optimism. This digital saturation frequently acts as a comorbid factor alongside substance use, creating a compound effect on overall adolescent wellbeing."
       },
       "storyB": {
         "id": "story6B_GenZWorries",
         "title": "What Worries Gen Z?",
-        "subtitle": "The top concerns keeping 17,480 young Australians up at night."
+        "subtitle": "The top concerns keeping 17,480 young Australians up at night.",
+        "analysis": "The hierarchy of youth concerns paints a picture of a generation grappling with profound macro-level uncertainty. With the cost of living and climate anxiety dominating their worldview, traditional teenage stressors have been superseded by existential economic and environmental fears. Substance use patterns must be contextualized within this broader landscape of generational distress."
       }
     }
   ]

@@ -16,6 +16,7 @@ import {
 import awarenessData from "@/data/awareness-stats.json";
 import DataWheel from "@/components/awareness/DataWheel";
 import ChartRenderer from "@/components/awareness/ChartRenderer";
+import TypewriterText from "@/components/awareness/TypewriterText";
 
 const WHEEL_ITEMS = [
   { id: "aihw-youth",  title: "Youth Usage Trends",     color: "#ff6b5b", icon: <Activity size={22} />   },
@@ -433,6 +434,10 @@ export default function AwarenessPage() {
                         <div style={{ width: "100%" }}>
                           <ChartRenderer storyId={currentStory!.id} />
                         </div>
+
+                        {(currentStory as any).analysis && (
+                          <TypewriterText text={(currentStory as any).analysis} speed={25} />
+                        )}
                       </motion.div>
                     </AnimatePresence>
                   </div>
