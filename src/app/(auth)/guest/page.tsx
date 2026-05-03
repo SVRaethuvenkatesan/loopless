@@ -433,43 +433,43 @@ export default function GuestPage() {
         .trigger-btn {
           display:flex; align-items:center; gap:10px;
           padding:12px 16px; border-radius:14px;
-          border:2px solid rgba(26,18,8,0.12);
-          background:white; cursor:pointer;
+          border:2px solid var(--border2);
+          background:var(--bg1); cursor:pointer;
           transition:transform 0.12s, box-shadow 0.12s, border-color 0.12s, background 0.12s;
           font-family:'Nunito',sans-serif; text-align:left;
-          box-shadow:3px 3px 0px rgba(26,18,8,0.07);
+          box-shadow:3px 3px 0px var(--shadow-light);
           width:100%;
         }
-        .trigger-btn:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0px rgba(26,18,8,0.1); }
+        .trigger-btn:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0px var(--shadow-card); }
 
         .age-btn {
           display:flex; flex-direction:column; align-items:center; justify-content:center;
           gap:6px; padding:16px 12px; border-radius:16px;
-          border:2px solid rgba(26,18,8,0.12);
-          background:white; cursor:pointer;
+          border:2px solid var(--border2);
+          background:var(--bg1); cursor:pointer;
           transition:transform 0.12s, box-shadow 0.12s;
           font-family:'Nunito',sans-serif;
-          box-shadow:3px 3px 0px rgba(26,18,8,0.07);
+          box-shadow:3px 3px 0px var(--shadow-light);
         }
-        .age-btn:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0px rgba(26,18,8,0.1); }
+        .age-btn:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0px var(--shadow-card); }
 
         .name-input {
-          width:100%; background:white;
-          border:2.5px solid rgba(26,18,8,0.15);
+          width:100%; background:var(--bg1);
+          border:2.5px solid var(--border3);
           border-radius:16px; padding:16px 20px;
           font-size:18px; font-weight:600;
-          font-family:'Nunito',sans-serif; outline:none; color:#1a1208;
+          font-family:'Nunito',sans-serif; outline:none; color:var(--text1);
           transition:border-color 0.18s, box-shadow 0.18s;
           text-align:center;
         }
         .name-input:focus {
-          border-color:#5a8f6a;
-          box-shadow:0 0 0 4px rgba(90,143,106,0.18), 3px 3px 0px rgba(61,107,79,0.15);
+          border-color:var(--mint);
+          box-shadow:0 0 0 4px var(--mint-light), 3px 3px 0px var(--shadow-mint);
         }
-        .name-input::placeholder { color:#c8b89a; }
+        .name-input::placeholder { color:var(--text3); }
 
         .next-btn {
-          width:100%; border:2.5px solid #1a1208;
+          width:100%; border:2.5px solid var(--text1);
           border-radius:16px; padding:16px;
           font-size:16px; font-weight:800;
           font-family:'Nunito',sans-serif; cursor:pointer;
@@ -481,13 +481,13 @@ export default function GuestPage() {
         .next-btn:disabled { opacity:0.45; pointer-events:none; }
 
         .back-link {
-          background:transparent; border:2px solid rgba(26,18,8,0.15);
+          background:transparent; border:2px solid var(--border3);
           border-radius:12px; padding:12px 20px;
-          font-size:14px; font-weight:700; color:#6b5c3e;
+          font-size:14px; font-weight:700; color:var(--text2);
           cursor:pointer; font-family:'Nunito',sans-serif;
           transition:background 0.12s;
         }
-        .back-link:hover { background:#fde8c8; }
+        .back-link:hover { background:var(--bg3); }
 
         .divider-line {
           flex:1; height:2px; border-top:2px dashed rgba(26,18,8,0.1);
@@ -582,7 +582,7 @@ export default function GuestPage() {
               fontFamily: "'Fredoka',sans-serif",
               fontSize: 26,
               fontWeight: 600,
-              color: "#1a1208",
+              color: "var(--text1)",
             }}
           >
             Loop
@@ -594,7 +594,7 @@ export default function GuestPage() {
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: "#a8936a",
+              color: "var(--text3)",
               marginTop: 2,
             }}
           >
@@ -624,11 +624,11 @@ export default function GuestPage() {
         {/* Card */}
         <div
           style={{
-            background: "white",
-            border: `2.5px solid rgba(26,18,8,0.1)`,
+            background: "var(--bg0)",
+            border: `2.5px solid var(--border3)`,
             borderRadius: 28,
             padding: "32px 28px",
-            boxShadow: "8px 8px 0px rgba(26,18,8,0.1)",
+            boxShadow: "8px 8px 0px var(--shadow-strong)",
             minHeight: 420,
             overflow: "hidden",
             position: "relative",
@@ -662,7 +662,7 @@ export default function GuestPage() {
                   style={{
                     fontSize: 24,
                     fontWeight: 600,
-                    color: "#1a1208",
+                    color: "var(--text1)",
                     marginBottom: 6,
                     lineHeight: 1.25,
                   }}
@@ -672,7 +672,7 @@ export default function GuestPage() {
                 <p
                   style={{
                     fontSize: 13.5,
-                    color: "#6b5c3e",
+                    color: "var(--text2)",
                     fontWeight: 500,
                     lineHeight: 1.6,
                   }}
@@ -725,13 +725,13 @@ export default function GuestPage() {
                         className="age-btn"
                         onClick={() => setAge(a.val)}
                         style={{
-                          background: sel ? cur.bg : "white",
-                          borderColor: sel ? cur.accent : "rgba(26,18,8,0.12)",
+                          background: sel ? "var(--bg3)" : "var(--bg1)",
+                          borderColor: sel ? cur.accent : "var(--border2)",
                           boxShadow: sel
                             ? `3px 3px 0px ${cur.shadow}44`
-                            : "3px 3px 0px rgba(26,18,8,0.07)",
+                            : "3px 3px 0px var(--shadow-light)",
                           transform: sel ? "translate(-1px,-1px)" : "",
-                          color: sel ? cur.accent : "#6b5c3e",
+                          color: sel ? cur.accent : "var(--text2)",
                         }}
                       >
                         <a.Icon />
@@ -739,7 +739,7 @@ export default function GuestPage() {
                           style={{
                             fontSize: 15,
                             fontWeight: 800,
-                            color: "#1a1208",
+                            color: "var(--text1)",
                           }}
                         >
                           {a.label}
@@ -778,13 +778,13 @@ export default function GuestPage() {
                         className="trigger-btn"
                         onClick={() => toggleTrigger(t.val)}
                         style={{
-                          background: sel ? cur.bg : "white",
-                          borderColor: sel ? cur.accent : "rgba(26,18,8,0.12)",
+                          background: sel ? "var(--bg3)" : "var(--bg1)",
+                          borderColor: sel ? cur.accent : "var(--border2)",
                           boxShadow: sel
                             ? `3px 3px 0px ${cur.shadow}44`
-                            : "3px 3px 0px rgba(26,18,8,0.07)",
+                            : "3px 3px 0px var(--shadow-light)",
                           transform: sel ? "translate(-1px,-1px)" : "",
-                          color: sel ? cur.accent : "#6b5c3e",
+                          color: sel ? cur.accent : "var(--text2)",
                         }}
                       >
                         <span style={{ flexShrink: 0 }}>
@@ -794,7 +794,7 @@ export default function GuestPage() {
                           style={{
                             fontSize: 13,
                             fontWeight: 700,
-                            color: "#1a1208",
+                            color: "var(--text1)",
                             lineHeight: 1.3,
                           }}
                         >

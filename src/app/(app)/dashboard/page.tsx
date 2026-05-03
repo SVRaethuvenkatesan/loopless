@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import DashboardClient from "./dashboard-client";
 import { withDb } from "@/lib/db/with-db";
+import { computeXP } from "@/lib/xp";
 
 async function getDashboardData(userId: string) {
   try {
@@ -54,6 +55,9 @@ async function getDashboardData(userId: string) {
         checkInStreak = streak;
       }
 
+      // Compute XP server-side using full 30-day data (matching profile API logic)
+      const serverXP = computeXP(userBadges, checkInStreak, allCheckins30);
+
       return {
         recentCheckins,
         checkInStreak,
@@ -61,6 +65,7 @@ async function getDashboardData(userId: string) {
         todayEntry,
         userBadges,
         userTriggers,
+        serverXP,
         urgesThisWeek: recentUrges.length,
         copingSessionsThisWeek: recentCoping.length,
       };
@@ -74,6 +79,7 @@ async function getDashboardData(userId: string) {
       todayEntry: null,
       userBadges: [],
       userTriggers: [],
+      serverXP: 0,
       urgesThisWeek: 0,
       copingSessionsThisWeek: 0,
     };
@@ -89,6 +95,7 @@ export default async function DashboardPage() {
       userName={session.user.name ?? ""}
       userId={session.user.id}
       recentCheckins={data.recentCheckins as any[]}
+      serverXP={data.serverXP}
       checkInStreak={data.checkInStreak}
       checkedInToday={data.checkedInToday}
       todayEntry={data.todayEntry as any}

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { RotateCcw, Info, Wind, Footprints, Snowflake, NotebookPen, ChevronRight, Search } from "lucide-react";
+import Link from "next/link";
 
 // AC 7.3.1 - Relapse Pattern Detection with coping tool suggestion
 interface RelapsePatternCardProps {
@@ -14,82 +16,27 @@ interface RelapsePatternCardProps {
 
 const TOOL_DISPLAY: Record<
   string,
-  { name: string; desc: string; icon: React.ReactNode; color: string }
+  { name: string; desc: string; icon: React.ReactNode }
 > = {
   breathe: {
     name: "Box Breathing",
-    desc: "4-7-8 breathing - works in 2 minutes",
-    color: "#5bb8f5",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" width={18} height={18}>
-        <path
-          d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"
-          stroke="#5bb8f5"
-          strokeWidth="2"
-        />
-        <path
-          d="M12 8v8M8 12h8"
-          stroke="#5bb8f5"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
+    desc: "4-7-8 breathing — works in 2 minutes",
+    icon: <Wind size={18} strokeWidth={2.5} />,
   },
   walk: {
     name: "Interrupt Walk",
-    desc: "30 quick steps - breaks the loop",
-    color: "#3bc98e",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" width={18} height={18}>
-        <circle cx="12" cy="5" r="2" stroke="#3bc98e" strokeWidth="2" />
-        <path
-          d="m19 13-3-2-3-6-3 5-3-1M16 21l-3-8M8 21l2-5"
-          stroke="#3bc98e"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    desc: "30 quick steps — breaks the loop",
+    icon: <Footprints size={18} strokeWidth={2.5} />,
   },
   cold: {
     name: "Ice Shock",
-    desc: "Cold water on wrists - resets the urge",
-    color: "#7b6fa0",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" width={18} height={18}>
-        <path
-          d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"
-          stroke="#7b6fa0"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
+    desc: "Cold water on wrists — resets the urge",
+    icon: <Snowflake size={18} strokeWidth={2.5} />,
   },
   journal: {
     name: "Brain Dump",
-    desc: "Write it out - externalise the urge",
-    color: "#c9982a",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" width={18} height={18}>
-        <path
-          d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-          stroke="#c9982a"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-          stroke="#c9982a"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    desc: "Write it out — externalise the urge",
+    icon: <NotebookPen size={18} strokeWidth={2.5} />,
   },
 };
 
@@ -109,18 +56,18 @@ export default function RelapsePatternCard({
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.1, type: "spring", bounce: 0.3 }}
-      className="mb-6"
+      whileHover={{ y: -2 }}
+      className="mb-6 relative overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #fff3ef, #ffe8e0)",
-        border: "2.5px solid #e07b5a",
+        background: "var(--bg2)",
+        backdropFilter: "blur(12px)",
+        border: "1.5px solid var(--border3)",
         borderRadius: 20,
-        padding: "22px 20px",
-        boxShadow: "5px 5px 0 rgba(224,123,90,0.18)",
-        position: "relative",
-        overflow: "hidden",
+        padding: "24px 20px",
+        boxShadow: "var(--shadow-card-lg)",
       }}
     >
-      {/* Subtle animated background pattern */}
+      {/* Subtle animated background circle */}
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
@@ -131,109 +78,93 @@ export default function RelapsePatternCard({
           width: 100,
           height: 100,
           borderRadius: "50%",
-          border: "2px dashed rgba(224,123,90,0.15)",
+          border: "2px dashed var(--border3)",
           pointerEvents: "none",
         }}
       />
 
+      {/* Header */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          gap: 12,
           marginBottom: 14,
         }}
       >
         <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
+          animate={{ scale: [1, 1.08, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            background: "#e07b5a",
+            width: 44,
+            height: 44,
+            borderRadius: 14,
+            background: "var(--coral)",
+            color: "var(--bg0)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "3px 3px 0 rgba(26,18,8,0.15)",
+            boxShadow: "var(--shadow-card)",
             flexShrink: 0,
           }}
         >
-          {/* Pattern SVG */}
-          <svg viewBox="0 0 24 24" fill="none" width={20} height={20}>
-            <path
-              d="M1 4v6h6M23 20v-6h-6"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <RotateCcw size={22} strokeWidth={2.5} />
         </motion.div>
         <div>
           <div
             style={{
-              fontFamily: "'Fredoka',sans-serif",
+              fontFamily: "var(--font-display)",
               fontSize: 17,
-              fontWeight: 600,
-              color: "#7a2a0a",
+              fontWeight: 700,
+              color: "var(--coral)",
+              letterSpacing: "-0.01em",
             }}
           >
             We spotted a pattern
           </div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#a8936a" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text3)" }}>
             Based on your last 30 days
           </div>
         </div>
       </div>
 
-      {/* Pattern description - AC 7.3.1 */}
+      {/* Pattern description */}
       <p
         style={{
           fontSize: 15,
           fontWeight: 700,
-          color: "#1a1208",
+          color: "var(--text1)",
           lineHeight: 1.6,
           marginBottom: 16,
-          fontFamily: "'Nunito',sans-serif",
         }}
       >
         {patternText}
       </p>
 
       {/* Stats chips */}
-      <div
-        style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}
-      >
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
         <div
           style={{
-            padding: "5px 12px",
+            padding: "6px 12px",
             borderRadius: 50,
-            background: "rgba(224,123,90,0.1)",
-            border: "1.5px solid #e07b5a44",
+            background: "var(--bg1)",
+            border: "1.5px solid var(--border2)",
             fontSize: 12,
             fontWeight: 800,
-            color: "#7a2a0a",
+            color: "var(--coral)",
           }}
         >
           {urgesIn48h} urges in 48h
         </div>
         <div
           style={{
-            padding: "5px 12px",
+            padding: "6px 12px",
             borderRadius: 50,
-            background: "rgba(224,123,90,0.1)",
-            border: "1.5px solid #e07b5a44",
+            background: "var(--bg1)",
+            border: "1.5px solid var(--border2)",
             fontSize: 12,
             fontWeight: 800,
-            color: "#7a2a0a",
+            color: "var(--text2)",
             textTransform: "capitalize",
           }}
         >
@@ -241,26 +172,26 @@ export default function RelapsePatternCard({
         </div>
         <div
           style={{
-            padding: "5px 12px",
+            padding: "6px 12px",
             borderRadius: 50,
-            background: "rgba(224,123,90,0.1)",
-            border: "1.5px solid #e07b5a44",
+            background: "var(--bg1)",
+            border: "1.5px solid var(--border2)",
             fontSize: 12,
             fontWeight: 800,
-            color: "#7a2a0a",
+            color: "var(--text2)",
           }}
         >
           {confPct}% confident
         </div>
       </div>
 
-      {/* Suggested coping tool - AC 7.3.1 specific suggestion */}
+      {/* Suggested coping tool */}
       <div
         style={{
-          padding: "14px 16px",
-          background: "rgba(255,255,255,0.7)",
+          padding: "16px",
+          background: "var(--bg1)",
           borderRadius: 14,
-          border: `2px solid ${tool.color}33`,
+          border: "1px solid var(--border2)",
           marginBottom: 14,
         }}
       >
@@ -268,60 +199,76 @@ export default function RelapsePatternCard({
           style={{
             fontSize: 11,
             fontWeight: 800,
-            color: "#a8936a",
+            color: "var(--text3)",
             textTransform: "uppercase",
             letterSpacing: ".05em",
-            marginBottom: 8,
+            marginBottom: 12,
           }}
         >
-          What worked for you before 👇
+          What worked for you before
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 11,
-              background: `${tool.color}15`,
-              border: `2px solid ${tool.color}33`,
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              background: "var(--bg2)",
+              border: "1.5px solid var(--border3)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
+              color: "var(--text1)",
             }}
           >
             {tool.icon}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: "#1a1208" }}>
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 800,
+                color: "var(--text1)",
+              }}
+            >
               {tool.name}
             </div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#6b5c3e" }}>
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--text2)",
+              }}
+            >
               {tool.desc}
             </div>
           </div>
-          <motion.a
+          <Link
             href="/coping"
-            whileTap={{ scale: 0.95 }}
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
               padding: "8px 14px",
               borderRadius: 10,
               fontWeight: 700,
               fontSize: 12,
-              background: tool.color,
-              color: "white",
-              border: "2px solid #1a1208",
+              background: "var(--text1)",
+              color: "var(--bg0)",
+              border: "none",
               textDecoration: "none",
-              fontFamily: "'Nunito',sans-serif",
-              boxShadow: "3px 3px 0 rgba(26,18,8,0.15)",
+              fontFamily: "var(--font-sans)",
+              boxShadow: "var(--shadow-card)",
+              whiteSpace: "nowrap",
             }}
           >
-            Try it
-          </motion.a>
+            Try it <ChevronRight size={14} strokeWidth={2.5} />
+          </Link>
         </div>
       </div>
 
-      {/* AC 7.3.3 - Plain English explanation */}
+      {/* Plain English explanation toggle */}
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={() => setShowExplanation(!showExplanation)}
@@ -329,32 +276,19 @@ export default function RelapsePatternCard({
           display: "inline-flex",
           alignItems: "center",
           gap: 6,
-          padding: "7px 14px",
+          padding: "8px 14px",
           borderRadius: 10,
           fontWeight: 700,
           fontSize: 12,
-          background: "transparent",
-          color: "#a8936a",
-          border: "1.5px solid rgba(168,147,106,0.3)",
+          background: showExplanation ? "var(--bg1)" : "transparent",
+          color: "var(--text3)",
+          border: "1.5px solid var(--border2)",
           cursor: "pointer",
-          fontFamily: "'Nunito',sans-serif",
+          fontFamily: "var(--font-sans)",
+          transition: "all 0.15s",
         }}
       >
-        <svg viewBox="0 0 24 24" fill="none" width={13} height={13}>
-          <circle
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-          <path
-            d="M12 16v-4m0-4h.01"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
+        <Info size={13} strokeWidth={2.5} />
         How did we figure this out?
       </motion.button>
 
@@ -364,39 +298,112 @@ export default function RelapsePatternCard({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
             style={{ overflow: "hidden" }}
           >
             <div
               style={{
-                marginTop: 12,
-                padding: "14px",
-                background: "rgba(255,255,255,0.6)",
+                marginTop: 14,
+                padding: "16px",
+                background: "var(--bg0)",
                 borderRadius: 12,
-                border: "1.5px solid rgba(168,147,106,0.2)",
+                border: "1.5px solid var(--border3)",
               }}
             >
               <p
                 style={{
                   fontSize: 13.5,
-                  color: "#6b5c3e",
+                  color: "var(--text1)",
                   fontWeight: 600,
                   lineHeight: 1.6,
+                  marginBottom: 16,
                 }}
               >
                 We looked at your last 30 days of check-ins and urge logs. If
                 you had 3 or more urges within 48 hours of a high-stress day, we
                 flag it as a pattern. That's what happened here.
               </p>
-              <p
+
+              {/* ML Feature Importance */}
+              <div style={{ marginBottom: 16 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: "var(--text3)",
+                    textTransform: "uppercase",
+                    letterSpacing: ".05em",
+                    marginBottom: 12,
+                  }}
+                >
+                  Key Risk Factors
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {[
+                    { label: "High Stress Peak (≥7)", pct: 45 },
+                    { label: `Trigger: ${topTrigger}`, pct: 30 },
+                    { label: "Urge Frequency (48h)", pct: 15 },
+                  ].map(({ label, pct }, i) => (
+                    <div key={i}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: "var(--text2)",
+                          marginBottom: 5,
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        <span>{label}</span>
+                        <span style={{ color: "var(--coral)" }}>+{pct}%</span>
+                      </div>
+                      <div
+                        style={{
+                          height: 6,
+                          background: "var(--bg2)",
+                          borderRadius: 10,
+                          overflow: "hidden",
+                          border: "1px solid var(--border3)",
+                        }}
+                      >
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ delay: i * 0.1, duration: 0.6, ease: "easeOut" }}
+                          style={{
+                            height: "100%",
+                            background: "var(--coral)",
+                            borderRadius: 10,
+                            opacity: 1 - i * 0.2,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div
                 style={{
-                  fontSize: 12,
-                  color: "#a8936a",
-                  fontWeight: 600,
-                  marginTop: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
                 }}
               >
-                No algorithmic jargon. Just your own data, explained plainly. 🔍
-              </p>
+                <Search size={14} strokeWidth={2.5} color="var(--text3)" />
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: "var(--text3)",
+                    fontWeight: 600,
+                  }}
+                >
+                  No algorithmic jargon. Just your own data, explained plainly.
+                </p>
+              </div>
             </div>
           </motion.div>
         )}

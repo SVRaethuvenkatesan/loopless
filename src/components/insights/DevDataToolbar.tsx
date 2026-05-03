@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 
 type Mode =
   | "idle"
@@ -15,7 +14,6 @@ type Mode =
 export default function DevDataToolbar() {
   const [mode, setMode] = useState<Mode>("idle");
   const [open, setOpen] = useState(false);
-  const router = useRouter();
 
   const seed = async () => {
     setMode("seeding");
@@ -24,8 +22,7 @@ export default function DevDataToolbar() {
       if (res.ok) {
         setMode("done-seed");
         setTimeout(() => {
-          router.refresh();
-          setMode("idle");
+          window.location.reload();
         }, 1200);
       } else {
         setMode("error");
@@ -42,8 +39,7 @@ export default function DevDataToolbar() {
       if (res.ok) {
         setMode("done-clear");
         setTimeout(() => {
-          router.refresh();
-          setMode("idle");
+          window.location.reload();
         }, 1200);
       } else {
         setMode("error");

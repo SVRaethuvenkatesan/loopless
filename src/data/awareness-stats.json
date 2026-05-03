@@ -134,12 +134,24 @@
       "storyA": {
         "id": "story1A_BigSwitch",
         "title": "The Big Switch",
-        "subtitle": "Youth smoking is dying. Vaping replaced it."
+        "subtitle": "Youth smoking is dying. Vaping replaced it.",
+        "analysis": "The data reveals a dramatic structural shift: youth smoking has crashed to just 7.3% by 2023, but vaping has surged to 21.7%. This 43x spike since 2013 suggests a generational replacement where traditional cigarettes are being swapped for high-concentration vapes at an unprecedented scale.",
+        "keyStats": [
+          { "label": "Vaping Rate 2023", "value": "21.7%" },
+          { "label": "Smoking Rate 2023", "value": "7.3%" },
+          { "label": "Vaping spike vs 2013", "value": "43x" }
+        ]
       },
       "storyB": {
         "id": "story1B_AgeDrop",
         "title": "The Age Drop",
-        "subtitle": "The alarming drop in the age of first-time nicotine users."
+        "subtitle": "The alarming drop in the age of first-time nicotine users.",
+        "analysis": "The demographic window is narrowing. Previous generations began smoking at 18.5 years old, but Gen Z users are starting vapes at just 14.2 years—a 23% drop in the age of first exposure. This premature nicotine entry during early adolescence significantly heightens the risk of lifelong dependency.",
+        "keyStats": [
+          { "label": "Gen Z first use", "value": "14.2 yrs" },
+          { "label": "Boomers first use", "value": "18.5 yrs" },
+          { "label": "Exposure window", "value": "-23%" }
+        ]
       }
     },
     {
@@ -150,12 +162,24 @@
       "storyA": {
         "id": "story2A_MindTrap",
         "title": "The Mind Trap",
-        "subtitle": "How vaping distorts your mental wellbeing across the board."
+        "subtitle": "How vaping distorts your mental wellbeing across the board.",
+        "analysis": "Cross-referencing nicotine use with mental health shows a stark pattern: 80% of daily vapers report significant irritability, and sleep issues are 60% more prevalent than in non-vapers. Vaping acts as a biological stressor that effectively doubles the baseline for severe psychological friction.",
+        "keyStats": [
+          { "label": "Irritability (Vapers)", "value": "80%" },
+          { "label": "Sleep Issues", "value": "+60%" },
+          { "label": "Severe Stress", "value": "1.75x" }
+        ]
       },
       "storyB": {
         "id": "story2B_AnxietySpiral",
         "title": "The Anxiety Spiral",
-        "subtitle": "The more you vape, the worse your anxiety and depression get."
+        "subtitle": "The more you vape, the worse your anxiety and depression get.",
+        "analysis": "Frequency of use directly steepens the distress curve. Daily users are 5.4x more likely to report high anxiety (65%) compared to non-users (12%). This dose-response relationship implies that the continuous withdrawal cycle of chronic vaping artificially inflates the user's baseline anxiety levels.",
+        "keyStats": [
+          { "label": "Daily use anxiety", "value": "65%" },
+          { "label": "Never-use anxiety", "value": "12%" },
+          { "label": "Distress Multiplier", "value": "5.4x" }
+        ]
       }
     },
     {
@@ -166,12 +190,24 @@
       "storyA": {
         "id": "story3A_GlobalOutliers",
         "title": "Global Outliers",
-        "subtitle": "Australia has some of the strictest laws, yet massive youth usage."
+        "subtitle": "Australia has some of the strictest laws, yet massive youth usage.",
+        "analysis": "Australia presents a regulatory paradox: despite a strict 90/100 regulation score, youth usage sits at 21.7%—far exceeding Japan's 3.0%. This divergence suggests that while laws are strict, informal distribution networks have successfully bypassed formal border and pharmacy-only controls.",
+        "keyStats": [
+          { "label": "AU Usage Rate", "value": "21.7%" },
+          { "label": "AU Reg Strictness", "value": "90/100" },
+          { "label": "Japan Usage", "value": "3.0%" }
+        ]
       },
       "storyB": {
         "id": "story3B_BlackMarket",
         "title": "The Black Market Surge",
-        "subtitle": "How strict bans inadvertently fuelled the unregulated trade."
+        "subtitle": "How strict bans inadvertently fuelled the unregulated trade.",
+        "analysis": "The illicit trade has scaled aggressively to 120M units by 2024, dwarfing the legal prescription market by a 6.6:1 ratio. As narrow clinical pathways failed to meet demand, the black market expanded exponentially, underscoring the challenge of regulating an agile, globally connected gray economy.",
+        "keyStats": [
+          { "label": "2024 Black Market", "value": "120M" },
+          { "label": "Legal Prescr.", "value": "18M" },
+          { "label": "Illicit Ratio", "value": "6.6:1" }
+        ]
       }
     },
     {
@@ -182,12 +218,24 @@
       "storyA": {
         "id": "story4A_HealthRisks",
         "title": "Body Under Attack",
-        "subtitle": "The physical multipliers of inhaling aerosolised chemicals."
+        "subtitle": "The physical multipliers of inhaling aerosolised chemicals.",
+        "analysis": "Respiratory health data shows massive risk multipliers: chronic cough is 3.0x more likely in vapers, and asthma complications surge by 2.5x. These acute physiological responses dismantle the 'harmless water vapor' myth, revealing measurable pulmonary stress across all user cohorts.",
+        "keyStats": [
+          { "label": "Chronic Cough Risk", "value": "3.0x" },
+          { "label": "Bronchitis Risk", "value": "2.8x" },
+          { "label": "Asthma Multiplier", "value": "2.5x" }
+        ]
       },
       "storyB": {
         "id": "story4B_FitnessToll",
         "title": "The Fitness Toll",
-        "subtitle": "How vaping directly degrades physical performance and stamina."
+        "subtitle": "How vaping directly degrades physical performance and stamina.",
+        "analysis": "Quantifiable degradation is evident in cardiovascular metrics: daily vapers show a 25% drop in lung capacity and reach just 60% of the sprint stamina of non-vapers. For young athletes, the fitness toll is tangible, with recovery times slowing significantly by 40% due to compromised efficiency.",
+        "keyStats": [
+          { "label": "Sprint Stamina", "value": "60%" },
+          { "label": "Recovery Time", "value": "40%" },
+          { "label": "Lung Capacity", "value": "-25%" }
+        ]
       }
     },
     {
@@ -198,12 +246,24 @@
       "storyA": {
         "id": "story5A_ReformEffect",
         "title": "The Reform Effect",
-        "subtitle": "Australia's 2024 vaping reforms are working. Youth rates are dropping."
+        "subtitle": "Australia's 2024 vaping reforms are working. Youth rates are dropping.",
+        "analysis": "The 2024 reforms are showing real impact: prevalence has dropped from 19.2% in Wave 1 to 14.6% in Wave 8—a 24% relative decline. This downward inflection suggests that choking off the supply of youth-oriented disposables is successfully reversing a decade-long upward trend.",
+        "keyStats": [
+          { "label": "Wave 1 Prevalence", "value": "19.2%" },
+          { "label": "Wave 8 (2025)", "value": "14.6%" },
+          { "label": "Recent Drop", "value": "-24%" }
+        ]
       },
       "storyB": {
         "id": "story5B_AdExposurePlunge",
         "title": "Ad Exposure Plunge",
-        "subtitle": "Teens seeing vape ads on social media has halved since regulation."
+        "subtitle": "Teens seeing vape ads on social media has halved since regulation.",
+        "analysis": "Digital regulation is working: teen exposure to vape ads on TikTok has plunged by 52%, with similar drops on Snapchat (-46%) and Instagram (-47%). Suppressing the algorithmic promotion of vaping directly decreases the normalization of the behavior among the most vulnerable age groups.",
+        "keyStats": [
+          { "label": "TikTok Ad Exp.", "value": "-52%" },
+          { "label": "Snapchat Ad Exp.", "value": "-46%" },
+          { "label": "Insta Ad Exp.", "value": "-47%" }
+        ]
       }
     },
     {
@@ -214,12 +274,24 @@
       "storyA": {
         "id": "story6A_ScreenTimeTrap",
         "title": "The Screen Time Trap",
-        "subtitle": "3+ hours of daily social media doubles psychological distress in teens."
+        "subtitle": "3+ hours of daily social media doubles psychological distress in teens.",
+        "analysis": "High digital consumption is a clear distress multiplier: teens using social media 3+ hours daily report 38% severe distress, compared to 18% for low users. This loneliness jump (+59%) creates a compound effect on wellbeing, often acting as a comorbid factor alongside substance use.",
+        "keyStats": [
+          { "label": "High Use Distress", "value": "38%" },
+          { "label": "Low Use Distress", "value": "18%" },
+          { "label": "Loneliness Jump", "value": "+59%" }
+        ]
       },
       "storyB": {
         "id": "story6B_GenZWorries",
         "title": "What Worries Gen Z?",
-        "subtitle": "The top concerns keeping 17,480 young Australians up at night."
+        "subtitle": "The top concerns keeping 17,480 young Australians up at night.",
+        "analysis": "The hierarchy of youth concerns paints a picture of a generation grappling with profound macro-level uncertainty. With the cost of living and climate anxiety dominating their worldview, traditional teenage stressors have been superseded by existential economic and environmental fears. Substance use patterns must be contextualized within this broader landscape of generational distress.",
+        "keyStats": [
+          { "label": "Cost of Living", "value": "56%" },
+          { "label": "Mental Health", "value": "23%" },
+          { "label": "Sample Size", "value": "17k+" }
+        ]
       }
     }
   ]

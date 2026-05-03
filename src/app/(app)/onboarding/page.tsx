@@ -85,45 +85,50 @@ const STEPS = [
     title: "How old are you?",
     sub: "Helps us personalise tools for your life stage.",
     emoji: "🎂",
-    accent: "#5a8f6a",
-    shadow: "#3d6b4f",
-    bg: "#e8f5ec",
+    accent: "var(--mint)",
+    shadow: "var(--shadow-mint)",
+    bg: "var(--mint3)",
+    glow: "var(--mint-glow)",
   },
   {
     id: 1,
     title: "What triggers your urge?",
     sub: "Pick all that apply - we'll build your toolkit around these.",
     emoji: "😤",
-    accent: "#e07b5a",
-    shadow: "#a84f2a",
-    bg: "#fdf0ea",
+    accent: "var(--coral)",
+    shadow: "var(--shadow-coral)",
+    bg: "var(--coral3)",
+    glow: "var(--coral-glow)",
   },
   {
     id: 2,
     title: "How do you cope best?",
     sub: "We'll prioritise these tools so they surface when you need them.",
     emoji: "🧘",
-    accent: "#c9982a",
-    shadow: "#8c6400",
-    bg: "#fffbef",
+    accent: "var(--amber)",
+    shadow: "var(--shadow-amber)",
+    bg: "var(--amber3)",
+    glow: "var(--amber-glow)",
   },
   {
     id: 3,
     title: "Notification preferences",
     sub: "Choose what feels comfortable - you can always change this later.",
     emoji: "🔔",
-    accent: "#7b6fa0",
-    shadow: "#4e4478",
-    bg: "#f0edf8",
+    accent: "var(--purple)",
+    shadow: "var(--shadow-purple)",
+    bg: "var(--lilac)",
+    glow: "var(--shadow-purple)",
   },
   {
     id: 4,
     title: "You're all set! 🎉",
     sub: "Your personalised Loopless experience is ready.",
     emoji: "🏆",
-    accent: "#5a8f6a",
-    shadow: "#3d6b4f",
-    bg: "#e8f5ec",
+    accent: "var(--mint)",
+    shadow: "var(--shadow-mint)",
+    bg: "var(--mint3)",
+    glow: "var(--mint-glow)",
   },
 ];
 
@@ -258,7 +263,7 @@ export default function OnboardingPage() {
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         html{font-family:'Nunito',sans-serif;}
-        body{font-family:'Nunito',sans-serif;background:#fef9f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;}
+        body{font-family:'Nunito',sans-serif;background:var(--bg0);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;}
         h1,h2,h3{font-family:'Fredoka',sans-serif;}
         a{color:inherit;text-decoration:none;}
 
@@ -270,17 +275,17 @@ export default function OnboardingPage() {
         .choice{
           display:flex;align-items:center;gap:12px;
           padding:14px 16px;border-radius:16px;
-          border:2px solid rgba(26,18,8,.12);background:white;
+          border:2px solid var(--border3);background:var(--bg1);
           cursor:pointer;font-family:'Nunito',sans-serif;
-          box-shadow:3px 3px 0 rgba(26,18,8,.07);
+          box-shadow:3px 3px 0 var(--border);
           transition:transform .12s,box-shadow .12s,border-color .12s,background .12s;
           width:100%;text-align:left;
         }
-        .choice:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(26,18,8,.1);}
+        .choice:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--border2);}
         .choice.sel{transform:translate(-1px,-1px);}
 
         .next-btn{
-          width:100%;border:2.5px solid #1a1208;border-radius:16px;
+          width:100%;border:2.5px solid var(--text1);border-radius:16px;
           padding:15px;font-size:16px;font-weight:800;
           font-family:'Nunito',sans-serif;cursor:pointer;
           display:flex;align-items:center;justify-content:center;gap:10px;
@@ -290,31 +295,31 @@ export default function OnboardingPage() {
         .next-btn:active{transform:translate(3px,3px)!important;}
         .next-btn:disabled{opacity:.45;pointer-events:none;}
         .back-btn{
-          background:transparent;border:2px solid rgba(26,18,8,.15);border-radius:12px;
-          padding:12px 20px;font-size:14px;font-weight:700;color:#6b5c3e;
+          background:transparent;border:2px solid var(--border3);border-radius:12px;
+          padding:12px 20px;font-size:14px;font-weight:700;color:var(--text2);
           cursor:pointer;font-family:'Nunito',sans-serif;transition:background .12s;
         }
-        .back-btn:hover{background:#fde8c8;}
+        .back-btn:hover{background:var(--bg4);}
 
         .notif-toggle{
           display:flex;align-items:center;gap:14px;
           padding:14px 16px;border-radius:16px;
-          border:2px solid rgba(26,18,8,.1);background:white;
-          cursor:pointer;box-shadow:3px 3px 0 rgba(26,18,8,.07);
+          border:2px solid var(--border2);background:var(--bg1);
+          cursor:pointer;box-shadow:3px 3px 0 var(--border);
           transition:all .15s;width:100%;text-align:left;font-family:'Nunito',sans-serif;
         }
         .notif-toggle:hover{border-color:rgba(123,111,160,.4);}
         .notif-toggle.on{background:#f0edf8;border-color:#7b6fa0;box-shadow:3px 3px 0 rgba(78,68,120,.3);}
 
         .toggle-dot{
-          width:36px;height:20px;border-radius:10px;background:#e0d8c8;
-          border:1.5px solid rgba(26,18,8,.15);position:relative;
+          width:36px;height:20px;border-radius:10px;background:var(--bg3);
+          border:1.5px solid var(--border3);position:relative;
           transition:background .2s;flex-shrink:0;
         }
         .toggle-dot::after{
           content:'';position:absolute;width:14px;height:14px;
-          border-radius:50%;background:white;top:2px;left:2px;
-          border:1.5px solid rgba(26,18,8,.15);transition:transform .2s;
+          border-radius:50%;background:var(--bg1);top:2px;left:2px;
+          border:1.5px solid var(--border3);transition:transform .2s;
         }
         .toggle-dot.on{background:#7b6fa0;}
         .toggle-dot.on::after{transform:translateX(16px);}
@@ -338,7 +343,7 @@ export default function OnboardingPage() {
             width: 400,
             height: 400,
             borderRadius: "50%",
-            background: `radial-gradient(circle,${cur.accent}20 0%,transparent 70%)`,
+            background: `radial-gradient(circle, ${cur.glow} 0%, transparent 70%)`,
             animation: "blob 10s ease-in-out infinite",
             transition: "background .5s",
           }}
@@ -351,7 +356,7 @@ export default function OnboardingPage() {
             width: 320,
             height: 320,
             borderRadius: "50%",
-            background: `radial-gradient(circle,${cur.accent}14 0%,transparent 70%)`,
+            background: `radial-gradient(circle, ${cur.glow} 0%, transparent 70%)`,
             animation: "blob 13s ease-in-out 2s infinite",
             transition: "background .5s",
           }}
@@ -366,7 +371,7 @@ export default function OnboardingPage() {
               width: p.s,
               height: p.s,
               borderRadius: "50%",
-              background: `radial-gradient(circle,${cur.accent}30 0%,transparent 75%)`,
+              background: `radial-gradient(circle, ${cur.glow} 0%, transparent 75%)`,
               animation: `puff ${p.d}s ease-in-out ${p.dl}s infinite`,
               filter: "blur(8px)",
             }}
@@ -393,7 +398,7 @@ export default function OnboardingPage() {
               fontFamily: "'Fredoka',sans-serif",
               fontSize: 24,
               fontWeight: 600,
-              color: "#1a1208",
+              color: "var(--text1)",
             }}
           >
             Loop
@@ -406,7 +411,7 @@ export default function OnboardingPage() {
               style={{
                 fontSize: 13,
                 fontWeight: 700,
-                color: "#a8936a",
+                color: "var(--text3)",
                 marginTop: 2,
               }}
             >
@@ -426,13 +431,13 @@ export default function OnboardingPage() {
                   flex: 1,
                   height: 6,
                   borderRadius: 3,
-                  border: "1.5px solid rgba(26,18,8,.1)",
+                  border: "1.5px solid var(--border2)",
                   background:
                     absI < step
                       ? cur.accent
                       : absI === step
                         ? cur.accent
-                        : "#fde8c8",
+                        : "var(--bg4)",
                   opacity: absI < step ? 0.55 : absI === step ? 1 : 0.4,
                   transition: "background .4s",
                 }}
@@ -444,11 +449,11 @@ export default function OnboardingPage() {
         {/* Card */}
         <div
           style={{
-            background: "white",
-            border: "2.5px solid rgba(26,18,8,.1)",
+            background: "var(--bg1)",
+            border: "2.5px solid var(--border2)",
             borderRadius: 28,
             padding: "32px 28px",
-            boxShadow: "8px 8px 0 rgba(26,18,8,.1)",
+            boxShadow: "8px 8px 0 var(--border2)",
             minHeight: 460,
             overflow: "hidden",
           }}
@@ -480,7 +485,7 @@ export default function OnboardingPage() {
                     fontFamily: "'Fredoka',sans-serif",
                     fontSize: 24,
                     fontWeight: 600,
-                    color: "#1a1208",
+                    color: "var(--text1)",
                     marginBottom: 6,
                     lineHeight: 1.25,
                   }}
@@ -490,7 +495,7 @@ export default function OnboardingPage() {
                 <p
                   style={{
                     fontSize: 13.5,
-                    color: "#6b5c3e",
+                    color: "var(--text2)",
                     fontWeight: 500,
                     lineHeight: 1.6,
                   }}
@@ -520,11 +525,11 @@ export default function OnboardingPage() {
                           alignItems: "center",
                           justifyContent: "center",
                           padding: "18px 12px",
-                          background: sel ? cur.bg : "white",
-                          borderColor: sel ? cur.accent : "rgba(26,18,8,.12)",
+                          background: sel ? cur.bg : "var(--bg1)",
+                          borderColor: sel ? cur.accent : "var(--border3)",
                           boxShadow: sel
-                            ? `3px 3px 0 ${cur.shadow}44`
-                            : "3px 3px 0 rgba(26,18,8,.07)",
+                            ? `3px 3px 0 ${cur.shadow}`
+                            : "3px 3px 0 var(--border)",
                         }}
                       >
                         <span style={{ fontSize: 30, marginBottom: 6 }}>
@@ -534,7 +539,7 @@ export default function OnboardingPage() {
                           style={{
                             fontSize: 16,
                             fontWeight: 800,
-                            color: "#1a1208",
+                            color: "var(--text1)",
                           }}
                         >
                           {a.label}
@@ -543,7 +548,7 @@ export default function OnboardingPage() {
                           style={{
                             fontSize: 11,
                             fontWeight: 600,
-                            color: "#a8936a",
+                            color: "var(--text3)",
                             marginTop: 2,
                           }}
                         >
@@ -584,11 +589,11 @@ export default function OnboardingPage() {
                         className={`choice${sel ? " sel" : ""}`}
                         onClick={() => toggleTrigger(t.val)}
                         style={{
-                          background: sel ? cur.bg : "white",
-                          borderColor: sel ? cur.accent : "rgba(26,18,8,.12)",
+                          background: sel ? cur.bg : "var(--bg1)",
+                          borderColor: sel ? cur.accent : "var(--border3)",
                           boxShadow: sel
-                            ? `3px 3px 0 ${cur.shadow}44`
-                            : "3px 3px 0 rgba(26,18,8,.07)",
+                            ? `3px 3px 0 ${cur.shadow}`
+                            : "3px 3px 0 var(--border)",
                         }}
                       >
                         <span style={{ fontSize: 22, flexShrink: 0 }}>
@@ -598,7 +603,7 @@ export default function OnboardingPage() {
                           style={{
                             fontSize: 13,
                             fontWeight: 700,
-                            color: "#1a1208",
+                            color: "var(--text1)",
                           }}
                         >
                           {t.label}
@@ -647,11 +652,11 @@ export default function OnboardingPage() {
                         className={`choice${sel ? " sel" : ""}`}
                         onClick={() => setCoping(c.val)}
                         style={{
-                          background: sel ? cur.bg : "white",
-                          borderColor: sel ? cur.accent : "rgba(26,18,8,.12)",
+                          background: sel ? cur.bg : "var(--bg1)",
+                          borderColor: sel ? cur.accent : "var(--border3)",
                           boxShadow: sel
-                            ? `3px 3px 0 ${cur.shadow}44`
-                            : "3px 3px 0 rgba(26,18,8,.07)",
+                            ? `3px 3px 0 ${cur.shadow}`
+                            : "3px 3px 0 var(--border)",
                         }}
                       >
                         <span style={{ fontSize: 30, flexShrink: 0 }}>
@@ -662,7 +667,7 @@ export default function OnboardingPage() {
                             style={{
                               fontSize: 15,
                               fontWeight: 800,
-                              color: "#1a1208",
+                              color: "var(--text1)",
                             }}
                           >
                             {c.label}
@@ -671,7 +676,7 @@ export default function OnboardingPage() {
                             style={{
                               fontSize: 12,
                               fontWeight: 500,
-                              color: "#6b5c3e",
+                              color: "var(--text2)",
                               marginTop: 2,
                             }}
                           >
@@ -716,7 +721,7 @@ export default function OnboardingPage() {
                             style={{
                               fontSize: 14,
                               fontWeight: 800,
-                              color: "#1a1208",
+                              color: "var(--text1)",
                             }}
                           >
                             {n.label}
@@ -725,7 +730,7 @@ export default function OnboardingPage() {
                             style={{
                               fontSize: 12,
                               fontWeight: 500,
-                              color: "#6b5c3e",
+                              color: "var(--text2)",
                               marginTop: 2,
                             }}
                           >
@@ -740,7 +745,7 @@ export default function OnboardingPage() {
                     style={{
                       fontSize: 11.5,
                       fontWeight: 600,
-                      color: "#a8936a",
+                      color: "var(--text3)",
                       textAlign: "center",
                       marginTop: 4,
                     }}
@@ -768,7 +773,7 @@ export default function OnboardingPage() {
                       fontFamily: "'Fredoka',sans-serif",
                       fontSize: 26,
                       fontWeight: 600,
-                      color: "#1a1208",
+                      color: "var(--text1)",
                       marginBottom: 10,
                     }}
                   >
@@ -777,7 +782,7 @@ export default function OnboardingPage() {
                   <p
                     style={{
                       fontSize: 15,
-                      color: "#6b5c3e",
+                      color: "var(--text2)",
                       fontWeight: 500,
                       lineHeight: 1.65,
                       marginBottom: 24,
@@ -822,7 +827,7 @@ export default function OnboardingPage() {
                           padding: "7px 14px",
                           fontSize: 12,
                           fontWeight: 800,
-                          color: "#1a1208",
+                          color: "var(--text1)",
                           display: "flex",
                           alignItems: "center",
                           gap: 6,
@@ -876,7 +881,7 @@ export default function OnboardingPage() {
             style={{
               flex: 1,
               background: canNext ? cur.accent : "#d4c8b0",
-              color: canNext ? "white" : "#a8936a",
+              color: canNext ? "var(--bg1)" : "var(--text3)",
               boxShadow: canNext ? `4px 4px 0 ${cur.shadow}` : "none",
             }}
           >
@@ -894,7 +899,7 @@ export default function OnboardingPage() {
             marginTop: 14,
             fontSize: 12,
             fontWeight: 600,
-            color: "#a8936a",
+            color: "var(--text3)",
           }}
         >
           Step {step - startStep + 1} of {STEPS.length - startStep} · Your data

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ShieldCheck, Lock, Bot, Scale, Stethoscope } from "lucide-react";
 
 export default function PrivacyPledge() {
   return (
@@ -8,51 +9,48 @@ export default function PrivacyPledge() {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.7 }}
-      className="mb-8"
+      whileHover={{ y: -2 }}
+      className="mb-8 relative overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #fffbef, #fff0c8)",
-        border: "2.5px solid #f5a623",
+        background: "var(--bg2)",
+        backdropFilter: "blur(12px)",
+        border: "1.5px solid var(--border3)",
         borderRadius: 20,
-        padding: "22px 20px",
-        boxShadow: "5px 5px 0 rgba(245,166,35,0.18)",
+        padding: "24px 20px",
+        boxShadow: "var(--shadow-card-lg)",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 10,
-          marginBottom: 14,
+          gap: 12,
+          marginBottom: 16,
         }}
       >
         <div
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            background: "#f5a623",
+            width: 44,
+            height: 44,
+            borderRadius: 14,
+            background: "var(--bg1)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "3px 3px 0 rgba(26,18,8,0.12)",
+            boxShadow: "var(--shadow-card)",
+            border: "1.5px solid var(--border2)",
+            color: "var(--amber)",
           }}
         >
-          <svg viewBox="0 0 24 24" fill="none" width={20} height={20}>
-            <path
-              d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <ShieldCheck size={22} strokeWidth={2.5} />
         </div>
         <div
           style={{
-            fontFamily: "'Fredoka',sans-serif",
+            fontFamily: "var(--font-display)",
             fontSize: 18,
-            fontWeight: 600,
-            color: "#5a3800",
+            fontWeight: 700,
+            color: "var(--text1)",
+            letterSpacing: "-0.01em",
           }}
         >
           Our promise to you
@@ -62,19 +60,19 @@ export default function PrivacyPledge() {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {[
           {
-            icon: "🔒",
+            icon: <Lock size={18} strokeWidth={2.5} color="var(--amber)" />,
             text: "Your data stays yours. It is never sold, shared, or used to train other people's models.",
           },
           {
-            icon: "🤖",
+            icon: <Bot size={18} strokeWidth={2.5} color="var(--mint)" />,
             text: "Everything you see in Insights comes from your own check-ins and logs - not assumptions.",
           },
           {
-            icon: "⚖️",
+            icon: <Scale size={18} strokeWidth={2.5} color="var(--coral)" />,
             text: "We check our pattern engine regularly to ensure it works fairly, regardless of age or background.",
           },
           {
-            icon: "🏥",
+            icon: <Stethoscope size={18} strokeWidth={2.5} color="var(--text2)" />,
             text: "These insights are not medical advice. If you're struggling, please reach out to a professional.",
           },
         ].map((item, i) => (
@@ -85,20 +83,20 @@ export default function PrivacyPledge() {
             transition={{ delay: 0.7 + i * 0.07 }}
             style={{
               display: "flex",
-              alignItems: "flex-start",
-              gap: 10,
-              padding: "10px 12px",
-              background: "rgba(255,255,255,0.6)",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 14px",
+              background: "var(--bg1)",
               borderRadius: 12,
-              border: "1.5px solid rgba(245,166,35,0.2)",
+              border: "1px solid var(--border2)",
             }}
           >
-            <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+            <div style={{ flexShrink: 0, display: "flex", background: "var(--bg2)", padding: 6, borderRadius: 8, border: "1px solid var(--border3)" }}>{item.icon}</div>
             <span
               style={{
                 fontSize: 13,
-                fontWeight: 700,
-                color: "#5a3800",
+                fontWeight: 600,
+                color: "var(--text2)",
                 lineHeight: 1.5,
               }}
             >
@@ -110,11 +108,11 @@ export default function PrivacyPledge() {
 
       <div
         style={{
-          marginTop: 14,
+          marginTop: 20,
           textAlign: "center",
           fontSize: 12,
-          fontWeight: 600,
-          color: "#a8936a",
+          fontWeight: 700,
+          color: "var(--text3)",
         }}
       >
         Loopless - built with care, not just code ♥

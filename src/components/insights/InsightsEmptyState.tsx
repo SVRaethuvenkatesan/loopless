@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { Sprout, CheckCircle, DatabaseZap } from "lucide-react";
 
 export default function InsightsEmptyState({
   checkinCount,
@@ -34,33 +35,42 @@ export default function InsightsEmptyState({
       animate={{ opacity: 1, y: 0 }}
       className="mb-6"
       style={{
-        background: "linear-gradient(135deg, #fffbef, #fff0c8)",
-        border: "2.5px dashed #c9982a",
+        background: "var(--bg2)",
+        backdropFilter: "blur(12px)",
+        border: "2px dashed var(--border3)",
         borderRadius: 20,
-        padding: "28px 24px",
+        padding: "32px 24px",
         textAlign: "center",
       }}
     >
-      {/* Animated clock */}
+      {/* Animated icon */}
       <motion.div
         animate={{ rotate: [0, 5, -5, 0] }}
         transition={{ duration: 3, repeat: Infinity }}
-        style={{ fontSize: 48, marginBottom: 16 }}
+        style={{ 
+          display: "inline-flex", 
+          marginBottom: 16,
+          color: "var(--mint)",
+          background: "var(--mint-light)",
+          padding: "16px",
+          borderRadius: "50%",
+        }}
       >
-        🌱
+        <Sprout size={36} strokeWidth={2.5} />
       </motion.div>
 
       <div
         style={{
-          fontFamily: "'Fredoka',sans-serif",
-          fontSize: 20,
-          fontWeight: 600,
-          color: "#5a3800",
+          fontFamily: "var(--font-display)",
+          fontSize: 22,
+          fontWeight: 700,
+          color: "var(--text1)",
           marginBottom: 8,
+          letterSpacing: "-0.01em",
         }}
       >
         {checkinCount === 0
-          ? "No data yet - let's change that!"
+          ? "No real data yet - let's change that!"
           : `${daysNeeded} more days to unlock insights`}
       </div>
 
@@ -68,74 +78,69 @@ export default function InsightsEmptyState({
         style={{
           fontSize: 14,
           fontWeight: 600,
-          color: "#a8936a",
+          color: "var(--text2)",
           lineHeight: 1.6,
-          marginBottom: 20,
+          marginBottom: 24,
+          maxWidth: 400,
+          margin: "0 auto 24px",
         }}
       >
         {checkinCount === 0
-          ? "Your insights page needs at least 7 daily check-ins to start finding patterns. Check in each morning to get started."
-          : `You've logged ${checkinCount} day${checkinCount !== 1 ? "s" : ""} - almost there! Keep checking in to unlock your personalised pattern insights.`}
+          ? "You are currently viewing your real data. Your insights engine needs at least 7 daily check-ins to start finding patterns. Check in each morning to get started."
+          : `You are viewing your real data. You've logged ${checkinCount} day${checkinCount !== 1 ? "s" : ""} - almost there! Keep checking in to unlock your personalised pattern insights.`}
       </p>
 
       {/* Check in CTA */}
       <div
         style={{
           display: "flex",
-          gap: 10,
+          gap: 12,
           justifyContent: "center",
           flexWrap: "wrap",
         }}
       >
         <motion.a
           href="/checkin"
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           style={{
-            padding: "12px 22px",
+            padding: "12px 24px",
             borderRadius: 14,
             fontWeight: 800,
             fontSize: 14,
-            background: "#f5a623",
-            color: "#3d2200",
-            border: "2.5px solid #1a1208",
+            background: "var(--amber)",
+            color: "var(--bg0)",
+            border: "1.5px solid var(--border3)",
             textDecoration: "none",
-            fontFamily: "'Nunito',sans-serif",
-            boxShadow: "4px 4px 0 rgba(26,18,8,0.15)",
             display: "inline-flex",
             alignItems: "center",
-            gap: 7,
+            gap: 8,
+            boxShadow: "var(--shadow-card)",
           }}
         >
-          <svg viewBox="0 0 24 24" fill="none" width={16} height={16}>
-            <path
-              d="M12 5v14M5 12h14"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
+          <CheckCircle size={18} strokeWidth={2.5} />
           Check in now
         </motion.a>
 
         {/* Dev-only seed button */}
         {process.env.NODE_ENV !== "production" && !done && (
           <motion.button
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={seed}
             disabled={seeding}
             style={{
-              padding: "12px 22px",
+              padding: "12px 24px",
               borderRadius: 14,
               fontWeight: 700,
               fontSize: 14,
               background: "transparent",
-              color: "#a8936a",
-              border: "2px solid rgba(168,147,106,0.3)",
+              color: "var(--text2)",
+              border: "1.5px solid var(--border2)",
               cursor: "pointer",
-              fontFamily: "'Nunito',sans-serif",
               display: "inline-flex",
               alignItems: "center",
-              gap: 7,
+              gap: 8,
             }}
           >
             {seeding ? (
@@ -148,9 +153,9 @@ export default function InsightsEmptyState({
                     ease: "linear",
                   }}
                   style={{
-                    width: 14,
-                    height: 14,
-                    border: "2px solid #a8936a",
+                    width: 16,
+                    height: 16,
+                    border: "2px solid var(--text2)",
                     borderTopColor: "transparent",
                     borderRadius: "50%",
                   }}
@@ -159,23 +164,8 @@ export default function InsightsEmptyState({
               </>
             ) : (
               <>
-                <svg viewBox="0 0 24 24" fill="none" width={14} height={14}>
-                  <path
-                    d="M4 4v5h5M20 20v-5h-5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M20.49 9A9 9 0 0 0 5.64 5.64L4 9m16 6-1.64 3.36A9 9 0 0 1 3.51 15"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Load demo data (dev)
+                <DatabaseZap size={18} strokeWidth={2.5} />
+                Load demo data
               </>
             )}
           </motion.button>
@@ -186,11 +176,14 @@ export default function InsightsEmptyState({
             style={{
               fontSize: 13,
               fontWeight: 700,
-              color: "#3bc98e",
+              color: "var(--mint)",
               padding: "12px 0",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
             }}
           >
-            ✓ Demo data loaded - refreshing...
+            <CheckCircle size={14} /> Demo data loaded - refreshing...
           </span>
         )}
       </div>
@@ -201,19 +194,19 @@ export default function InsightsEmptyState({
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: 6,
-            marginTop: 20,
+            gap: 8,
+            marginTop: 24,
           }}
         >
           {Array.from({ length: 7 }).map((_, i) => (
             <div
               key={i}
               style={{
-                width: 10,
-                height: 10,
+                width: 12,
+                height: 12,
                 borderRadius: "50%",
-                background: i < checkinCount ? "#f5a623" : "#fde8c8",
-                border: "1.5px solid rgba(168,147,106,0.3)",
+                background: i < checkinCount ? "var(--amber)" : "var(--bg1)",
+                border: i < checkinCount ? "none" : "1.5px solid var(--border2)",
                 transition: "background .3s",
               }}
             />

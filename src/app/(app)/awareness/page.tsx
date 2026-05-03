@@ -16,6 +16,7 @@ import {
 import awarenessData from "@/data/awareness-stats.json";
 import DataWheel from "@/components/awareness/DataWheel";
 import ChartRenderer from "@/components/awareness/ChartRenderer";
+import TypewriterText from "@/components/awareness/TypewriterText";
 
 const WHEEL_ITEMS = [
   { id: "aihw-youth",  title: "Youth Usage Trends",     color: "#ff6b5b", icon: <Activity size={22} />   },
@@ -433,6 +434,28 @@ export default function AwarenessPage() {
                         <div style={{ width: "100%" }}>
                           <ChartRenderer storyId={currentStory!.id} />
                         </div>
+
+                        {(currentStory as any).analysis && (
+                          <div style={{ marginTop: 24 }}>
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+                              {(currentStory as any).keyStats?.map((stat: any, i: number) => (
+                                <div key={i} style={{
+                                  background: `${sourceInfo.color}15`,
+                                  border: `1.5px solid ${sourceInfo.color}44`,
+                                  padding: "4px 10px",
+                                  borderRadius: 50,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6
+                                }}>
+                                  <span style={{ fontSize: 10, fontWeight: 800, color: sourceInfo.color, textTransform: "uppercase", letterSpacing: "0.05em" }}>{stat.label}</span>
+                                  <span style={{ fontSize: 13, fontWeight: 900, color: "var(--text1)" }}>{stat.value}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <TypewriterText text={(currentStory as any).analysis} speed={25} />
+                          </div>
+                        )}
                       </motion.div>
                     </AnimatePresence>
                   </div>
@@ -440,7 +463,7 @@ export default function AwarenessPage() {
                   {/* Footer */}
                   <div style={{
                     padding: "10px 24px",
-                    borderTop: "2px dashed rgba(26,18,8,.1)",
+                    borderTop: "2px dashed var(--border2)",
                     background: "var(--bg1)",
                     display: "flex",
                     alignItems: "center",
