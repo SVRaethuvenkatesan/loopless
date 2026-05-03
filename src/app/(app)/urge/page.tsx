@@ -77,51 +77,51 @@ const TOOLS: Tool[] = [
 const TRIGGERS = [
   {
     val: "stress", label: "Stress",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   },
   {
     val: "boredom", label: "Boredom",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M8 15s1.5-2 4-2 4 2 4 2M9 9h.01M15 9h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" /><path d="M8 15s1.5-2 4-2 4 2 4 2M9 9h.01M15 9h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>,
   },
   {
     val: "social", label: "Social",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   },
   {
     val: "anxiety", label: "Anxiety",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   },
   {
     val: "routine", label: "Routine",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" /><path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>,
   },
   {
     val: "alcohol", label: "Drinking",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M8 22h8M12 11v11M5 2l2 20h10L19 2H5zM5 8h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M8 22h8M12 11v11M5 2l2 20h10L19 2H5zM5 8h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   },
   {
     val: "break", label: "Break time",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   },
   {
     val: "emotions", label: "Emotions",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   },
   {
     val: "loneliness", label: "Loneliness",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="17" y1="11" x2="22" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><line x1="17" y1="11" x2="22" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>,
   },
   {
     val: "excitement", label: "Excitement",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   },
   {
     val: "after-eating", label: "After Eating",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M3 11l19-9-9 19-2-8-8-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><path d="M3 11l19-9-9 19-2-8-8-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   },
   {
     val: "waking-up", label: "Waking Up",
-    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+    icon: <svg viewBox="0 0 24 24" fill="none" width={20} height={20}><circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>,
   },
 ];
 
@@ -927,12 +927,12 @@ function ColdGame({ onDone }: { onDone: (s: number) => void }) {
         animate={
           phase === "holding"
             ? {
-                boxShadow: [
-                  "0 0 0 rgba(123,111,160,0)",
-                  "0 0 30px rgba(123,111,160,.6)",
-                  "0 0 0 rgba(123,111,160,0)",
-                ],
-              }
+              boxShadow: [
+                "0 0 0 rgba(123,111,160,0)",
+                "0 0 30px rgba(123,111,160,.6)",
+                "0 0 0 rgba(123,111,160,0)",
+              ],
+            }
             : {}
         }
         transition={{ duration: 1.5, repeat: Infinity }}
@@ -1129,7 +1129,7 @@ export default function UrgePage() {
       });
       const d = await r.json();
       if (d.id) setUrgeEventId(d.id);
-    } catch {}
+    } catch { }
 
     /* Fetch AI scenario */
     try {
@@ -1196,7 +1196,7 @@ export default function UrgePage() {
           amount: activeTool.damage,
         }),
       });
-    } catch {}
+    } catch { }
 
     setActiveTool(null);
     if (newHp <= 0) {
@@ -1259,7 +1259,37 @@ export default function UrgePage() {
         }
         .bg::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,.015) 3px,rgba(255,255,255,.015) 4px);pointer-events:none;animation:scanline 4s linear infinite;}
 
-        .page{max-width:520px;margin:0 auto;padding:16px 16px 80px;position:relative;z-index:1;}
+        .page{max-width:520px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom));position:relative;z-index:1;}
+
+        .urge-entry-card{padding-bottom:20px;}
+
+        /* Mobile: sit above shell bottom nav - reserve space */
+        @media(max-width:1023px){
+          .page{padding-bottom:calc(148px + env(safe-area-inset-bottom));}
+          .urge-entry-card{padding-bottom:calc(96px + env(safe-area-inset-bottom));}
+        }
+
+        /* Sticky primary CTA (narrow screens) */
+        .urge-fixed-cta{display:contents;}
+        @media(max-width:1023px){
+          .urge-fixed-cta{
+            display:block;
+            position:fixed;
+            left:0;right:0;
+            bottom:calc(68px + env(safe-area-inset-bottom));
+            z-index:95;
+            padding:12px 16px 14px;
+            pointer-events:none;
+            background:linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--bg0) 94%, transparent) 28%, var(--bg0));
+            backdrop-filter:saturate(140%) blur(14px);
+            border-top:1px solid color-mix(in srgb, var(--border2) 70%, transparent);
+          }
+          .urge-fixed-cta > * { pointer-events:auto; }
+        }
+
+        .trigger-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+        @media(max-width:560px){ .trigger-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;} }
+        @media(max-width:380px){ .trigger-grid{ grid-template-columns:repeat(2,minmax(0,1fr));} }
 
         .card{background:var(--bg1);border:3px solid var(--stroke);border-radius:26px;box-shadow:var(--shadow-card);overflow:hidden;}
 
@@ -1386,7 +1416,7 @@ export default function UrgePage() {
                 </motion.div>
 
                 <div
-                  className="card"
+                  className="card urge-entry-card"
                   style={{ padding: "24px 22px", marginBottom: 14 }}
                 >
                   <h2
@@ -1529,13 +1559,7 @@ export default function UrgePage() {
                     >
                       What's triggering you?
                     </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(4,1fr)",
-                        gap: 8,
-                      }}
-                    >
+                    <div className="trigger-grid">
                       {TRIGGERS.map((t) => {
                         const sel = trigger === t.val;
                         return (
@@ -1605,7 +1629,7 @@ export default function UrgePage() {
                         Context (+20 XP)
                       </div>
                     </div>
-                    
+
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                       <div>
                         <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)", marginBottom: 6 }}>Activity Before Urge</div>
@@ -1663,34 +1687,36 @@ export default function UrgePage() {
                     </div>
                   </div>
 
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={enterBattle}
-                    disabled={!trigger}
-                    style={{
-                      width: "100%",
-                      background: trigger ? "#e07b5a" : "#d4c8b0",
-                      color: "white",
-                      border: "2.5px solid #1a1208",
-                      borderRadius: 16,
-                      padding: "16px",
-                      fontSize: 17,
-                      fontWeight: 800,
-                      fontFamily: "'Nunito',sans-serif",
-                      cursor: trigger ? "pointer" : "not-allowed",
-                      boxShadow: trigger
-                        ? "6px 6px 0 rgba(26,18,8,.2)"
-                        : "none",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 10,
-                      transition: "all .15s",
-                    }}
-                  >
-                    ⚔️ Generate my battle
-                  </motion.button>
+                  <div className="urge-fixed-cta">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={enterBattle}
+                      disabled={!trigger}
+                      style={{
+                        width: "100%",
+                        background: trigger ? "#e07b5a" : "#d4c8b0",
+                        color: "white",
+                        border: "2.5px solid #1a1208",
+                        borderRadius: 16,
+                        padding: "clamp(14px, 4vw, 17px)",
+                        fontSize: "clamp(15px, 4vw, 17px)",
+                        fontWeight: 800,
+                        fontFamily: "'Nunito',sans-serif",
+                        cursor: trigger ? "pointer" : "not-allowed",
+                        boxShadow: trigger
+                          ? "6px 6px 0 rgba(26,18,8,.2), 0 14px 40px rgba(224,123,90,.35)"
+                          : "none",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10,
+                        transition: "all .15s",
+                      }}
+                    >
+                      ⚔️ Generate my battle
+                    </motion.button>
+                  </div>
                 </div>
                 <Link
                   href="/dashboard"
@@ -1936,24 +1962,24 @@ export default function UrgePage() {
                               >
                                 {t.id === "breathe" && (
                                   <svg viewBox="0 0 24 24" fill="none" width={30} height={30}>
-                                    <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                   </svg>
                                 )}
                                 {t.id === "walk" && (
                                   <svg viewBox="0 0 24 24" fill="none" width={30} height={30}>
-                                    <circle cx="12" cy="5" r="2" stroke="currentColor" strokeWidth="2"/>
-                                    <path d="m19 13-3-2-3-6-3 5-3-1M16 21l-3-8M8 21l2-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <circle cx="12" cy="5" r="2" stroke="currentColor" strokeWidth="2" />
+                                    <path d="m19 13-3-2-3-6-3 5-3-1M16 21l-3-8M8 21l2-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                   </svg>
                                 )}
                                 {t.id === "cold" && (
                                   <svg viewBox="0 0 24 24" fill="none" width={30} height={30}>
-                                    <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                    <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                                   </svg>
                                 )}
                                 {t.id === "journal" && (
                                   <svg viewBox="0 0 24 24" fill="none" width={30} height={30}>
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                   </svg>
                                 )}
                               </motion.div>

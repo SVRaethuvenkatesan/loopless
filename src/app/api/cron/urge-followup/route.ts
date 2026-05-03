@@ -1,4 +1,4 @@
-// AC9.2.3: Coping follow-up — 25-35 min after urge logged, if no coping session completed
+// AC9.2.3: Coping follow-up - 25-35 min after urge logged, if no coping session completed
 // Daily nudge cap: max 2 per user per day
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
 
         const n = await sendPushToUser(userId, {
           title: "How are you doing? 💚",
-          body: "You logged an urge a little while ago. A quick coping tool can help — 2 minutes is all it takes.",
+          body: "You logged an urge a little while ago. A quick coping tool can help - 2 minutes is all it takes.",
           url: "/coping",
         });
 

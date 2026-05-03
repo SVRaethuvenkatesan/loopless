@@ -1,4 +1,4 @@
-// AC9.2.1 + AC9.2.2: Daily check-in reminder — only send if user hasn't checked in today
+// AC9.2.1 + AC9.2.2: Daily check-in reminder - only send if user hasn't checked in today
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
       for (const userId of toNotify) {
         const n = await sendPushToUser(userId, {
           title: "Daily check-in reminder 📋",
-          body: "60 seconds. Log how you're feeling — your streak is counting on you.",
+          body: "60 seconds. Log how you're feeling - your streak is counting on you.",
           url: "/checkin",
         });
         sent += n;

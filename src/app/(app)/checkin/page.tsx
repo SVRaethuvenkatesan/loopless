@@ -545,19 +545,19 @@ function MiniChart({ history }: { history: CheckInRecord[] }) {
 
 /* ─── Streak milestone configs ──────────── */
 const STREAK_MILESTONES: Record<number, { emoji: string; title: string; sub: string }> = {
-  7:   { emoji: "🫁", title: "7-day streak!",  sub: "Lung cilia are already recovering. Science is on your side." },
-  12:  { emoji: "💨", title: "12-day streak!", sub: "Airways less inflamed — breathing is measurably easier." },
-  30:  { emoji: "🏆", title: "30-day streak!", sub: "Lung function up to 30% better this month. Incredible." },
-  100: { emoji: "🔥", title: "100 days!",      sub: "Your lung cancer risk has started to fall. You changed your biology." },
+  7: { emoji: "🫁", title: "7-day streak!", sub: "Lung cilia are already recovering. Science is on your side." },
+  12: { emoji: "💨", title: "12-day streak!", sub: "Airways less inflamed - breathing is measurably easier." },
+  30: { emoji: "🏆", title: "30-day streak!", sub: "Lung function up to 30% better this month. Incredible." },
+  100: { emoji: "🔥", title: "100 days!", sub: "Your lung cancer risk has started to fall. You changed your biology." },
 };
 
 /* ─── Badge unlock modal ─────────────────── */
 const BADGE_DISPLAY: Record<string, { emoji: string; name: string; color: string }> = {
-  first_checkin: { emoji: "🌱", name: "First Breath",  color: "#5a8f6a" },
-  streak_7:      { emoji: "🫁", name: "Deep Breath",   color: "#5bb8f5" },
-  streak_12:     { emoji: "💨", name: "Clear Airways", color: "#7b6fa0" },
-  streak_30:     { emoji: "🏆", name: "Lung Warrior",  color: "#c9982a" },
-  streak_100:    { emoji: "🔥", name: "Lung Champion", color: "#e07b5a" },
+  first_checkin: { emoji: "🌱", name: "First Breath", color: "#5a8f6a" },
+  streak_7: { emoji: "🫁", name: "Deep Breath", color: "#5bb8f5" },
+  streak_12: { emoji: "💨", name: "Clear Airways", color: "#7b6fa0" },
+  streak_30: { emoji: "🏆", name: "Lung Warrior", color: "#c9982a" },
+  streak_100: { emoji: "🔥", name: "Lung Champion", color: "#e07b5a" },
 };
 
 function BadgeUnlockModal({ badgeType, milestoneMsg, onClose }: { badgeType: string; milestoneMsg: string; onClose: () => void }) {
@@ -676,7 +676,7 @@ export default function CheckInPage() {
           setAlreadyDone(true);
           setTodayEntry(d.checkin);
         }
-      } catch {}
+      } catch { }
     })();
   }, []);
 
@@ -699,7 +699,7 @@ export default function CheckInPage() {
           const id = await ir.json();
           if (id.insight) setAiInsight(id.insight);
         }
-      } catch {}
+      } catch { }
       setHistLoading(false);
       setInsightLoading(false);
     })();
@@ -756,7 +756,7 @@ export default function CheckInPage() {
       });
       const d = await r.json();
       if (d.message) setMilestoneMsg(d.message);
-    } catch {}
+    } catch { }
   }
 
   async function submit(e: React.MouseEvent) {
@@ -816,10 +816,10 @@ export default function CheckInPage() {
                 }
               }
             })
-            .catch(() => {});
+            .catch(() => { });
         }
       }
-    } catch {}
+    } catch { }
     setLoading(false);
     setSubmitted(true);
   }
@@ -829,8 +829,8 @@ export default function CheckInPage() {
   // History analytics
   const avgStress = history.length
     ? +(
-        history.reduce((s, h) => s + h.stressLevel, 0) / history.length
-      ).toFixed(1)
+      history.reduce((s, h) => s + h.stressLevel, 0) / history.length
+    ).toFixed(1)
     : 0;
   const totalDays = history.length;
   const highDays = history.filter((h) => h.stressLevel >= 7).length;
@@ -1574,9 +1574,9 @@ export default function CheckInPage() {
                               animate={
                                 sel
                                   ? {
-                                      scale: [1, 1.4, 0.85, 1.15, 1],
-                                      rotate: [0, -14, 14, -6, 0],
-                                    }
+                                    scale: [1, 1.4, 0.85, 1.15, 1],
+                                    rotate: [0, -14, 14, -6, 0],
+                                  }
                                   : { scale: 1, rotate: 0 }
                               }
                               transition={{ duration: 0.4, ease: "easeOut" }}

@@ -20,22 +20,22 @@ const TOOL_DISPLAY: Record<
 > = {
   breathe: {
     name: "Box Breathing",
-    desc: "4-7-8 breathing — works in 2 minutes",
+    desc: "4-7-8 breathing - works in 2 minutes",
     icon: <Wind size={18} strokeWidth={2.5} />,
   },
   walk: {
     name: "Interrupt Walk",
-    desc: "30 quick steps — breaks the loop",
+    desc: "30 quick steps - breaks the loop",
     icon: <Footprints size={18} strokeWidth={2.5} />,
   },
   cold: {
     name: "Ice Shock",
-    desc: "Cold water on wrists — resets the urge",
+    desc: "Cold water on wrists - resets the urge",
     icon: <Snowflake size={18} strokeWidth={2.5} />,
   },
   journal: {
     name: "Brain Dump",
-    desc: "Write it out — externalise the urge",
+    desc: "Write it out - externalise the urge",
     icon: <NotebookPen size={18} strokeWidth={2.5} />,
   },
 };

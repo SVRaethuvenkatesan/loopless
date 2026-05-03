@@ -1,6 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import { JSX } from "react";
+import { JSX, useId } from "react";
 import {
   IcoBadge,
   IcoLung,
@@ -127,6 +127,235 @@ function IcoClearWind() {
   );
 }
 
+/** Single clean HUD shield - achievement icon renders once in center (no stacked gem/ribbon/star overlap). */
+function GameBadgeShield({
+  gid,
+  earned,
+  accent,
+  size = "sm",
+}: {
+  gid: string;
+  earned: boolean;
+  accent: string;
+  size?: "sm" | "lg";
+}) {
+  const w = size === "lg" ? 112 : 72;
+  const h = size === "lg" ? 132 : 88;
+  const filterId = `${gid}-sDrop`;
+
+  return (
+    <svg
+      width={w}
+      height={h}
+      viewBox="0 0 80 96"
+      aria-hidden
+      style={{ display: "block", flexShrink: 0 }}
+    >
+      <defs>
+        <linearGradient id={`${gid}-metal`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fff9ed" />
+          <stop offset="40%" stopColor={accent} />
+          <stop offset="100%" stopColor="#68461c" />
+        </linearGradient>
+        <linearGradient id={`${gid}-face`} x1="50%" y1="15%" x2="50%" y2="92%">
+          <stop offset="0%" stopColor={earned ? "#ffffff" : "#e4e6ee"} />
+          <stop offset="100%" stopColor={earned ? accent + "aa" : "#9ea3ae"} />
+        </linearGradient>
+        <filter id={filterId} x="-35%" y="-35%" width="170%" height="170%">
+          <feDropShadow
+            dx="0"
+            dy="3"
+            stdDeviation={earned ? 2 : 1}
+            floodColor="#000000"
+            floodOpacity={earned ? 0.2 : 0.12}
+          />
+        </filter>
+      </defs>
+      <ellipse
+        cx="40"
+        cy="90"
+        rx="26"
+        ry="5"
+        fill="#0c0c10"
+        opacity={earned ? 0.18 : 0.1}
+      />
+
+      <path
+        d="M 40 4 L 64 22 L 60 73 L 40 88 L 20 73 L 16 22 Z"
+        fill={`url(#${gid}-face)`}
+        stroke={`url(#${gid}-metal)`}
+        strokeWidth="3.25"
+        strokeLinejoin="round"
+        filter={earned ? `url(#${filterId})` : undefined}
+        opacity={earned ? 1 : 0.88}
+      />
+      {/* Inner bevel */}
+      <path
+        d="M 40 12 L 57 26 L 54 71 L 40 80 L 26 71 L 23 26 Z"
+        fill="none"
+        stroke="#ffffff52"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+        opacity={earned ? 0.95 : 0.35}
+      />
+    </svg>
+  );
+}
+
+function RecoveryBadgeTile({
+  badgeKey,
+  earned,
+  meta,
+  onSelect,
+}: {
+  badgeKey: string;
+  earned: boolean;
+  meta: (typeof BADGE_META)[string];
+  onSelect: () => void;
+}) {
+  const baseId = useId().replace(/:/g, "");
+  const gid = `${baseId}-${badgeKey}`;
+  const { color, bg, Icon, label, xp } = meta;
+
+  return (
+    <motion.button
+      type="button"
+      whileHover={{ y: -5, scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      onClick={onSelect}
+      style={{
+        position: "relative",
+        width: 100,
+        minHeight: 124,
+        borderRadius: 20,
+        cursor: "pointer",
+        border: `3px solid ${earned ? color + "aa" : "var(--border2)"}`,
+        background: earned
+          ? `linear-gradient(165deg, ${bg} 0%, var(--bg2) 55%, var(--bg1) 100%)`
+          : "linear-gradient(180deg, var(--bg3), var(--bg2))",
+        boxShadow: earned
+          ? `0 10px 0 ${color}38, 0 16px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.75)`
+          : "var(--shadow-card)",
+        padding: "10px 8px 10px",
+      }}
+      aria-label={earned ? `${label} earned` : `${label} locked`}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 4,
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            width: 72,
+            height: 88,
+          }}
+        >
+          <GameBadgeShield
+            gid={`${gid}-badge`}
+            earned={earned}
+            accent={color}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -54%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              color: earned ? color : "#8f8ea0",
+              filter: earned
+                ? `drop-shadow(0 1px 2px rgba(0,0,0,0.12))`
+                : "grayscale(1) brightness(0.88)",
+              opacity: earned ? 1 : 0.58,
+              pointerEvents: "none",
+            }}
+          >
+            <span style={{ display: "flex", transform: "scale(2.05)" }}>
+              <Icon />
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: 9.8,
+          fontWeight: 800,
+          color: earned ? "var(--text1)" : "var(--text3)",
+          textAlign: "center",
+          lineHeight: 1.22,
+          minHeight: 26,
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          fontFamily: "'Fredoka',system-ui,sans-serif",
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          marginTop: 4,
+          display: "inline-flex",
+          alignSelf: "center",
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 9,
+            fontWeight: 900,
+            letterSpacing: "0.06em",
+            color: earned ? "#4a3700" : "var(--text4)",
+            background: earned
+              ? "linear-gradient(180deg,#fff6d4,#f0d78c)"
+              : "var(--bg3)",
+            border: `1.5px solid ${earned ? color + "66" : "var(--border2)"}`,
+            borderRadius: 999,
+            padding: "3px 10px",
+            boxShadow: earned ? "inset 0 1px 0 rgba(255,255,255,0.8)" : "none",
+          }}
+        >
+          {xp} XP
+        </span>
+      </div>
+      {!earned && (
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 8,
+            background: "#252530e8",
+            borderRadius: 10,
+            padding: "4px 5px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+            border: "1px solid #4a4a58",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.35)",
+          }}
+        >
+          <span style={{ display: "flex", transform: "scale(0.78)" }}>
+            <IcoLock />
+          </span>
+        </div>
+      )}
+    </motion.button>
+  );
+}
+
 const ALL_BADGE_TYPES = Object.keys(BADGE_META);
 
 function BadgeModal({
@@ -141,6 +370,7 @@ function BadgeModal({
   onClose: () => void;
 }) {
   const next = badge.nextBadge ? BADGE_META[badge.nextBadge] : null;
+  const modalUid = useId().replace(/:/g, "");
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -177,25 +407,44 @@ function BadgeModal({
           style={{
             display: "flex",
             justifyContent: "space-between",
+            alignItems: "flex-start",
             marginBottom: 20,
+            gap: 12,
           }}
         >
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 16,
-              background: badge.bg,
-              border: `2px solid ${badge.color}55`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: badge.color,
-            }}
-          >
-            <badge.Icon />
+          <div style={{ position: "relative", width: 112, flexShrink: 0 }}>
+            <GameBadgeShield
+              gid={`${modalUid}-view-${badge.badgeType}`}
+              earned={badge.earned}
+              accent={badge.color}
+              size="lg"
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                transform: "translate(-50%, -54%)",
+                color: badge.earned ? badge.color : "#a8a8b8",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 44,
+                height: 44,
+                filter: badge.earned
+                  ? `drop-shadow(0 1px 2px rgba(0,0,0,0.15))`
+                  : "grayscale(1) brightness(0.95)",
+                opacity: badge.earned ? 1 : 0.55,
+                pointerEvents: "none",
+              }}
+            >
+              <span style={{ display: "flex", transform: "scale(2.75)" }}>
+                <badge.Icon />
+              </span>
+            </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             style={{
               background: "none",
@@ -369,59 +618,18 @@ export function BadgesSection({ earnedBadges }: { earnedBadges: Badge[] }) {
           {earnedBadges.length}/{ALL_BADGE_TYPES.length} earned
         </span>
       </div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         {ALL_BADGE_TYPES.map((bt) => {
           const meta = BADGE_META[bt];
           const earned = earnedMap.has(bt);
           return (
-            <motion.button
+            <RecoveryBadgeTile
               key={bt}
-              whileHover={{ y: -3 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelected(bt)}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 5,
-                padding: "12px 10px",
-                borderRadius: 16,
-                border: `2px solid ${earned ? meta.color + "55" : "var(--border2)"}`,
-                background: earned ? meta.bg : "var(--bg3)",
-                cursor: "pointer",
-                minWidth: 64,
-                opacity: earned ? 1 : 0.45,
-                filter: earned ? "none" : "grayscale(0.5)",
-                boxShadow: earned
-                  ? `3px 3px 0 ${meta.color}33`
-                  : "var(--shadow-card)",
-              }}
-            >
-              <div style={{ color: earned ? meta.color : "var(--text3)" }}>
-                {earned ? <meta.Icon /> : <IcoLock />}
-              </div>
-              <div
-                style={{
-                  fontSize: 9.5,
-                  fontWeight: 800,
-                  color: earned ? "var(--text1)" : "var(--text3)",
-                  textAlign: "center",
-                  lineHeight: 1.2,
-                  maxWidth: 56,
-                }}
-              >
-                {meta.label}
-              </div>
-              <div
-                style={{
-                  fontSize: 8.5,
-                  fontWeight: 700,
-                  color: earned ? meta.color : "var(--text4)",
-                }}
-              >
-                {meta.xp} XP
-              </div>
-            </motion.button>
+              badgeKey={bt}
+              earned={earned}
+              meta={meta}
+              onSelect={() => setSelected(bt)}
+            />
           );
         })}
       </div>

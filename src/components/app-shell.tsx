@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import type { Session } from "next-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -39,39 +40,6 @@ const CheckinIcon = () => (
     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
   </svg>
 );
-const LoopIcon = () => (
-  <svg
-    width="17"
-    height="17"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="17 1 21 5 17 9" />
-    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-    <polyline points="7 23 3 19 7 15" />
-    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-  </svg>
-);
-const ProgressIcon = () => (
-  <svg
-    width="17"
-    height="17"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="18" y1="20" x2="18" y2="10" />
-    <line x1="12" y1="20" x2="12" y2="4" />
-    <line x1="6" y1="20" x2="6" y2="14" />
-  </svg>
-);
 const InsightsIcon = () => (
   <svg
     width="17"
@@ -100,20 +68,6 @@ const ToolkitIcon = () => (
     strokeLinejoin="round"
   >
     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-  </svg>
-);
-const MythsIcon = () => (
-  <svg
-    width="17"
-    height="17"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   </svg>
 );
 const SupportIcon = () => (
@@ -239,22 +193,6 @@ const StarIcon = () => (
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </svg>
 );
-const MenuIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="3" y1="12" x2="21" y2="12" />
-    <line x1="3" y1="6" x2="21" y2="6" />
-    <line x1="3" y1="18" x2="21" y2="18" />
-  </svg>
-);
 const SparkleIcon = () => (
   <svg
     width="14"
@@ -270,49 +208,74 @@ const SparkleIcon = () => (
   </svg>
 );
 
-const NAV = [
-  { href: "/dashboard", Icon: HomeIcon, label: "Home", implemented: true },
-  { href: "/checkin", Icon: CheckinIcon, label: "Check-in", implemented: true },
-  {
-    href: "/awareness",
-    Icon: SparkleIcon,
-    label: "Awareness",
-    implemented: true,
-  },
-  {
-    href: "/insights",
-    Icon: InsightsIcon,
-    label: "Insights",
-    implemented: true,
-  },
-  { href: "/loop", Icon: LoopIcon, label: "Loop", implemented: false },
-  {
-    href: "/progress",
-    Icon: ProgressIcon,
-    label: "Progress",
-    implemented: false,
-  },
-  { href: "/coping", Icon: ToolkitIcon, label: "Toolkit", implemented: true },
-  { href: "/myths", Icon: MythsIcon, label: "Myth Cards", implemented: false },
-  { href: "/support", Icon: SupportIcon, label: "Support", implemented: false },
+/** Sidebar + title resolution (only implemented routes) */
+type NavItem = { href: string; Icon: typeof HomeIcon; label: string };
+
+const NAV_MAIN: NavItem[] = [
+  { href: "/dashboard", Icon: HomeIcon, label: "Home" },
+  { href: "/checkin", Icon: CheckinIcon, label: "Check-in" },
+  { href: "/awareness", Icon: SparkleIcon, label: "Awareness" },
+  { href: "/insights", Icon: InsightsIcon, label: "Insights" },
 ];
-const BOTTOM_NAV = [
-  { href: "/dashboard", Icon: HomeIcon, label: "Home", implemented: true },
-  { href: "/checkin", Icon: CheckinIcon, label: "Check-in", implemented: true },
-  {
-    href: "/awareness",
-    Icon: SparkleIcon,
-    label: "Awareness",
-    implemented: true,
-  },
-  {
-    href: "/insights",
-    Icon: InsightsIcon,
-    label: "Insights",
-    implemented: true,
-  },
-  { href: "/support", Icon: SupportIcon, label: "More", implemented: false },
+
+const NAV_TOOLS: NavItem[] = [
+  { href: "/coping", Icon: ToolkitIcon, label: "Toolkit" },
+  { href: "/support", Icon: SupportIcon, label: "Support" },
 ];
+
+const NAV: NavItem[] = [...NAV_MAIN, ...NAV_TOOLS];
+
+const BOTTOM_NAV: NavItem[] = [
+  { href: "/dashboard", Icon: HomeIcon, label: "Home" },
+  { href: "/checkin", Icon: CheckinIcon, label: "Check-in" },
+  { href: "/awareness", Icon: SparkleIcon, label: "Awareness" },
+  { href: "/insights", Icon: InsightsIcon, label: "Insights" },
+  { href: "/coping", Icon: ToolkitIcon, label: "Toolkit" },
+];
+
+const COLLAPSED_KEY = "loopless-sidebar-collapsed";
+
+/** App favicon from `src/app/icon.tsx` (served at `/icon`) */
+function SidebarAppIcon({ size = 38 }: { size?: number }) {
+  return (
+    <Image
+      src="/icon"
+      alt="Loopless"
+      width={size}
+      height={size}
+      sizes={`${size}px`}
+      priority
+      className="sidebar-app-icon"
+      style={{
+        flexShrink: 0,
+        borderRadius: 12,
+        boxShadow:
+          "0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12)",
+        objectFit: "cover",
+      }}
+    />
+  );
+}
+
+const ChevronRailIcon = ({ collapsed }: { collapsed: boolean }) => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+    style={{
+      transform: collapsed ? "rotate(180deg)" : undefined,
+      transition: "transform .2s ease",
+    }}
+  >
+    <polyline points="14 17 9 12 14 7" />
+  </svg>
+);
 
 // Derive gamification level from total XP
 function deriveLevel(xpTotal: number) {
@@ -335,7 +298,6 @@ export default function AppShell({
   const [guestName, setGuestName] = useState("");
   const [isGuest, setIsGuest] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [particles, setParticles] = useState<
     { id: number; x: number; y: number }[]
   >([]);
@@ -348,6 +310,28 @@ export default function AppShell({
 
   const profileRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(0);
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      setSidebarCollapsed(localStorage.getItem(COLLAPSED_KEY) === "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  function toggleSidebarCollapsed() {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(COLLAPSED_KEY, next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }
 
   /* load guest info from localStorage */
   useEffect(() => {
@@ -415,6 +399,10 @@ export default function AppShell({
     setTimeout(() => setParticles((p) => p.filter((pt) => pt.id !== id)), 700);
   }
 
+  function onNavLinkClick(e: React.MouseEvent) {
+    spawnParticles(e);
+  }
+
   async function handleSignOut() {
     if (isGuest) {
       localStorage.clear();
@@ -432,6 +420,24 @@ export default function AppShell({
   const { level, xpInLvl, xpToNext } = deriveLevel(xpTotal);
   const xpPct = (xpInLvl / xpToNext) * 100;
 
+  function topBarLabel(): string {
+    const hit = NAV.find((n) => isActive(n.href));
+    if (hit) return hit.label;
+    const fallbacks = [
+      ["/urge", "Urge log"],
+      ["/profile", "Profile"],
+      ["/settings", "Settings"],
+      ["/privacy", "Privacy"],
+      ["/terms", "Terms"],
+    ] as const;
+    for (const [prefix, lbl] of fallbacks) {
+      if (pathname === prefix || pathname.startsWith(`${prefix}/`)) return lbl;
+    }
+    return "Loopless";
+  }
+
+  const shellCls = sidebarCollapsed ? " shell-collapsed-sidebar" : "";
+
   return (
     <>
       <style>{`
@@ -447,21 +453,66 @@ export default function AppShell({
         @keyframes xpSlide{from{background-position:-200% 0;}to{background-position:200% 0;}}
         @keyframes sideGlow{0%,100%{box-shadow:4px 0 0 rgba(26,18,8,.06);}50%{box-shadow:4px 0 24px rgba(90,143,106,.14);}}
 
-        .shell{display:flex;min-height:100vh;}
-
-        /* ── Sidebar ── */
-        .sidebar{
-          width:220px;flex-shrink:0;background:var(--bg2);
-          border-right:2px solid var(--border2);
-          display:flex;flex-direction:column;
-          position:fixed;top:0;left:0;height:100vh;z-index:150;
-          animation:sideGlow 6s ease-in-out infinite;
-          transition:transform .25s ease;
+        .shell{
+          display:flex;
+          min-height:100vh;
+          min-height:100dvh;
+          --rail-w:var(--sidebar-w);
+          --rail-collapsed-w:76px;
         }
-        .sidebar-logo{padding:20px 16px 16px;border-bottom:2px dashed var(--border2);margin-bottom:8px;}
-        .logo-text{font-family:'Fredoka',sans-serif;font-size:24px;font-weight:600;color:var(--text1);}
+
+        /* ── Sidebar (desktop ≥1024 only - hidden on narrow viewports) ── */
+        .sidebar{
+          width:var(--rail-w);flex-shrink:0;background:var(--bg2);
+          border-right:2px solid var(--border2);
+          display:none;
+          flex-direction:column;
+          position:fixed;top:0;left:0;height:100vh;z-index:150;
+          padding-bottom:env(safe-area-inset-bottom,0);
+          animation:none;
+          transition:width .22s ease, box-shadow .2s ease;
+        }
+        @media(min-width:1024px){
+          .sidebar{display:flex;}
+          .sidebar{animation:sideGlow 6s ease-in-out infinite;}
+        }
+        @media(max-width:1023px){.collapse-toggle{display:none!important;}}
+        .sidebar-logo{
+          padding:max(14px, calc(8px + env(safe-area-inset-top))) 14px 12px;
+          border-bottom:2px dashed var(--border2);margin-bottom:8px;
+        }
+        .sidebar-brand-inner{
+          display:flex;align-items:flex-start;gap:12px;width:100%;
+        }
+        .sidebar-brand-copy{flex:1;min-width:0;}
+        .collapse-toggle{
+          flex-shrink:0;width:34px;height:34px;margin-left:auto;display:flex;
+          align-items:center;justify-content:center;
+          border-radius:10px;border:2px solid var(--border3);
+          background:var(--bg3);color:var(--text2);cursor:pointer;
+          transition:transform .15s,color .15s,background .15s,border-color .15s;
+        }
+        .collapse-toggle:hover{border-color:var(--mint2);color:var(--mint2);}
+        .sidebar-app-icon{border:2px solid var(--border3);background:var(--bg3);}
+        .logo-text{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600;color:var(--text1);line-height:1.15;}
         .logo-accent{color:var(--mint2);}
-        .logo-tag{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:1px;}
+        .logo-tag{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+
+        .shell-collapsed-sidebar{--rail-w:var(--rail-collapsed-w);}
+        .shell-collapsed-sidebar .collapse-toggle{border-color:var(--mint2);color:var(--mint2);}
+        .shell-collapsed-sidebar .sidebar-brand-copy{display:none!important;}
+        .shell-collapsed-sidebar .sidebar-brand-inner{flex-direction:column;align-items:center;gap:8px;padding:0 2px;}
+        .shell-collapsed-sidebar .collapse-toggle{margin-left:0!important;}
+        .shell-collapsed-sidebar .nav-group-label,
+        .shell-collapsed-sidebar .nav-label,
+        .shell-collapsed-sidebar .nav-badge,
+        .shell-collapsed-sidebar .nav-check{display:none!important;}
+        .shell-collapsed-sidebar .nav-item{padding-left:11px!important;padding-right:11px!important;justify-content:center!important;}
+        .shell-collapsed-sidebar .sidebar-user-meta,
+        .shell-collapsed-sidebar .sidebar-user-arrow,
+        .shell-collapsed-sidebar .guest-delete-btn{display:none!important;}
+        .shell-collapsed-sidebar .sidebar-bottom .user-card{justify-content:center;padding:11px!important;}
+        .shell-collapsed-sidebar .sidebar-xp{display:none!important;}
 
         /* XP card */
         .sidebar-xp{
@@ -470,6 +521,18 @@ export default function AppShell({
           border:2px solid #1a1208;border-radius:16px;padding:12px 14px;
           box-shadow:3px 3px 0 rgba(26,18,8,.15);
         }
+        .xp-stat-row{
+          display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;
+        }
+        .xp-pill{
+          display:inline-flex;align-items:center;gap:6px;
+          min-height:29px;line-height:1;
+          padding:6px 10px;font-size:11px;font-weight:800;border-radius:999px;
+          box-sizing:border-box;
+        }
+        .xp-pill-streak{color:#fca5a5;background:rgba(224,123,90,.22);border:1px solid rgba(224,123,90,.45);}
+        .xp-pill-streak svg{flex-shrink:0;display:block;margin-top:.5px;}
+        .xp-pill-done{color:#5ddba8;background:rgba(93,219,168,.14);border:1px solid rgba(93,219,168,.4);}
         .xp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
         .xp-val{font-family:'Fredoka',sans-serif;font-size:13px;font-weight:600;color:#5ddba8;}
         .xp-bar-bg{height:6px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;position:relative;}
@@ -503,8 +566,9 @@ export default function AppShell({
           box-shadow:2px 2px 0 rgba(61,107,79,.2);font-weight:800;
         }
         .nav-item.active::before{content:'';position:absolute;left:-10px;top:25%;bottom:25%;width:3px;background:var(--mint2);border-radius:0 2px 2px 0;}
-        .nav-icon{font-size:17px;flex-shrink:0;}
+        .nav-label{flex:1;min-width:0;}
         .nav-badge{margin-left:auto;background:var(--coral2);color:white;border:1.5px solid var(--stroke);border-radius:20px;padding:1px 7px;font-size:9px;font-weight:800;}
+        .nav-check{margin-left:auto;color:#5ddba8;font-weight:900;font-size:14px;}
 
         /* Sidebar bottom */
         .sidebar-bottom{border-top:2px dashed var(--border2);padding:12px;}
@@ -516,8 +580,9 @@ export default function AppShell({
         .guest-delete-btn{width:100%;margin-top:8px;background:var(--coral3);border:2px solid var(--coral);border-radius:12px;padding:9px;font-size:12px;font-weight:800;color:var(--text1);cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:2px 2px 0 var(--shadow-coral);transition:all .12s;display:flex;align-items:center;justify-content:center;gap:7px;}
         .guest-delete-btn:hover{background:var(--coral2);color:white;transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow-coral);}
 
-        /* Main */
-        .main-area{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+        /* Main - offset by sidebar rail width on desktop */
+        .main-area{margin-left:0;flex:1;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
+        @media(min-width:1024px){ .main-area{margin-left:var(--rail-w);transition:margin-left .22s ease;} }
 
         /* Topbar */
         .topbar{height:60px;background:var(--smoke1);backdrop-filter:blur(20px);border-bottom:2px solid var(--border2);padding:0 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 0 var(--border);}
@@ -539,24 +604,40 @@ export default function AppShell({
         /* Skeleton shimmer */
         .skel{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:xpSlide 1.4s ease-in-out infinite;border-radius:4px;}
 
-        @media(max-width:768px){
-          .sidebar{transform:translateX(-100%);}
-          .sidebar.open{transform:translateX(0);}
-          .main-area{margin-left:0;}
-          .topbar{padding:0 16px;}
-          .page-content{padding-bottom:72px;}
+        @media(max-width:1023px){
+          .topbar{
+            height:auto;min-height:56px;
+            padding:max(10px, env(safe-area-inset-top)) 14px 12px 16px;
+          }
+          .page-content{padding-bottom:calc(88px + env(safe-area-inset-bottom));}
         }
-        @media(min-width:769px){
-          .overlay{display:none!important;}
-          .bnav{display:none!important;}
-          .hamburger{display:none!important;}
+        @media(max-width:400px){
+          .level-pill{display:none!important;}
+          .topbar-title{font-size:17px;max-width:50vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         }
+        .shell-collapsed-sidebar .nav-item.active::before{display:none;}
 
-        /* Bottom nav */
-        .bnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--smoke1);backdrop-filter:blur(20px);border-top:2px solid var(--border2);padding:8px 0 calc(10px + env(safe-area-inset-bottom));box-shadow:0 -3px 0 var(--border);}
-        .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;text-decoration:none;}
-        .hamburger{width:36px;height:36px;border-radius:10px;background:var(--bg3);border:2px solid var(--border3);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;}
-        .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:140;backdrop-filter:blur(4px);}
+        .bnav{
+          display:flex;position:fixed;bottom:0;left:0;right:0;z-index:120;
+          background:var(--smoke1);backdrop-filter:blur(20px);
+          border-top:2px solid var(--border2);
+          padding:6px 8px calc(8px + env(safe-area-inset-bottom));
+          box-shadow:0 -6px 28px rgba(0,0,0,.12);
+          gap:4px;
+        }
+        .bnav-item{
+          flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+          min-height:54px;justify-content:center;border-radius:14px;padding:6px 4px;
+          text-decoration:none;color:var(--text3);transition:background .15s,color .15s,transform .12s;
+          -webkit-tap-highlight-color:transparent;
+        }
+        .bnav-item:active{transform:scale(.97);}
+        .bnav-item.bnav-active{
+          background:color-mix(in srgb,var(--mint2) 16%,transparent);
+          color:var(--mint2);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--mint2) 42%,transparent);
+        }
+        .bnav-item.bnav-active div{color:var(--mint2)!important;}
+        @media(min-width:1024px){.bnav{display:none!important;}}
       `}</style>
 
       {particles.map((p) => (
@@ -564,21 +645,35 @@ export default function AppShell({
           <SparkleIcon />
         </div>
       ))}
-      {sidebarOpen && (
-        <div className="overlay" onClick={() => setSidebarOpen(false)} />
-      )}
 
-      <div className="shell">
-        {/* ── SIDEBAR ─────────────────────────── */}
-        <aside className={`sidebar${sidebarOpen ? " open" : ""}`}>
+      <div className={`shell${shellCls}`}>
+        {/* ── SIDEBAR (desktop ≥1024 only, CSS hides below) ── */}
+        <aside id="app-sidebar" className="sidebar">
           <div className="sidebar-logo">
-            <div className="logo-text">
-              Loop<span className="logo-accent">less</span>
+            <div className="sidebar-brand-inner">
+              <SidebarAppIcon size={sidebarCollapsed ? 36 : 40} />
+              <div className="sidebar-brand-copy">
+                <div className="logo-text">
+                  Loop<span className="logo-accent">less</span>
+                </div>
+                <div className="logo-tag">Break the cycle</div>
+              </div>
+              <button
+                type="button"
+                className="collapse-toggle"
+                onClick={toggleSidebarCollapsed}
+                aria-pressed={sidebarCollapsed}
+                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-label={
+                  sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+                }
+              >
+                <ChevronRailIcon collapsed={sidebarCollapsed} />
+              </button>
             </div>
-            <div className="logo-tag">Break the cycle</div>
           </div>
 
-          {/* XP card - real data */}
+          {/* XP card - desktop expanded rail only */}
           <div className="sidebar-xp">
             <div
               style={{
@@ -619,117 +714,64 @@ export default function AppShell({
                 style={{ width: dataReady ? `${xpPct}%` : "0%" }}
               />
             </div>
-            {/* Streak + checkin today */}
-            <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-              <span
-                style={{
-                  background: "rgba(224,123,90,.25)",
-                  border: "1px solid rgba(224,123,90,.4)",
-                  borderRadius: 50,
-                  padding: "3px 9px",
-                  fontSize: 10,
-                  fontWeight: 800,
-                  color: "#fca5a5",
-                }}
-              >
-                <FireIcon /> {dataReady ? streak : "-"} streak
+            {/* Streak + check-in status */}
+            <div className="xp-stat-row">
+              <span className="xp-pill xp-pill-streak">
+                <FireIcon />
+                <span>{dataReady ? streak : "–"}</span>
+                <span style={{ fontWeight: 700, opacity: 0.9 }}>streak</span>
               </span>
               {dataReady && checkedToday && (
-                <span
-                  style={{
-                    background: "rgba(93,219,168,.2)",
-                    border: "1px solid rgba(93,219,168,.35)",
-                    borderRadius: 50,
-                    padding: "3px 9px",
-                    fontSize: 10,
-                    fontWeight: 800,
-                    color: "#5ddba8",
-                  }}
-                >
-                  Checked in
-                </span>
+                <span className="xp-pill xp-pill-done">Checked in ✓</span>
               )}
             </div>
           </div>
 
           <nav className="nav-section">
             <div className="nav-group-label">Main</div>
-            {NAV.slice(0, 6).map((item) =>
-              item.implemented ? (
-                <Link key={item.href} href={item.href} onClick={spawnParticles}>
-                  <div
-                    className={`nav-item${isActive(item.href) ? " active" : ""}`}
-                  >
-                    <span className="nav-icon">
-                      <item.Icon />
-                    </span>
-                    <span>{item.label}</span>
-                    {item.href === "/checkin" && !checkedToday && (
-                      <span className="nav-badge">+20 XP</span>
-                    )}
-                    {item.href === "/checkin" && checkedToday && (
-                      <span style={{ marginLeft: "auto", color: "#5a8f6a" }}>
-                        ✓
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              ) : (
+            {NAV_MAIN.map((item) => (
+              <Link key={item.href} href={item.href} onClick={onNavLinkClick}>
                 <div
-                  key={item.href}
-                  className="nav-item"
-                  style={{
-                    opacity: 0.4,
-                    cursor: "not-allowed",
-                    filter: "grayscale(100%)",
-                  }}
+                  className={`nav-item${isActive(item.href) ? " active" : ""}`}
                 >
                   <span className="nav-icon">
                     <item.Icon />
                   </span>
-                  <span>{item.label}</span>
+                  <span className="nav-label">{item.label}</span>
+                  {item.href === "/checkin" && !checkedToday && (
+                    <span className="nav-badge">+20 XP</span>
+                  )}
+                  {item.href === "/checkin" && checkedToday && (
+                    <span className="nav-check">✓</span>
+                  )}
                 </div>
-              ),
-            )}
+              </Link>
+            ))}
             <div className="nav-group-label" style={{ marginTop: 6 }}>
               Tools
             </div>
-            {NAV.slice(6).map((item) =>
-              item.implemented ? (
-                <Link key={item.href} href={item.href} onClick={spawnParticles}>
-                  <div
-                    className={`nav-item${isActive(item.href) ? " active" : ""}`}
-                  >
-                    <span className="nav-icon">
-                      <item.Icon />
-                    </span>
-                    <span>{item.label}</span>
-                  </div>
-                </Link>
-              ) : (
+            {NAV_TOOLS.map((item) => (
+              <Link key={item.href} href={item.href} onClick={onNavLinkClick}>
                 <div
-                  key={item.href}
-                  className="nav-item"
-                  style={{
-                    opacity: 0.4,
-                    cursor: "not-allowed",
-                    filter: "grayscale(100%)",
-                  }}
+                  className={`nav-item${isActive(item.href) ? " active" : ""}`}
                 >
                   <span className="nav-icon">
                     <item.Icon />
                   </span>
-                  <span>{item.label}</span>
+                  <span className="nav-label">{item.label}</span>
                 </div>
-              ),
-            )}
+              </Link>
+            ))}
           </nav>
 
           <div className="sidebar-bottom">
             <Link href="/profile">
               <div className="user-card">
                 <div className="avatar">{initials}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  className="sidebar-user-meta"
+                  style={{ flex: 1, minWidth: 0 }}
+                >
                   <div className="user-name">{firstName}</div>
                   <div className="user-sub">
                     {isGuest
@@ -739,7 +781,12 @@ export default function AppShell({
                         : "Loading…"}
                   </div>
                 </div>
-                <span style={{ fontSize: 14, color: "#a8936a" }}>→</span>
+                <span
+                  className="sidebar-user-arrow"
+                  style={{ fontSize: 14, color: "#a8936a" }}
+                >
+                  →
+                </span>
               </div>
             </Link>
             {isGuest && (
@@ -754,15 +801,7 @@ export default function AppShell({
         <div className="main-area">
           <header className="topbar">
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <button
-                className="hamburger"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-              >
-                <MenuIcon />
-              </button>
-              <div className="topbar-title">
-                {NAV.find((n) => isActive(n.href))?.label ?? "Loopless"}
-              </div>
+              <div className="topbar-title">{topBarLabel()}</div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -949,6 +988,11 @@ export default function AppShell({
                             path: "/profile",
                           },
                           {
+                            Icon: SupportIcon,
+                            label: "Help & Support",
+                            path: "/support",
+                          },
+                          {
                             Icon: SettingsIcon,
                             label: "Settings",
                             path: "/settings",
@@ -1040,55 +1084,29 @@ export default function AppShell({
       <nav className="bnav">
         {BOTTOM_NAV.map((item) => {
           const on = isActive(item.href);
-          if (!item.implemented) {
-            return (
-              <div
-                key={item.href}
-                className="bnav-item"
-                style={{
-                  opacity: 0.4,
-                  cursor: "not-allowed",
-                  filter: "grayscale(100%)",
-                }}
-              >
-                <div style={{ color: "#a8936a", display: "flex" }}>
-                  <item.Icon />
-                </div>
-                <div
-                  style={{ fontSize: 10, fontWeight: 700, color: "#a8936a" }}
-                >
-                  {item.label}
-                </div>
-              </div>
-            );
-          }
           return (
-            <Link key={item.href} href={item.href} className="bnav-item">
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`bnav-item${on ? " bnav-active" : ""}`}
+            >
               <div
-                style={{ color: on ? "#5a8f6a" : "#a8936a", display: "flex" }}
+                style={{
+                  color: on ? "var(--mint2)" : "var(--text3)",
+                  display: "flex",
+                }}
               >
                 <item.Icon />
               </div>
               <div
                 style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: on ? "#5a8f6a" : "#a8936a",
+                  fontSize: 11,
+                  fontWeight: 800,
+                  color: on ? "var(--mint2)" : "var(--text3)",
                 }}
               >
                 {item.label}
               </div>
-              {on && (
-                <div
-                  style={{
-                    width: 20,
-                    height: 3,
-                    borderRadius: 2,
-                    background: "#5a8f6a",
-                    marginTop: 1,
-                  }}
-                />
-              )}
             </Link>
           );
         })}

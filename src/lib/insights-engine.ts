@@ -120,7 +120,7 @@ export async function computeUserInsights(
       await import("@/lib/db/schema");
     const { eq, asc, ne, and } = await import("drizzle-orm");
 
-    // Scoped fetch: seed-only OR real-only — never mixed
+    // Scoped fetch: seed-only OR real-only - never mixed
     const [allCheckins, allUrges] = await Promise.all([
       db
         .select()

@@ -1,4 +1,4 @@
-// AC9.2.4: Re-engagement after exactly 3 days inactivity — send once, not repeated until another 3 days
+// AC9.2.4: Re-engagement after exactly 3 days inactivity - send once, not repeated until another 3 days
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -71,7 +71,7 @@ export async function GET(req: Request) {
       for (const userId of toNotify) {
         const n = await sendPushToUser(userId, {
           title: "We miss you 💚",
-          body: "Streak ended — but you can start again today. Every day is a new beginning.",
+          body: "Streak ended - but you can start again today. Every day is a new beginning.",
           url: "/checkin",
         });
         if (n > 0) {

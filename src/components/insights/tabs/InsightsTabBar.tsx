@@ -72,7 +72,7 @@ export default function InsightsTabBar({ activeTab, onTabChange }: InsightsTabBa
                   borderRadius: 50,
                   background: "var(--text1)",
                   border: "1.5px solid var(--border3)",
-                  boxShadow: "2px 2px 0 var(--shadow-card)",
+                  boxShadow: "var(--shadow-card)",
                   zIndex: -1,
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
@@ -86,7 +86,7 @@ export default function InsightsTabBar({ activeTab, onTabChange }: InsightsTabBa
                   borderRadius: 50,
                   border: "1.5px solid var(--border2)",
                   background: "var(--bg1)",
-                  boxShadow: "1px 1px 0 rgba(26,18,8,.05)",
+                  boxShadow: "var(--tab-pill-shadow-idle)",
                   zIndex: -1,
                 }}
               />

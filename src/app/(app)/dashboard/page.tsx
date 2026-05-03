@@ -7,9 +7,18 @@ import { computeXP } from "@/lib/xp";
 async function getDashboardData(userId: string) {
   try {
     return await withDb(async (db) => {
-      const { checkins, streaks, badges, stressTriggers, urgeEvents, copingSessions } =
-        await import("@/lib/db/schema");
-      const { eq, and, gte, desc, count } = await import("drizzle-orm");
+      const {
+        checkins,
+        streaks,
+        badges,
+        stressTriggers,
+        urgeEvents,
+        copingSessions,
+        riskPredictions,
+        dailyInsights,
+        mlInsights,
+      } = await import("@/lib/db/schema");
+      const { eq, and, gte, desc, ne } = await import("drizzle-orm");
 
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -18,8 +27,19 @@ async function getDashboardData(userId: string) {
       const todayUTC = new Date();
       todayUTC.setUTCHours(0, 0, 0, 0);
 
-      const [recentCheckins, allCheckins30, userStreaks, userBadges, userTriggers, recentUrges, recentCoping] =
-        await Promise.all([
+      const [
+        recentCheckins,
+        allCheckins30,
+        userStreaks,
+        userBadges,
+        userTriggers,
+        recentUrges,
+        recentCoping,
+        activeRiskRows,
+        latestDailyRows,
+        latestGeneralMlRows,
+        relapseMlRows,
+      ] = await Promise.all([
           db.select().from(checkins)
             .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, sevenDaysAgo)))
             .orderBy(desc(checkins.checkedInAt)).limit(7),
@@ -35,6 +55,45 @@ async function getDashboardData(userId: string) {
           db.select().from(copingSessions)
             .where(and(eq(copingSessions.userId, userId), gte(copingSessions.completedAt, sevenDaysAgo)))
             .limit(10),
+          db
+            .select()
+            .from(riskPredictions)
+            .where(
+              and(
+                eq(riskPredictions.userId, userId),
+                eq(riskPredictions.status, "pending"),
+              ),
+            )
+            .orderBy(desc(riskPredictions.createdAt))
+            .limit(1),
+          db
+            .select()
+            .from(dailyInsights)
+            .where(eq(dailyInsights.userId, userId))
+            .orderBy(desc(dailyInsights.insightDate))
+            .limit(1),
+          db
+            .select()
+            .from(mlInsights)
+            .where(
+              and(
+                eq(mlInsights.userId, userId),
+                ne(mlInsights.patternType, "relapse_trigger"),
+              ),
+            )
+            .orderBy(desc(mlInsights.generatedAt))
+            .limit(1),
+          db
+            .select()
+            .from(mlInsights)
+            .where(
+              and(
+                eq(mlInsights.userId, userId),
+                eq(mlInsights.patternType, "relapse_trigger"),
+              ),
+            )
+            .orderBy(desc(mlInsights.generatedAt))
+            .limit(1),
         ]);
 
       const todayEntry = recentCheckins.find(
@@ -58,6 +117,55 @@ async function getDashboardData(userId: string) {
       // Compute XP server-side using full 30-day data (matching profile API logic)
       const serverXP = computeXP(userBadges, checkInStreak, allCheckins30);
 
+      const activeRisk = activeRiskRows[0];
+      const nowMs = Date.now();
+      const riskWindowValid =
+        !!activeRisk?.predictedWindowEnd &&
+        new Date(activeRisk.predictedWindowEnd).getTime() > nowMs;
+
+      const relapseRow = relapseMlRows[0];
+      const dailyRow = latestDailyRows[0];
+      const generalMlRow = latestGeneralMlRows[0];
+
+      let criticalInsight: {
+        variant: "risk" | "relapse" | "insight";
+        emoji: string;
+        title: string;
+        detail: string;
+      } | null = null;
+
+      if (riskWindowValid && activeRisk) {
+        const end = new Date(activeRisk.predictedWindowEnd!);
+        const minsLeft = Math.max(0, Math.floor((end.getTime() - nowMs) / 60000));
+        const hrs = Math.floor(minsLeft / 60);
+        const timeLeft =
+          hrs > 0 ? `${hrs}h ${minsLeft % 60}m left` : `${minsLeft}m left`;
+        criticalInsight = {
+          variant: "risk",
+          emoji: "⚠️",
+          title: "Risk window active",
+          detail: `${Math.round((activeRisk.confidence ?? 0) * 100)}% confidence · ${timeLeft}. Open Insights for tools and timing.`,
+        };
+      } else if (relapseRow?.insightText) {
+        const t = relapseRow.insightText;
+        criticalInsight = {
+          variant: "relapse",
+          emoji: "🔁",
+          title: "Pattern to watch",
+          detail: t.length > 200 ? `${t.slice(0, 200)}…` : t,
+        };
+      } else {
+        const text = dailyRow?.insightText ?? generalMlRow?.insightText;
+        if (text) {
+          criticalInsight = {
+            variant: "insight",
+            emoji: "💡",
+            title: "Today’s takeaway",
+            detail: text.length > 220 ? `${text.slice(0, 220)}…` : text,
+          };
+        }
+      }
+
       return {
         recentCheckins,
         checkInStreak,
@@ -68,6 +176,7 @@ async function getDashboardData(userId: string) {
         serverXP,
         urgesThisWeek: recentUrges.length,
         copingSessionsThisWeek: recentCoping.length,
+        criticalInsight,
       };
     });
   } catch (err: any) {
@@ -82,6 +191,7 @@ async function getDashboardData(userId: string) {
       serverXP: 0,
       urgesThisWeek: 0,
       copingSessionsThisWeek: 0,
+      criticalInsight: null,
     };
   }
 }
@@ -103,6 +213,7 @@ export default async function DashboardPage() {
       userTriggers={data.userTriggers as any[]}
       urgesThisWeek={data.urgesThisWeek}
       copingSessionsThisWeek={data.copingSessionsThisWeek}
+      criticalInsight={data.criticalInsight}
     />
   );
 }

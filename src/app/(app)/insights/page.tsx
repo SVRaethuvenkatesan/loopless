@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
@@ -29,7 +28,12 @@ export default async function InsightsPage() {
   const seedCheck = await db
     .select({ id: checkins.id })
     .from(checkins)
-    .where(and(eq(checkins.userId, userId!), eq(checkins.timezoneOffset, "__seed__")))
+    .where(
+      and(
+        eq(checkins.userId, userId!),
+        eq(checkins.timezoneOffset, "__seed__"),
+      ),
+    )
     .limit(1);
   const isDemoMode = seedCheck.length > 0;
 
@@ -71,9 +75,12 @@ export default async function InsightsPage() {
       .where(
         and(
           eq(checkins.userId, userId),
-          isDemoMode 
-            ? eq(checkins.timezoneOffset, "__seed__") 
-            : or(ne(checkins.timezoneOffset, "__seed__"), isNull(checkins.timezoneOffset)),
+          isDemoMode
+            ? eq(checkins.timezoneOffset, "__seed__")
+            : or(
+                ne(checkins.timezoneOffset, "__seed__"),
+                isNull(checkins.timezoneOffset),
+              ),
           gte(checkins.checkedInAt, thirtyDaysAgo),
         ),
       )
@@ -86,9 +93,12 @@ export default async function InsightsPage() {
       .where(
         and(
           eq(urgeEvents.userId, userId),
-          isDemoMode 
-            ? eq(urgeEvents.socialContext, "__seed__") 
-            : or(ne(urgeEvents.socialContext, "__seed__"), isNull(urgeEvents.socialContext)),
+          isDemoMode
+            ? eq(urgeEvents.socialContext, "__seed__")
+            : or(
+                ne(urgeEvents.socialContext, "__seed__"),
+                isNull(urgeEvents.socialContext),
+              ),
           gte(urgeEvents.occurredAt, thirtyDaysAgo),
         ),
       )
@@ -191,8 +201,12 @@ export default async function InsightsPage() {
         return {
           insightText: rawPrimary.insightText,
           insightDate: isDailyInsight
-            ? (rawPrimary as { insightDate: Date | null }).insightDate?.toString() ?? null
-            : (rawPrimary as { generatedAt: Date | null }).generatedAt?.toString() ?? null,
+            ? ((
+                rawPrimary as { insightDate: Date | null }
+              ).insightDate?.toString() ?? null)
+            : ((
+                rawPrimary as { generatedAt: Date | null }
+              ).generatedAt?.toString() ?? null),
           patternType: isDailyInsight
             ? ((rawPrimary as { patternType?: string | null }).patternType ??
               "stress_peak")
@@ -267,7 +281,7 @@ export default async function InsightsPage() {
   }));
 
   return (
-    <div className="relative min-h-[100vh] pb-28 overflow-hidden">
+    <div className="relative min-h-[100dvh] pb-28 max-[1024px]:pb-32 overflow-hidden">
       {/* Animated background blobs */}
       <div className="absolute top-10 left-10 w-64 h-64 bg-[var(--mint-glow)] rounded-full blur-3xl animate-blob opacity-50 pointer-events-none" />
       <div className="absolute top-60 right-10 w-72 h-72 bg-[var(--coral-glow)] rounded-full blur-3xl animate-blob anim-d2 opacity-40 pointer-events-none" />
@@ -275,7 +289,7 @@ export default async function InsightsPage() {
 
       {/* Page header */}
       <div className="page-header relative z-10">
-        <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
           <div>
             <div className="flex items-center gap-3 mb-1">
               <div className="relative">
@@ -309,62 +323,67 @@ export default async function InsightsPage() {
                 </svg>
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#3bc98e] rounded-full animate-pulse" />
               </div>
-              <h1 className="page-title !mb-0">Your Patterns</h1>
+              <div>
+                <h1 className="page-title !mb-1">Your Patterns</h1>
+                <p className="page-sub !mb-0 max-w-xl">
+                  One clear story first - swipe the tabs below when you want the
+                  full picture.
+                </p>
+              </div>
             </div>
-            <p className="page-sub">
-              What your data says about you - in plain English
-            </p>
           </div>
 
-          <div
-            className="metric-card !py-2 !px-4 flex items-center gap-3 backdrop-blur"
-            style={{ background: "var(--bg2)" }}
-          >
-            <div>
-              <div className="metric-label !mb-0 text-[10px]">Days tracked</div>
-              <div className="font-display font-bold text-xl text-[var(--mint2)]">
-                {correlationData.checkinDays}
+          <div className="insights-metric-row flex flex-wrap gap-2 sm:gap-3 shrink-0">
+            <span className="insights-metric-pill">
+              <span className="text-lg" aria-hidden>
+                📅
+              </span>
+              <div>
+                <div className="metric-label !mb-0 text-[10px] text-[var(--text3)]">
+                  Days tracked
+                </div>
+                <div className="font-display font-bold text-xl text-[var(--mint2)]">
+                  {correlationData.checkinDays}
+                </div>
               </div>
-            </div>
-            <div className="h-8 w-px bg-[var(--border2)]" />
-            <div>
-              <div className="metric-label !mb-0 text-[10px]">
-                Patterns found
+            </span>
+            <span className="insights-metric-pill">
+              <span className="text-lg" aria-hidden>
+                ✨
+              </span>
+              <div>
+                <div className="metric-label !mb-0 text-[10px] text-[var(--text3)]">
+                  Patterns found
+                </div>
+                <div className="font-display font-bold text-xl text-[var(--coral2)]">
+                  {latestInsight.length}
+                </div>
               </div>
-              <div className="font-display font-bold text-xl text-[var(--coral)]">
-                {latestInsight.length}
-              </div>
-            </div>
+            </span>
           </div>
         </div>
       </div>
 
       {/* Dashboard with tabs */}
       <div className="page-content relative z-10">
-        <Suspense fallback={
-          <div style={{ padding: 40, textAlign: "center", color: "var(--text3)" }}>
-            <p>Initialising insights...</p>
-          </div>
-        }>
-          <InsightsDashboard
-            correlationData={correlationData}
-            hasEnoughData={hasEnoughData}
-            checkinCount={checkinHistory.length}
-            urgeCount={urgeHistory.length}
-            risk={risk}
-            canSendNudge={canSendNudge}
-            primaryInsight={primaryInsight}
-            top3HighStress={top3HighStress}
-            relapseInsight={relapseInsight}
-            chartData={chartData}
-            triggerCounts={triggerCounts}
-            avgSleep={avgSleep}
-            avgEnergy={avgEnergy}
-            sleepTrend={calcTrend("sleepQuality")}
-            energyTrend={calcTrend("energyLevel")}
-            isDemoMode={isDemoMode}
-          />
-        </Suspense>
+        <InsightsDashboard
+          correlationData={correlationData}
+          hasEnoughData={hasEnoughData}
+          checkinCount={checkinHistory.length}
+          urgeCount={urgeHistory.length}
+          risk={risk}
+          canSendNudge={canSendNudge}
+          primaryInsight={primaryInsight}
+          top3HighStress={top3HighStress}
+          relapseInsight={relapseInsight}
+          chartData={chartData}
+          triggerCounts={triggerCounts}
+          avgSleep={avgSleep}
+          avgEnergy={avgEnergy}
+          sleepTrend={calcTrend("sleepQuality")}
+          energyTrend={calcTrend("energyLevel")}
+          isDemoMode={isDemoMode}
+        />
       </div>
 
       <DevDataToolbar />

@@ -4,6 +4,7 @@ import RiskAlertBanner from "@/components/insights/RiskAlertBanner";
 import DailyInsightCard from "@/components/insights/DailyInsightCard";
 import RelapsePatternCard from "@/components/insights/RelapsePatternCard";
 import InsightsEmptyState from "@/components/insights/InsightsEmptyState";
+import OneThingCallout from "@/components/insights/OneThingCallout";
 import SectionRow from "@/components/insights/ui/SectionRow";
 
 interface TabTodayProps {
@@ -30,8 +31,16 @@ export default function TabToday({
   setOpenInfo,
 }: TabTodayProps) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       {!hasEnoughData && <InsightsEmptyState checkinCount={checkinCount} />}
+
+      <OneThingCallout
+        hasEnoughData={hasEnoughData}
+        risk={risk}
+        canSendNudge={canSendNudge}
+        primaryInsight={primaryInsight}
+        relapseInsight={relapseInsight}
+      />
 
       {risk && canSendNudge && (
         <div>
@@ -66,7 +75,7 @@ export default function TabToday({
             infoTitle="How today's insight is generated"
             infoLines={[
               "Source: checkins + urge_events (last 30 days)",
-              "Method: Rule-based pattern detection — checks for day-of-week stress peaks, consecutive high-stress runs, sleep-urge links, and weekend recovery.",
+              "Method: Rule-based pattern detection - checks for day-of-week stress peaks, consecutive high-stress runs, sleep-urge links, and weekend recovery.",
               "Text: Gemini 2.0 Flash (if key set), otherwise a pre-written fallback sentence.",
               "Freshness: Generated once per day, cached in daily_insights table.",
             ]}

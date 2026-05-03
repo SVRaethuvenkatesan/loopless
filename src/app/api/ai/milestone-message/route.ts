@@ -5,12 +5,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
 const MILESTONE_FALLBACKS: Record<string, string> = {
-  first_checkin: "You took the first step. That takes courage — most people never even start. 🌱",
+  first_checkin: "You took the first step. That takes courage - most people never even start. 🌱",
   streak_7: "One full week. Your lung cilia are already recovering. The hardest part is behind you. 💪",
   streak_12: "12 days. Your airways are measurably less inflamed right now. This is science, not just motivation. 🫁",
-  streak_30: "A whole month. Lung function improves up to 30% in the first 30 days — you're living proof. 🏆",
-  streak_100: "100 days. Your lung cancer risk has already started dropping. You didn't just break a habit — you changed your biology. 🔥",
-  level_up: "Level up! Your consistency is paying off — you're building the neural pathways of a non-smoker. ⚡",
+  streak_30: "A whole month. Lung function improves up to 30% in the first 30 days - you're living proof. 🏆",
+  streak_100: "100 days. Your lung cancer risk has already started dropping. You didn't just break a habit - you changed your biology. 🔥",
+  level_up: "Level up! Your consistency is paying off - you're building the neural pathways of a non-smoker. ⚡",
 };
 
 export async function POST(req: Request) {
@@ -54,7 +54,7 @@ Write ONE personalised message (2-3 sentences, max 60 words) that:
 - Ends with a motivating forward-looking sentence
 - Uses 1 emoji naturally at the end
 
-Respond with ONLY the message — no labels, no quotes.`;
+Respond with ONLY the message - no labels, no quotes.`;
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,

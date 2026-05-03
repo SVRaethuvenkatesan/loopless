@@ -34,7 +34,7 @@ export async function sendPushToUser(
       sent++;
     } catch (err: any) {
       if (err.statusCode === 410) {
-        // Subscription expired — remove it
+        // Subscription expired - remove it
         await withDb(async (db) => {
           const { pushSubscriptions } = await import("@/lib/db/schema");
           const { eq } = await import("drizzle-orm");

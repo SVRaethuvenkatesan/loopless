@@ -11,9 +11,16 @@ export const authConfig = {
       const path = nextUrl.pathname;
 
       const protectedPaths = [
-        "/dashboard", "/checkin", "/loop", "/urge", "/coping",
-        "/insights", "/progress", "/myths", "/support", "/onboarding",
-        "/profile", "/settings",
+        "/dashboard",
+        "/checkin",
+        "/urge",
+        "/coping",
+        "/insights",
+        "/awareness",
+        "/support",
+        "/onboarding",
+        "/profile",
+        "/settings",
       ];
       const authPaths = ["/login", "/register"];
 

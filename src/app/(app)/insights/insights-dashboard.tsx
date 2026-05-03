@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { CorrelationInsightData } from "@/lib/insights-engine";
 
 // Decomposed tabs
-import InsightsTabBar, { InsightsTab } from "@/components/insights/tabs/InsightsTabBar";
+import InsightsTabBar, { type InsightsTab } from "@/components/insights/tabs/InsightsTabBar";
 import TabToday from "@/components/insights/tabs/TabToday";
 import TabTrends from "@/components/insights/tabs/TabTrends";
 import TabDeepScan from "@/components/insights/tabs/TabDeepScan";
@@ -68,6 +68,17 @@ export interface DashboardProps {
   isDemoMode: boolean;
 }
 
+const TAB_HINTS: Record<InsightsTab, string> = {
+  today:
+    "The one place to see what matters right now - everything else is optional detail.",
+  correlation:
+    "See how stress, urges, and timing line up when you have enough history.",
+  trends:
+    "Charts and habits over the last month - scroll one section at a time.",
+  deepscan:
+    "Extra transparency: model notes and how your data is handled.",
+};
+
 // ── Main dashboard ─────────────────────────────────────────────────────────────
 export default function InsightsDashboard(props: DashboardProps) {
   const { isDemoMode } = props;
@@ -82,29 +93,47 @@ export default function InsightsDashboard(props: DashboardProps) {
   return (
     <div>
       {isDemoMode && (
-        <div style={{
-          background: "linear-gradient(135deg, var(--amber) 0%, var(--coral) 100%)",
-          color: "white",
-          padding: "12px 20px",
-          textAlign: "center",
-          fontSize: 14,
-          fontWeight: 700,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 10,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          marginBottom: 20,
-          borderRadius: 16,
-        }}>
+        <div
+          style={{
+            background:
+              "linear-gradient(135deg, var(--amber) 0%, var(--coral) 100%)",
+            color: "white",
+            padding: "12px 20px",
+            textAlign: "center",
+            fontSize: 14,
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            position: "sticky",
+            top: 0,
+            zIndex: 50,
+            marginBottom: 20,
+            borderRadius: 16,
+          }}
+        >
           <span style={{ fontSize: 20 }}>💡</span>
-          <span>Viewing Pattern Insights with 30-day Demo Data. Real patterns will emerge as you check in.</span>
+          <span>
+            Viewing Pattern Insights with 30-day Demo Data. Real patterns will
+            emerge as you check in.
+          </span>
         </div>
       )}
       <InsightsTabBar activeTab={tab} onTabChange={handleTabChange} />
+
+      <p
+        style={{
+          fontSize: 13,
+          color: "var(--text2)",
+          lineHeight: 1.55,
+          margin: "0 0 18px",
+          maxWidth: 540,
+        }}
+      >
+        {TAB_HINTS[tab]}
+      </p>
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -144,10 +173,10 @@ export default function InsightsDashboard(props: DashboardProps) {
                   "Cache: Invalidated after each check-in or urge log. Refreshes on demand.",
                 ]}
               />
-              <InsightsClient 
-                key={isDemoMode ? "demo" : "real"} 
-                data={props.correlationData} 
-                isDemoMode={isDemoMode} 
+              <InsightsClient
+                key={isDemoMode ? "demo" : "real"}
+                data={props.correlationData}
+                isDemoMode={isDemoMode}
               />
             </div>
           )}

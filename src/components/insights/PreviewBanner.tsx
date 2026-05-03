@@ -83,7 +83,7 @@ export default function PreviewBanner({ checkinCount }: PreviewBannerProps) {
                 Preview Mode
               </div>
               <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text2)" }}>
-                Showing example data — your real patterns unlock after {needed} check-ins
+                Showing example data - your real patterns unlock after {needed} check-ins
               </div>
             </div>
           </div>
