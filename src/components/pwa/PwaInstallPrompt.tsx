@@ -59,18 +59,26 @@ export default function PwaInstallPrompt() {
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
+      <div
         style={{
           position: "fixed",
-          bottom: 80,
-          left: "50%",
-          transform: "translateX(-50%)",
+          inset: 0,
           zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0 16px",
+          pointerEvents: "none",
+        }}
+      >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.92 }}
+        style={{
           maxWidth: 340,
-          width: "calc(100% - 32px)",
+          width: "100%",
+          pointerEvents: "auto",
         }}
       >
         <div
@@ -235,6 +243,7 @@ export default function PwaInstallPrompt() {
           )}
         </div>
       </motion.div>
+      </div>
     </AnimatePresence>
   );
 }
