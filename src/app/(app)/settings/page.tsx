@@ -574,7 +574,7 @@ export default function SettingsPage() {
             <div
               key={i}
               style={{
-                borderBottom: i < 3 ? "2px dashed var(--border)" : "none",
+                borderBottom: "2px dashed var(--border)",
               }}
             >
               <Link href={item.href}>
@@ -607,6 +607,60 @@ export default function SettingsPage() {
               </Link>
             </div>
           ))}
+
+          {/* Iteration version links */}
+          <div style={{ padding: "14px 0 6px" }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 800,
+                color: "var(--text3)",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                marginBottom: 10,
+              }}
+            >
+              Previous iterations
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {[
+                { label: "Iteration 1", href: "https://iteration1.loopless.tech" },
+                { label: "Iteration 2", href: "https://iteration2.loopless.tech" },
+                { label: "Iteration 3", href: "https://iteration3.loopless.tech" },
+              ].map((v) => (
+                <a
+                  key={v.href}
+                  href={v.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--text2)",
+                    padding: "6px 14px",
+                    borderRadius: 50,
+                    border: "1.5px solid var(--border3)",
+                    background: "var(--bg0)",
+                    textDecoration: "none",
+                    transition: "color 0.15s, border-color 0.15s, background 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = "var(--mint2)";
+                    (e.currentTarget as HTMLElement).style.borderColor = "var(--mint2)";
+                    (e.currentTarget as HTMLElement).style.background = "var(--mint3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = "var(--text2)";
+                    (e.currentTarget as HTMLElement).style.borderColor = "var(--border3)";
+                    (e.currentTarget as HTMLElement).style.background = "var(--bg0)";
+                  }}
+                >
+                  {v.label} ↗
+                </a>
+              ))}
+            </div>
+          </div>
+
           <div
             style={{
               marginTop: 8,
@@ -616,7 +670,7 @@ export default function SettingsPage() {
               color: "var(--text3)",
             }}
           >
-            Loopless · SDG 3 · v1.0
+            Loopless · v1.0
           </div>
         </motion.div>
 

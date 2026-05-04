@@ -1477,13 +1477,13 @@ input[type="range"]::-webkit-slider-thumb {
   );
 }
 
-/* ── SDG badge theme ── */
-.sdg-badge-wrap {
+/* ── App badge theme ── */
+.app-badge-wrap {
   background: rgba(90, 143, 106, 0.1);
   border: 1px solid rgba(90, 143, 106, 0.35);
   color: var(--mint);
 }
-.dark .sdg-badge-wrap {
+.dark .app-badge-wrap {
   background: rgba(232, 25, 44, 0.08);
   border-color: rgba(232, 25, 44, 0.3);
   color: var(--red3);
@@ -1729,7 +1729,7 @@ input[type="range"]::-webkit-slider-thumb {
   background: linear-gradient(135deg, #f5f0ff, #ede9fe);
   border-color: var(--purple);
 }
-.lp-light .sdg-badge {
+.lp-light .app-badge {
   background: rgba(90, 143, 106, 0.1);
   border-color: rgba(90, 143, 106, 0.35);
   color: var(--mint);

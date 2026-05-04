@@ -581,7 +581,7 @@ export default function AppShell({
         .guest-delete-btn:hover{background:var(--coral2);color:white;transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow-coral);}
 
         /* Main - offset by sidebar rail width on desktop */
-        .main-area{margin-left:0;flex:1;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
+        .main-area{margin-left:0;flex:1;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;overflow-x:hidden;min-width:0;}
         @media(min-width:1024px){ .main-area{margin-left:var(--rail-w);transition:margin-left .22s ease;} }
 
         /* Topbar */
@@ -598,7 +598,7 @@ export default function AppShell({
         .dropdown-item.danger{color:var(--coral2);}
         .dropdown-item.danger:hover{background:var(--coral3);}
 
-        .page-content{flex:1;overflow-y:auto;}
+        .page-content{flex:1;overflow-y:auto;overflow-x:hidden;min-width:0;}
         .particle{position:fixed;pointer-events:none;z-index:9999;font-size:16px;animation:floatUp .7s ease-out forwards;}
 
         /* Skeleton shimmer */
@@ -1073,6 +1073,44 @@ export default function AppShell({
                 >
                   Terms of Service
                 </Link>
+              </div>
+              <div
+                style={{
+                  marginBottom: 8,
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 11, color: "var(--text4)", fontWeight: 600 }}>Iterations:</span>
+                {[
+                  ["iteration 1", "https://iteration1.loopless.tech"],
+                  ["iteration 2", "https://iteration2.loopless.tech"],
+                  ["iteration 3", "https://iteration3.loopless.tech"],
+                ].map(([label, href]) => (
+                  <a
+                    key={href}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "var(--text3)",
+                      padding: "3px 10px",
+                      borderRadius: 50,
+                      border: "1px solid var(--border2)",
+                      textDecoration: "none",
+                      transition: "color 0.15s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text1)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text3)")}
+                  >
+                    {label} ↗
+                  </a>
+                ))}
               </div>
               <div>&copy; {new Date().getFullYear()} Loopless.</div>
             </footer>

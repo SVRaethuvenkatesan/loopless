@@ -2,7 +2,6 @@
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Hand, Sparkles } from "lucide-react";
 import { BadgesSection, Badge } from "./dash-badges";
 import { LungProjection } from "./dash-lung";
@@ -1034,20 +1033,27 @@ export default function DashboardClient({
                         willChange: "transform",
                       }}
                     >
-                      <Image
-                        src="/icon"
-                        alt=""
-                        width={52}
-                        height={52}
-                        sizes="52px"
-                        priority
+                      <div
                         style={{
+                          width: 52,
+                          height: 52,
                           borderRadius: 14,
-                          display: "block",
-                          border: "2px solid rgba(255,255,255,.28)",
                           background: "#0a0a0d",
+                          border: "2px solid rgba(255,255,255,.28)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
                         }}
-                      />
+                      >
+                        <svg width="40" height="40" viewBox="0 0 140 140" fill="none">
+                          <circle cx="70" cy="70" r="70" fill="#3bc98e" opacity="0.08" />
+                          <circle cx="70" cy="70" r="55" stroke="#3bc98e" strokeWidth="11" strokeDasharray="259 87" strokeLinecap="round" />
+                          <circle cx="109" cy="31" r="6" fill="#e07b5a" />
+                          <rect x="48" y="38" width="13" height="60" rx="4" fill="white" />
+                          <rect x="48" y="84" width="44" height="13" rx="4" fill="white" />
+                        </svg>
+                      </div>
                     </motion.div>
                   </div>
                   <motion.div

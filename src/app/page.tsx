@@ -721,8 +721,30 @@ export default function LandingPage() {
           font-family:'Inter',sans-serif;
         }
         .nav-cta:hover { background:var(--red2); transform:translateY(-1px); box-shadow:0 6px 28px rgba(232,25,44,0.4); }
+
+        /* VERSION LINKS */
+        .nav-versions { display:flex; align-items:center; gap:4px; margin-right:4px; }
+        .nav-ver {
+          font-size:12px; font-weight:700; color:var(--text3);
+          padding:5px 10px; border-radius:50px;
+          border:1px solid var(--border2);
+          transition:background 0.15s, color 0.15s, border-color 0.15s;
+          letter-spacing:0.01em;
+        }
+        .nav-ver:hover { background:var(--red-dim); color:var(--red); border-color:rgba(232,25,44,0.3); }
+
+        .footer-versions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+        .footer-ver {
+          font-size:12px; font-weight:700; color:var(--text3);
+          padding:5px 11px; border-radius:50px;
+          border:1px solid var(--border2);
+          transition:color 0.15s, background 0.15s;
+        }
+        .footer-ver:hover { color:var(--red); background:var(--red-dim); }
+
         @media(max-width:640px) {
           .nav-links .nav-link { display:none; }
+          .nav-versions { display:none; }
         }
 
         /* TICKER */
@@ -816,13 +838,13 @@ export default function LandingPage() {
           font-size:18px; color:var(--red); font-weight:900;
         }
 
-        /* SDG badge */
-        .sdg-badge {
+        /* App badge */
+        .app-badge {
           display:inline-flex; align-items:center; gap:8px;
           background:rgba(90,143,106,0.10); border:1px solid rgba(90,143,106,0.35); border-radius:50px;
           padding:7px 16px; font-size:12px; font-weight:600; color:var(--mint);
         }
-        .dark .sdg-badge {
+        .dark .app-badge {
           background:rgba(232,25,44,0.08); border-color:rgba(232,25,44,0.3); color:var(--red3);
         }
 
@@ -861,6 +883,11 @@ export default function LandingPage() {
           <a href="#myth" className="nav-link">
             Myth busting
           </a>
+          <div className="nav-versions">
+            <a href="https://iteration1.loopless.tech" target="_blank" rel="noopener noreferrer" className="nav-ver">v1</a>
+            <a href="https://iteration2.loopless.tech" target="_blank" rel="noopener noreferrer" className="nav-ver">v2</a>
+            <a href="https://iteration3.loopless.tech" target="_blank" rel="noopener noreferrer" className="nav-ver">v3</a>
+          </div>
           <Link
             href="/login"
             className="nav-link"
@@ -1219,7 +1246,7 @@ export default function LandingPage() {
             "Offline-first - works on your commute",
             "4-7-8 breathing · Urge journal · Streak tracker",
             "Predictive ML nudges before cravings peak",
-            "SDG 3 · Good Health & Wellbeing",
+            "Break free from nicotine",
             "Break the loop",
             "Nicotine relieves withdrawal - not stress",
             "21% of 18–24s in Australia vape",
@@ -1867,7 +1894,7 @@ export default function LandingPage() {
                       color: "var(--text1)",
                     }}
                   >
-                    Jess, 22 - Melbourne
+                    Jess, 22
                   </div>
                   <div
                     style={{
@@ -1876,7 +1903,7 @@ export default function LandingPage() {
                       color: "var(--text3)",
                     }}
                   >
-                    Junior Marketing Coordinator · Monash grad
+                    Junior Marketing Coordinator
                   </div>
                 </div>
               </div>
@@ -2052,32 +2079,40 @@ export default function LandingPage() {
                 color: "var(--text4)",
               }}
             >
-              SDG 3 · Good Health &amp; Wellbeing · Melbourne, Australia
+              Made in Australia 🇦🇺
             </div>
           </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {["Privacy", "Terms", "Crisis support"].map((l) => (
-              <a
-                key={l}
-                href="#"
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "var(--text3)",
-                  padding: "6px 12px",
-                  borderRadius: 50,
-                  transition: "color 0.15s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--text1)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--text3)")
-                }
-              >
-                {l}
-              </a>
-            ))}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {["Privacy", "Terms", "Crisis support"].map((l) => (
+                <a
+                  key={l}
+                  href="#"
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--text3)",
+                    padding: "6px 12px",
+                    borderRadius: 50,
+                    transition: "color 0.15s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "var(--text1)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "var(--text3)")
+                  }
+                >
+                  {l}
+                </a>
+              ))}
+            </div>
+            <div className="footer-versions">
+              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text4)", marginRight: 2 }}>Iterations:</span>
+              <a href="https://iteration1.loopless.tech" target="_blank" rel="noopener noreferrer" className="footer-ver">iteration 1</a>
+              <a href="https://iteration2.loopless.tech" target="_blank" rel="noopener noreferrer" className="footer-ver">iteration 2</a>
+              <a href="https://iteration3.loopless.tech" target="_blank" rel="noopener noreferrer" className="footer-ver">iteration 3</a>
+            </div>
           </div>
         </div>
       </footer>

@@ -281,7 +281,7 @@ export default async function InsightsPage() {
   }));
 
   return (
-    <div className="relative min-h-[100dvh] pb-28 max-[1024px]:pb-32 overflow-hidden">
+    <div className="relative min-h-[100dvh] pb-28 max-[1024px]:pb-32 overflow-hidden w-full max-w-full box-border">
       {/* Animated background blobs */}
       <div className="absolute top-10 left-10 w-64 h-64 bg-[var(--mint-glow)] rounded-full blur-3xl animate-blob opacity-50 pointer-events-none" />
       <div className="absolute top-60 right-10 w-72 h-72 bg-[var(--coral-glow)] rounded-full blur-3xl animate-blob anim-d2 opacity-40 pointer-events-none" />

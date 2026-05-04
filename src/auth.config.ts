@@ -6,9 +6,22 @@ export const authConfig = {
   providers: [], // providers are added in src/lib/auth.ts only
 
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
+    authorized({ auth, request: { nextUrl, cookies } }) {
       const isLoggedIn = !!auth?.user;
       const path = nextUrl.pathname;
+
+      // Project access gate — runs before any auth logic
+      const accessPassword = process.env.ACCESS_PASSWORD;
+      if (accessPassword && path !== "/access") {
+        const secret = (process.env.NEXTAUTH_SECRET ?? "").slice(0, 10);
+        const expected = btoa(`${accessPassword}:${secret}`);
+        const cookieVal = cookies.get("loopless_access")?.value;
+        if (cookieVal !== expected) {
+          const url = new URL("/access", nextUrl);
+          if (path !== "/") url.searchParams.set("from", path);
+          return Response.redirect(url);
+        }
+      }
 
       const protectedPaths = [
         "/dashboard",
