@@ -722,17 +722,6 @@ export default function LandingPage() {
         }
         .nav-cta:hover { background:var(--red2); transform:translateY(-1px); box-shadow:0 6px 28px rgba(232,25,44,0.4); }
 
-        /* VERSION LINKS */
-        .nav-versions { display:flex; align-items:center; gap:4px; margin-right:4px; }
-        .nav-ver {
-          font-size:12px; font-weight:700; color:var(--text3);
-          padding:5px 10px; border-radius:50px;
-          border:1px solid var(--border2);
-          transition:background 0.15s, color 0.15s, border-color 0.15s;
-          letter-spacing:0.01em;
-        }
-        .nav-ver:hover { background:var(--red-dim); color:var(--red); border-color:rgba(232,25,44,0.3); }
-
         .footer-versions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
         .footer-ver {
           font-size:12px; font-weight:700; color:var(--text3);
@@ -744,7 +733,6 @@ export default function LandingPage() {
 
         @media(max-width:640px) {
           .nav-links .nav-link { display:none; }
-          .nav-versions { display:none; }
         }
 
         /* TICKER */
@@ -883,11 +871,6 @@ export default function LandingPage() {
           <a href="#myth" className="nav-link">
             Myth busting
           </a>
-          <div className="nav-versions">
-            <a href="https://iteration1.loopless.tech" target="_blank" rel="noopener noreferrer" className="nav-ver">v1</a>
-            <a href="https://iteration2.loopless.tech" target="_blank" rel="noopener noreferrer" className="nav-ver">v2</a>
-            <a href="https://iteration3.loopless.tech" target="_blank" rel="noopener noreferrer" className="nav-ver">v3</a>
-          </div>
           <Link
             href="/login"
             className="nav-link"
