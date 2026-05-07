@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { IcoLung, IcoArrow } from "./dash-icons";
 
 // Lung recovery checkpoints (times are clinical markers; `days` drives the same score curve as «Day N» streak)
-const MILESTONES = [
+export const MILESTONES = [
   {
     days: 1,
     label: "20 min",
@@ -235,12 +235,14 @@ const SVGR_LUNG_RIGHT_D =
 const SVGR_VB_Y0 = -1.5;
 const SVGR_VB_H = 33.65;
 
-function LungSvg({ pct }: { pct: number }) {
+export function LungSvg({ pct }: { pct: number }) {
   const rawUid = useId().replace(/:/g, "");
   const id = `lung${rawUid}`;
   const h = fillRatioFromPct(pct);
-  const fillTop = SVGR_VB_Y0 + SVGR_VB_H * (1 - h);
-  const revealH = Math.max(SVGR_VB_H * h, 0.08);
+  // Visual floor: always show at least 18% fill so low percentages are visible
+  const displayH = Math.max(h, 0.18);
+  const fillTop = SVGR_VB_Y0 + SVGR_VB_H * (1 - displayH);
+  const revealH = Math.max(SVGR_VB_H * displayH, 0.08);
 
   return (
     <svg
@@ -299,9 +301,9 @@ function LungSvg({ pct }: { pct: number }) {
             x={-4}
             width={41}
             fill="white"
-            initial={false}
+            initial={{ y: SVGR_VB_Y0 + SVGR_VB_H, height: 0.08 }}
             animate={{ y: fillTop, height: revealH }}
-            transition={{ type: "spring", stiffness: 52, damping: 20 }}
+            transition={{ type: "spring", stiffness: 38, damping: 18, delay: 0.3 }}
           />
         </mask>
       </defs>

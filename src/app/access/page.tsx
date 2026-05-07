@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   motion,
@@ -126,37 +127,6 @@ function LivesBar({ lives, max }: { lives: number; max: number }) {
   );
 }
 
-/* ─── XP bar ─── */
-function XPBar({ value }: { value: number }) {
-  const capped = Math.min(100, value);
-  const color = capped >= 80 ? "var(--mint2)" : capped >= 40 ? "var(--amber2)" : "var(--red)";
-  const label = capped >= 80 ? "🔥 STRONG" : capped >= 40 ? "⚡ BUILDING" : "💤 WEAK";
-
-  return (
-    <div style={{ width: "100%", marginBottom: 20 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5, alignItems: "center" }}>
-        <span style={{ fontSize: 10, fontWeight: 800, color: "var(--text3)", letterSpacing: "0.08em", fontFamily: "'Fredoka',sans-serif" }}>
-          🔑 KEY STRENGTH
-        </span>
-        <span style={{ fontSize: 10, fontWeight: 800, color, fontFamily: "'Fredoka',sans-serif" }}>
-          {label}
-        </span>
-      </div>
-      <div style={{
-        height: 10, background: "var(--bg3)",
-        borderRadius: 50, overflow: "hidden",
-        border: "2px solid var(--border3)",
-      }}>
-        <motion.div
-          animate={{ width: `${capped}%` }}
-          transition={{ type: "spring", stiffness: 140, damping: 18 }}
-          style={{ height: "100%", background: color, borderRadius: 50 }}
-        />
-      </div>
-    </div>
-  );
-}
-
 /* ─── Cursor follow glow ─── */
 function CursorGlow() {
   const mx = useMotionValue(0);
@@ -199,7 +169,6 @@ function AccessForm() {
 
   const MAX_LIVES = 5;
   const lives = Math.max(0, MAX_LIVES - attempts);
-  const xp = Math.min(100, password.length * 13);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
@@ -398,8 +367,6 @@ function AccessForm() {
           This app is in private preview.<br />
           Got the secret code? Let&apos;s go! 🚀
         </motion.p>
-
-        <XPBar value={xp} />
 
         {/* Input */}
         <motion.div
@@ -623,18 +590,25 @@ export default function AccessPage() {
           >
             {/* Logo icon */}
             <motion.div
-              animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.1, 1] }}
+              animate={{ y: [0, -2, 0], scale: [1, 1.04, 1] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: "var(--red)",
-                border: "2.5px solid var(--stroke)",
+                width: 40, height: 40, borderRadius: 12,
+                background: "var(--bg3)",
+                border: "2.5px solid var(--border3)",
                 boxShadow: "3px 3px 0 var(--stroke)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 18,
+                overflow: "hidden",
+                flexShrink: 0,
               }}
             >
-              🌱
+              <Image
+                src="/icon"
+                alt="Loopless"
+                width={40}
+                height={40}
+                priority
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
             </motion.div>
             <div>
               <div style={{
@@ -643,14 +617,14 @@ export default function AccessPage() {
                 letterSpacing: "-0.04em", color: "var(--text1)",
                 lineHeight: 1.1,
               }}>
-                Loop<span style={{ color: "var(--red2)" }}>less</span>
+                Loop<span style={{ color: "var(--mint2)" }}>less</span>
               </div>
               <div style={{
                 fontSize: 9, fontWeight: 800, color: "var(--text4)",
                 letterSpacing: "0.1em", textTransform: "uppercase",
                 fontFamily: "'Inter', sans-serif",
               }}>
-                private preview
+                Break the cycle
               </div>
             </div>
           </motion.div>

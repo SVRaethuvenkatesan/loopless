@@ -1,17 +1,12 @@
 "use client";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Hand, Sparkles } from "lucide-react";
-import { BadgesSection, Badge } from "./dash-badges";
-import { LungProjection } from "./dash-lung";
-import { AIInsights } from "./dash-insights";
 import {
   IcoFire,
   IcoStar,
-  IcoDollar,
   IcoZap,
-  IcoTrend,
   IcoAlert,
   IcoClipboard,
   IcoMessage,
@@ -20,6 +15,11 @@ import {
   IcoArrow,
 } from "./dash-icons";
 import { computeLevel } from "@/lib/xp";
+import { LungSvg, MILESTONES, lungPct } from "./dash-lung";
+import { BadgesSection } from "./dash-badges";
+import dynamic from "next/dynamic";
+const SakuraLottie = dynamic(() => import("./sakura-lottie"), { ssr: false });
+const LottiePlayer = dynamic(() => import("./lottie-player"), { ssr: false });
 
 interface Checkin {
   id: string;
@@ -45,7 +45,7 @@ interface Props {
   checkInStreak: number;
   checkedInToday: boolean;
   todayEntry: Checkin | null;
-  earnedBadges: Badge[];
+  earnedBadges: { id: string; badgeType: string }[];
   userTriggers: { triggerType: string }[];
   urgesThisWeek: number;
   copingSessionsThisWeek: number;
@@ -61,9 +61,9 @@ function XPBar({ pct }: { pct: number }) {
       <div
         style={{
           position: "relative",
-          height: 12,
+          height: 14,
           background: "rgba(255,255,255,.1)",
-          borderRadius: 6,
+          borderRadius: 7,
           overflow: "hidden",
         }}
       >
@@ -73,11 +73,11 @@ function XPBar({ pct }: { pct: number }) {
             style={{
               position: "absolute",
               left: `${t}%`,
-              top: 0,
-              bottom: 0,
+              top: "15%",
+              bottom: "15%",
               width: 1.5,
-              background: "rgba(0,0,0,.22)",
-              zIndex: 2,
+              background: clamped >= t ? "rgba(0,0,0,.2)" : "rgba(255,255,255,.18)",
+              zIndex: 3,
             }}
           />
         ))}
@@ -85,14 +85,14 @@ function XPBar({ pct }: { pct: number }) {
           initial={{ width: 0 }}
           animate={{ width: `${clamped}%` }}
           transition={{
-            duration: reduceMotion ? 0 : 1.65,
+            duration: reduceMotion ? 0 : 1.8,
             ease: reduceMotion ? "linear" : [0.34, 1.56, 0.64, 1],
-            delay: reduceMotion ? 0 : 0.38,
+            delay: reduceMotion ? 0 : 0.4,
           }}
           style={{
             height: "100%",
-            background: "linear-gradient(90deg,#5fe3b9,#43d698 45%,#3bc98e)",
-            borderRadius: 6,
+            background: "linear-gradient(90deg,#3bc98e,#5fe3b9 60%,#43d698)",
+            borderRadius: 7,
             position: "relative",
             overflow: "hidden",
           }}
@@ -105,52 +105,58 @@ function XPBar({ pct }: { pct: number }) {
                 position: "absolute",
                 inset: "-20%",
                 background:
-                  "linear-gradient(115deg, transparent 30%, rgba(255,255,255,.72) 50%, transparent 70%)",
+                  "linear-gradient(115deg, transparent 30%, rgba(255,255,255,.65) 50%, transparent 70%)",
               }}
-              animate={{ x: ["-60%", "120%"] }}
+              animate={{ x: ["-80%", "140%"] }}
               transition={{
-                duration: 2.4,
+                duration: 2.2,
                 repeat: Infinity,
-                repeatDelay: 3.8,
+                repeatDelay: 3.2,
                 ease: "easeInOut",
+              }}
+            />
+          )}
+          {!reduceMotion && clamped > 2 && (
+            <motion.div
+              aria-hidden
+              animate={{ opacity: [0.3, 0.9, 0.3] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              style={{
+                position: "absolute",
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: 20,
+                background: "linear-gradient(90deg, transparent, rgba(255,255,255,.55))",
+                borderRadius: "0 7px 7px 0",
               }}
             />
           )}
         </motion.div>
       </div>
-      {!reduceMotion && clamped > 3 && (
+      {!reduceMotion && clamped > 5 && clamped < 97 && (
         <motion.div
           aria-hidden
-          initial={{ left: "0%", opacity: 0 }}
-          animate={{ left: `${clamped}%`, opacity: 1 }}
-          transition={{
-            duration: 1.65,
-            ease: [0.34, 1.56, 0.64, 1],
-            delay: 0.38,
-          }}
           style={{
             position: "absolute",
-            top: 6,
-            transform: "translate(-50%, -50%)",
-            width: 13,
-            height: 13,
-            borderRadius: "50%",
-            background: "white",
-            boxShadow: "0 0 7px 2px rgba(63,210,152,.9)",
-            zIndex: 4,
+            top: -2,
+            left: `${clamped}%`,
+            fontSize: 9,
+            fontWeight: 900,
+            color: "#5ddba8",
             pointerEvents: "none",
+            transform: "translateX(-50%)",
+          }}
+          animate={{ opacity: [0, 1, 0], y: [0, -14, -22] }}
+          transition={{
+            duration: 1.3,
+            repeat: Infinity,
+            repeatDelay: 4.8,
+            delay: 1.5,
+            ease: "easeOut",
           }}
         >
-          <motion.div
-            animate={{ scale: [1, 2.2, 1], opacity: [0.55, 0, 0.55] }}
-            transition={{ duration: 2.0, repeat: Infinity, ease: "easeInOut" }}
-            style={{
-              position: "absolute",
-              inset: -4,
-              borderRadius: "50%",
-              background: "rgba(63,210,152,.3)",
-            }}
-          />
+          +XP
         </motion.div>
       )}
     </div>
@@ -434,19 +440,8 @@ export default function DashboardClient({
   const [editing, setEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
-  const [pushState, setPushState] = useState<
-    "idle" | "subscribed" | "denied" | "unsupported"
-  >("idle");
   const reduceMotion = useReducedMotion();
 
-  useEffect(() => {
-    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-      setPushState("unsupported");
-      return;
-    }
-    if (Notification.permission === "granted") setPushState("subscribed");
-    else if (Notification.permission === "denied") setPushState("denied");
-  }, []);
 
   useEffect(() => {
     const h = new Date().getHours();
@@ -460,14 +455,14 @@ export default function DashboardClient({
     }
   }, [checkedInToday, todayEntry]);
 
+  const [statsExpanded, setStatsExpanded] = useState(false);
+  const [lungShowAll, setLungShowAll] = useState(false);
+
   const name = (userName || guestName || "there").split(" ")[0];
   const streak = checkInStreak;
   const avgStress = recentCheckins.length
-    ? (
-        recentCheckins.reduce((s, c) => s + c.stressLevel, 0) /
-        recentCheckins.length
-      ).toFixed(1)
-    : "-";
+    ? (recentCheckins.reduce((s, c) => s + c.stressLevel, 0) / recentCheckins.length).toFixed(1)
+    : "–";
   const money = Math.round(streak * 2.5);
   // Use server-computed XP to stay in sync with sidebar and profile API
   const { level, xpInLevel: xpInLvl } = computeLevel(serverXP);
@@ -528,35 +523,6 @@ export default function DashboardClient({
 
   const stressLive = stressCue(stress);
 
-  // Simple analytics
-  let mostCommonMood = "-";
-  let highestStress = "-";
-  if (recentCheckins.length > 0) {
-    const counts = recentCheckins.reduce((acc: Record<string, number>, c) => {
-      acc[c.mood] = (acc[c.mood] || 0) + 1;
-      return acc;
-    }, {});
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const topKey = sorted[0]?.[0];
-    const topMoodObj = moods.find((m) => m.v === topKey);
-    const topLabel = topMoodObj?.l || topKey || "-";
-    mostCommonMood =
-      topKey && topLabel !== "-" ? `${moodEmoji(topKey)} ${topLabel}` : "-";
-
-    const highest = recentCheckins.reduce(
-      (max, c) => (c.stressLevel > max.stressLevel ? c : max),
-      recentCheckins[0],
-    );
-    const dayStr = highest.checkedInAt
-      ? new Date(highest.checkedInAt).toLocaleDateString("en-US", {
-          weekday: "short",
-        })
-      : "";
-    highestStress = highest.stressLevel
-      ? `${moodEmoji(highest.mood)} ${highest.stressLevel}/10 (${dayStr})`
-      : "-";
-  }
-
   async function submit() {
     if (!mood) return;
     setSubmitting(true);
@@ -582,40 +548,8 @@ export default function DashboardClient({
         setEditing(false);
         if (streak > 0) setCelebrate(true);
       }
-    } catch {}
+    } catch { }
     setSubmitting(false);
-  }
-
-  async function subscribePush() {
-    try {
-      const perm = await Notification.requestPermission();
-      if (perm !== "granted") {
-        setPushState("denied");
-        return;
-      }
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-      });
-      const json = sub.toJSON();
-      const gid =
-        typeof window !== "undefined"
-          ? localStorage.getItem("loopless_guest_id")
-          : null;
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (gid) headers["x-guest-id"] = gid;
-      await fetch("/api/notifications/subscribe", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
-      });
-      setPushState("subscribed");
-    } catch {
-      setPushState("denied");
-    }
   }
 
   const streakAtRisk = !done && streak > 0;
@@ -641,52 +575,19 @@ export default function DashboardClient({
       @keyframes blobDrift1{0%,100%{transform:translate(0,0);opacity:.1;}33%{transform:translate(36px,-22px);opacity:.2;}66%{transform:translate(-18px,10px);opacity:.12;}}
       @keyframes blobDrift2{0%,100%{transform:translate(0,0);opacity:.08;}33%{transform:translate(-26px,18px);opacity:.16;}66%{transform:translate(20px,-12px);opacity:.1;}}
       @keyframes flameFlicker{0%,100%{transform:scaleY(1) scaleX(1);}20%{transform:scaleY(1.07) scaleX(0.96);}40%{transform:scaleY(0.95) scaleX(1.02);}60%{transform:scaleY(1.05) scaleX(0.97);}80%{transform:scaleY(0.98) scaleX(1.01);}}
-      .dash{margin-inline:auto;width:100%;max-width:1200px;box-sizing:border-box;padding:clamp(14px,3vw,24px);padding-bottom:clamp(96px,12vh,112px);}
+      .dash{margin-inline:auto;width:95%;max-width:none;box-sizing:border-box;padding:clamp(10px,2vw,18px);padding-bottom:clamp(96px,12vh,112px);}
       @media(max-width:768px){
         .dash{
-          padding-left:max(14px, env(safe-area-inset-left));
-          padding-right:max(14px, env(safe-area-inset-right));
+          width:100%;
+          padding-left:max(10px, env(safe-area-inset-left));
+          padding-right:max(10px, env(safe-area-inset-right));
           padding-bottom:max(150px, calc(88px + env(safe-area-inset-bottom)));
         }
       }
       .dash-stack{display:flex;flex-direction:column;gap:clamp(14px,2.8vw,18px);}
-      .stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,2vw,14px);width:100%;}
-      @media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-      @media(max-width:380px){.stat-grid{grid-template-columns:1fr;}}
-      .two-col{
-        display:grid;
-        grid-template-columns:1fr;
-        gap:clamp(14px,2.8vw,18px);
-        align-items:start;
-        width:100%;
-      }
-      @media(min-width:900px){
-        .two-col{grid-template-columns:repeat(2,minmax(0,1fr));}
-      }
-      .two-col-chain{
-        display:flex;
-        flex-direction:column;
-        gap:clamp(14px,2.8vw,18px);
-        min-width:0;
-        width:100%;
-      }
-      .two-col-chain > * {min-width:0;width:100%;}
-      @media(max-width:899px){
-        .two-col{display:flex;flex-direction:column;gap:clamp(14px,2.8vw,18px);}
-        .two-col-chain{display:contents;}
-        .dash-slot-lung{order:1;}
-        .dash-slot-stress{order:2;}
-        .dash-slot-badges{order:3;}
-        .dash-slot-insights{order:4;}
-      }
       .card{background:var(--bg2);border:2px solid var(--border2);border-radius:22px;padding:clamp(14px,3vw,18px);box-shadow:var(--shadow-card);width:100%;min-width:0;box-sizing:border-box;}
       .slider{-webkit-appearance:none;width:100%;height:12px;border-radius:6px;outline:none;cursor:pointer;border:2px solid var(--border3);}
       .slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--bg2);border:2.5px solid var(--stroke);box-shadow:0 3px 8px rgba(0,0,0,.18);cursor:grab;}
-      .mood-strip{display:flex;flex-wrap:wrap;gap:8px;width:100%;}
-      @media(max-width:480px){.mood-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}}
-      .mood-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:14px;border:2.5px solid var(--border2);background:var(--bg2);cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif;color:var(--text1);min-width:0;width:100%;}
-      .mood-btn.sel{transform:translateY(-2px) scale(1.03);}
-      @media(max-width:480px){.mood-btn{padding:12px 8px}}
       .checkin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;width:100%;}
       .qc-card{position:relative;padding-bottom:clamp(18px,4vw,22px)!important;}
       .qc-xp-pills{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;}
@@ -724,10 +625,6 @@ export default function DashboardClient({
         .qc-log-btn-ready{animation:none!important;}
         .qc-mood-chip,.qc-log-btn{transition:none!important;}
       }
-      .push-banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;width:100%;box-sizing:border-box;}
-      @media(max-width:520px){.push-banner{padding:12px 14px!important;}}
-      .push-banner .push-enable{margin-left:auto;}
-      @media(max-width:480px){.push-banner .push-enable{margin-left:0;width:100%;flex:1 1 100%;}}
       .streak-warn-banner .streak-warn-cta{margin-left:auto;flex-shrink:0;}
       @media(max-width:480px){.streak-warn-banner .streak-warn-cta{margin-left:0;width:100%;flex:1 1 100%;text-align:center;}}
       .urge-fab{z-index:150;position:fixed;right:max(18px,env(safe-area-inset-right));left:auto;bottom:28px;}
@@ -805,7 +702,7 @@ export default function DashboardClient({
             transition={{ duration: 0.5 }}
             style={{
               borderRadius: 26,
-              padding: "22px 22px 20px",
+              padding: "18px 20px 16px",
               background: "linear-gradient(135deg,#1a3d28,#2d5a3d)",
               border: "2.5px solid #1a1208",
               boxShadow: "6px 6px 0 rgba(26,18,8,.22)",
@@ -815,378 +712,92 @@ export default function DashboardClient({
           >
             {!reduceMotion && (
               <>
-                <div
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    top: "-22%",
-                    left: "-14%",
-                    width: 210,
-                    height: 210,
-                    borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(93,219,168,0.55) 0%, transparent 70%)",
-                    filter: "blur(36px)",
-                    pointerEvents: "none",
-                    zIndex: 0,
-                    animation: "blobDrift1 11s ease-in-out infinite",
-                    willChange: "transform",
-                  }}
-                />
-                <div
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    bottom: "-28%",
-                    right: "-18%",
-                    width: 220,
-                    height: 220,
-                    borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(224,123,90,0.4) 0%, transparent 70%)",
-                    filter: "blur(42px)",
-                    pointerEvents: "none",
-                    zIndex: 0,
-                    animation: "blobDrift2 9s ease-in-out infinite",
-                    willChange: "transform",
-                  }}
-                />
+                <div aria-hidden style={{ position: "absolute", top: "-22%", left: "-14%", width: 210, height: 210, borderRadius: "50%", background: "radial-gradient(circle, rgba(93,219,168,0.55) 0%, transparent 70%)", filter: "blur(36px)", pointerEvents: "none", zIndex: 0, animation: "blobDrift1 11s ease-in-out infinite", willChange: "transform" }} />
+                <div aria-hidden style={{ position: "absolute", bottom: "-28%", right: "-18%", width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(224,123,90,0.4) 0%, transparent 70%)", filter: "blur(42px)", pointerEvents: "none", zIndex: 0, animation: "blobDrift2 9s ease-in-out infinite", willChange: "transform" }} />
+                <div aria-hidden style={{ position: "absolute", top: 0, right: "-11%", width: "62%", height: "120%", pointerEvents: "none", zIndex: 1, opacity: 0.5 }}>
+                  <div style={{ width: "100%", height: "100%", transform: "scaleX(-1)" }}>
+                    <SakuraLottie />
+                  </div>
+                </div>
               </>
             )}
             <div style={{ position: "relative", zIndex: 2 }}>
-              <motion.div
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.25 }}
-              >
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 7,
-                    background: "rgba(255,255,255,.12)",
-                    border: "1.5px solid rgba(255,255,255,.22)",
-                    borderRadius: 50,
-                    padding: "5px 14px",
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: "rgba(255,255,255,.92)",
-                    marginBottom: 10,
-                  }}
-                >
-                  <Sparkles size={14} strokeWidth={2.4} color="rgba(255,255,255,0.9)" />
-                  <IcoStar />
-                  Level {level} Loop Breaker
-                  <span
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: "50%",
-                      background: "#5ddba8",
-                      display: "inline-block",
-                      animation: reduceMotion ? "none" : "pulseDot 2s infinite",
-                    }}
-                  />
+              {/* Row 1: greeting + streak pill */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.5)" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5ddba8", display: "inline-block", flexShrink: 0, animation: reduceMotion ? "none" : "pulseDot 2s infinite" }} />
+                  {greet}
                 </div>
-              </motion.div>
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: 12,
-                  gap: 12,
-                }}
-              >
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <motion.div
-                    initial={{ opacity: 0, x: -14 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1, duration: 0.4, ease: "easeOut" }}
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: "rgba(255,255,255,.5)",
-                      marginBottom: 4,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        background: "#5ddba8",
-                        display: "inline-block",
-                        flexShrink: 0,
-                        animation: reduceMotion
-                          ? "none"
-                          : "pulseDot 2s infinite",
-                      }}
-                    />
-                    {greet}
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.22, duration: 0.45 }}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      gap: "8px 10px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "'Fredoka',sans-serif",
-                        fontSize: "clamp(1.5rem, 6vw, 2rem)",
-                        fontWeight: 600,
-                        color: "white",
-                        lineHeight: 1.1,
-                        display: "inline-flex",
-                        alignItems: "baseline",
-                        animation: reduceMotion
-                          ? "none"
-                          : "nameGlow 3.8s ease-in-out 1.5s infinite",
-                      }}
-                    >
-                      {(name + "!").split("").map((char, i) => (
-                        <motion.span
-                          key={i}
-                          initial={{ opacity: 0, y: 18, scale: 0.55 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={
-                            reduceMotion
-                              ? { duration: 0 }
-                              : {
-                                  delay: 0.28 + i * 0.07,
-                                  type: "spring",
-                                  bounce: 0.62,
-                                  duration: 0.5,
-                                }
-                          }
-                          style={{
-                            display: "inline-block",
-                            textShadow: "0 4px 18px rgba(0,0,0,.35)",
-                          }}
-                        >
-                          {char === " " ? " " : char}
-                        </motion.span>
-                      ))}
-                    </span>
-                    <motion.span
-                      aria-hidden
-                      animate={
-                        reduceMotion
-                          ? undefined
-                          : { rotate: [0, 22, -12, 16, -8, 0] }
-                      }
-                      transition={{
-                        repeat: Infinity,
-                        duration: 1.15,
-                        repeatDelay: 7.8,
-                        ease: "easeInOut",
-                      }}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        filter: "drop-shadow(0 3px 6px rgba(0,0,0,.38))",
-                      }}
-                    >
-                      <Hand size={31} strokeWidth={2} color="#fff" />
+                <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,.1)", border: "1.5px solid rgba(255,100,50,.35)", borderRadius: 50, padding: "4px 10px 4px 7px" }}>
+                  <span style={{ fontSize: 15, lineHeight: 1, animation: reduceMotion ? "none" : "flameFlicker 2s ease-in-out infinite" }}>🔥</span>
+                  <span style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 16, fontWeight: 600, color: "white", lineHeight: 1 }}>{streak}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.6)", letterSpacing: ".04em" }}>streak</span>
+                </div>
+              </div>
+              {/* Row 2: name + level badge */}
+              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px 10px", marginBottom: 12 }}>
+                <span style={{ fontFamily: "'Fredoka',sans-serif", fontSize: "clamp(1.35rem,5.5vw,1.8rem)", fontWeight: 600, color: "white", lineHeight: 1.1, display: "inline-flex", alignItems: "baseline", animation: reduceMotion ? "none" : "nameGlow 3.8s ease-in-out 1.5s infinite" }}>
+                  {(name + "!").split("").map((char, i) => (
+                    <motion.span key={i} initial={{ opacity: 0, y: 18, scale: 0.55 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={reduceMotion ? { duration: 0 } : { delay: 0.28 + i * 0.07, type: "spring", bounce: 0.62, duration: 0.5 }} style={{ display: "inline-block", textShadow: "0 4px 18px rgba(0,0,0,.35)" }}>
+                      {char === " " ? " " : char}
                     </motion.span>
-                  </motion.div>
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-end",
-                    gap: 10,
-                    flexShrink: 0,
-                  }}
-                >
-                  <div style={{ position: "relative" }}>
-                    <FloatingReaction emoji="✨" delay={0.7} offsetX={-6} />
-                    <FloatingReaction emoji="💚" delay={3.1} offsetX={18} />
-                    <FloatingReaction emoji="🌿" delay={5.4} offsetX={5} />
-                    <motion.div
-                      animate={
-                        reduceMotion
-                          ? undefined
-                          : { y: [0, -5, 0], rotate: [0, -1.5, 1.5, 0] }
-                      }
-                      transition={{
-                        duration: 3.8,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                      style={{
-                        padding: "2px",
-                        borderRadius: 16,
-                        background:
-                          "linear-gradient(140deg,rgba(255,255,255,.45),rgba(93,219,168,.55))",
-                        boxShadow: "0 8px 24px rgba(0,0,0,.35)",
-                        willChange: "transform",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 52,
-                          height: 52,
-                          borderRadius: 14,
-                          background: "#0a0a0d",
-                          border: "2px solid rgba(255,255,255,.28)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <svg width="40" height="40" viewBox="0 0 140 140" fill="none">
-                          <circle cx="70" cy="70" r="70" fill="#3bc98e" opacity="0.08" />
-                          <circle cx="70" cy="70" r="55" stroke="#3bc98e" strokeWidth="11" strokeDasharray="259 87" strokeLinecap="round" />
-                          <circle cx="109" cy="31" r="6" fill="#e07b5a" />
-                          <rect x="48" y="38" width="13" height="60" rx="4" fill="white" />
-                          <rect x="48" y="84" width="44" height="13" rx="4" fill="white" />
-                        </svg>
-                      </div>
-                    </motion.div>
+                  ))}
+                </span>
+                <motion.span aria-hidden animate={reduceMotion ? undefined : { rotate: [0, 22, -12, 16, -8, 0] }} transition={{ repeat: Infinity, duration: 1.15, repeatDelay: 7.8, ease: "easeInOut" }} style={{ display: "inline-flex", alignItems: "center", filter: "drop-shadow(0 3px 6px rgba(0,0,0,.38))" }}>
+                  <Hand size={24} strokeWidth={2} color="#fff" />
+                </motion.span>
+                <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,.12)", border: "1.5px solid rgba(255,255,255,.2)", borderRadius: 50, padding: "3px 9px", fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,.88)" }}>
+                  <Sparkles size={10} strokeWidth={2.4} color="rgba(255,255,255,0.85)" />
+                  Lv.{level} Loop Breaker
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#5ddba8", display: "inline-block", animation: reduceMotion ? "none" : "pulseDot 2s infinite" }} />
+                </motion.div>
+              </div>
+              {/* Stats row */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: statsExpanded ? 6 : 12, alignItems: "center" }}>
+                {([
+                  { emoji: "📊", val: avgStress, label: "/10 stress" },
+                  { emoji: "⚡", val: String(urgesThisWeek), label: "urges" },
+                  { emoji: "🧘", val: String(copingSessionsThisWeek), label: "coping" },
+                ] as { emoji: string; val: string; label: string }[]).map(({ emoji, val, label }) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 50, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.9)" }}>
+                    <span style={{ fontSize: 13 }}>{emoji}</span>
+                    <span style={{ fontWeight: 800 }}>{val}</span>
+                    <span style={{ opacity: .6, fontSize: 10 }}>{label}</span>
                   </div>
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.5, type: "spring", bounce: 0.55 }}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 3,
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: "relative",
-                        width: 40,
-                        height: 48,
-                        animation: reduceMotion ? "none" : "flameFlicker 1.9s ease-in-out infinite",
-                        willChange: "transform",
-                        transformOrigin: "bottom center",
-                      }}
-                    >
-                      <svg
-                        width="40"
-                        height="48"
-                        viewBox="0 0 44 52"
-                        fill="none"
-                        style={{ display: "block" }}
-                      >
-                        <defs>
-                          <linearGradient
-                            id="outerFlame"
-                            x1="22"
-                            y1="2"
-                            x2="22"
-                            y2="44"
-                            gradientUnits="userSpaceOnUse"
-                          >
-                            <stop offset="0%" stopColor="#ffb300" />
-                            <stop offset="55%" stopColor="#f55a1f" />
-                            <stop offset="100%" stopColor="#e07b5a" />
-                          </linearGradient>
-                          <linearGradient
-                            id="innerFlame"
-                            x1="22"
-                            y1="20"
-                            x2="22"
-                            y2="44"
-                            gradientUnits="userSpaceOnUse"
-                          >
-                            <stop offset="0%" stopColor="#fff9c4" />
-                            <stop offset="100%" stopColor="#ffd54f" />
-                          </linearGradient>
-                        </defs>
-                        <path
-                          d="M22 3C22 3 10 16 10 26C10 35.9 15.4 43 22 43C28.6 43 34 35.9 34 26C34 16 22 3 22 3Z"
-                          fill="url(#outerFlame)"
-                        />
-                        <path
-                          d="M22 21C22 21 17 28 17 33C17 37.4 19.2 41 22 41C24.8 41 27 37.4 27 33C27 28 22 21 22 21Z"
-                          fill="url(#innerFlame)"
-                        />
-                      </svg>
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "46%",
-                          left: "50%",
-                          transform: "translate(-50%, -50%)",
-                          fontFamily: "'Fredoka',sans-serif",
-                          fontSize: streak > 99 ? 13 : streak > 9 ? 17 : 21,
-                          fontWeight: 700,
-                          color: "white",
-                          textShadow: "0 1px 6px rgba(0,0,0,.7)",
-                          lineHeight: 1,
-                          pointerEvents: "none",
-                          userSelect: "none",
-                        }}
-                      >
-                        {streak}
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 9,
-                        fontWeight: 800,
-                        color: "rgba(255,255,255,.65)",
-                        textTransform: "uppercase",
-                        letterSpacing: ".07em",
-                        lineHeight: 1,
-                        marginTop: 4,
-                      }}
-                    >
-                      day streak
+                ))}
+                <button onClick={() => setStatsExpanded((p: boolean) => !p)} style={{ display: "inline-flex", alignItems: "center", gap: 3, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 50, padding: "4px 10px", fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,.65)", cursor: "pointer", fontFamily: "'Nunito',sans-serif", transition: "background .15s" }}>
+                  {statsExpanded ? "▲ less" : "▼ more"}
+                </button>
+              </div>
+              {/* Expanded stats */}
+              <AnimatePresence>
+                {statsExpanded && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} style={{ overflow: "hidden", marginBottom: 12 }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, paddingTop: 2 }}>
+                      {([
+                        { emoji: "💰", val: `$${money}`, label: "saved est." },
+                        { emoji: "📋", val: String(recentCheckins.length), label: "check-ins" },
+                      ] as { emoji: string; val: string; label: string }[]).map(({ emoji, val, label }) => (
+                        <div key={label} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 50, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.9)" }}>
+                          <span style={{ fontSize: 13 }}>{emoji}</span>
+                          <span style={{ fontWeight: 800 }}>{val}</span>
+                          <span style={{ opacity: .6, fontSize: 10 }}>{label}</span>
+                        </div>
+                      ))}
                     </div>
                   </motion.div>
+                )}
+              </AnimatePresence>
+              {/* XP bar */}
+              <div style={{ borderTop: "1px solid rgba(255,255,255,.1)", paddingTop: 11 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: ".06em" }}>XP to Level {level + 1}</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#5ddba8" }}>{xpInLvl}/500</span>
                 </div>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: 5,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 800,
-                    color: "rgba(255,255,255,.5)",
-                    textTransform: "uppercase",
-                    letterSpacing: ".06em",
-                  }}
-                >
-                  XP to Level {level + 1}
-                </span>
-                <span
-                  style={{ fontSize: 11, fontWeight: 800, color: "#5ddba8" }}
-                >
-                  {xpInLvl}/500
-                </span>
-              </div>
-              <XPBar pct={(xpInLvl / 500) * 100} />
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,.35)",
-                  marginTop: 5,
-                }}
-              >
-                {500 - xpInLvl} XP to next level · complete daily quests
+                <XPBar pct={(xpInLvl / 500) * 100} />
+                <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,.32)", marginTop: 5 }}>
+                  {500 - xpInLvl} XP to level up · complete daily quests
+                </div>
               </div>
             </div>
           </motion.div>
@@ -1292,210 +903,6 @@ export default function DashboardClient({
               </Link>
             </motion.div>
           )}
-
-          {/* STAT TILES */}
-          <div className="stat-grid">
-            {[
-              {
-                Icon: IcoFire,
-                val: `${streak}d`,
-                label: "Streak",
-                sub: "days clean",
-                accent: "#e07b5a",
-                bg: "var(--coral3)",
-              },
-              {
-                Icon: IcoTrend,
-                val: avgStress,
-                label: "Avg Stress",
-                sub: "this week /10",
-                accent: "#5bb8f5",
-                bg: "var(--sky3)",
-              },
-              {
-                Icon: IcoDollar,
-                val: `$${money}`,
-                label: "Saved",
-                sub: "estimated",
-                accent: "#5a8f6a",
-                bg: "var(--mint3)",
-              },
-              {
-                Icon: IcoZap,
-                val: `${urgesThisWeek}`,
-                label: "Urges Logged",
-                sub: "this week",
-                accent: "#c9982a",
-                bg: "var(--amber3)",
-              },
-            ].map(({ Icon, val, label, sub, accent, bg }, i) => (
-              <motion.div
-                key={label}
-                initial={{ opacity: 0, y: 18, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{
-                  delay: i * 0.08,
-                  duration: 0.45,
-                  type: "spring",
-                  bounce: 0.3,
-                }}
-                whileHover={{ y: -4 }}
-                style={{
-                  background: bg,
-                  border: `2px solid ${accent}44`,
-                  borderRadius: 20,
-                  padding: "14px 12px",
-                  boxShadow: `4px 4px 0 ${accent}33`,
-                  cursor: "pointer",
-                }}
-              >
-                <div style={{ color: accent, marginBottom: 6 }}>
-                  <Icon />
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Fredoka',sans-serif",
-                    fontSize: 26,
-                    fontWeight: 600,
-                    color: "var(--text1)",
-                    lineHeight: 1,
-                  }}
-                >
-                  {val}
-                </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 800,
-                    color: "var(--text1)",
-                    marginTop: 3,
-                  }}
-                >
-                  {label}
-                </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 500,
-                    color: "var(--text2)",
-                  }}
-                >
-                  {sub}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* PUSH NOTIFICATION BANNER */}
-          {pushState === "idle" && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="push-banner"
-              style={{
-                background: "var(--bg2)",
-                border: "2px solid #5a8f6a44",
-                borderRadius: 16,
-                padding: "12px 16px",
-                marginBottom: 0,
-                boxShadow: "var(--shadow-card)",
-              }}
-            >
-              <span style={{ fontSize: 22, flexShrink: 0 }}>🔔</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 800,
-                    color: "var(--text1)",
-                    marginBottom: 2,
-                  }}
-                >
-                  Enable daily reminders
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "var(--text2)",
-                  }}
-                >
-                  We&apos;ll nudge you once a day if you haven&apos;t checked
-                  in.
-                </div>
-              </div>
-              <button
-                type="button"
-                className="push-enable"
-                onClick={subscribePush}
-                style={{
-                  background: "#5a8f6a",
-                  color: "white",
-                  border: "2px solid rgba(0,0,0,.12)",
-                  borderRadius: 10,
-                  padding: "7px 14px",
-                  fontSize: 12,
-                  fontWeight: 800,
-                  cursor: "pointer",
-                  fontFamily: "'Nunito',sans-serif",
-                  flexShrink: 0,
-                }}
-              >
-                Enable
-              </button>
-            </motion.div>
-          )}
-
-          {/* STREAK EXPLANATION */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            style={{
-              background: "var(--amber3)",
-              border: "1.5px solid var(--amber)",
-              borderRadius: 16,
-              padding: "12px 16px",
-              marginBottom: 0,
-              display: "flex",
-              gap: 12,
-              boxShadow: "2px 2px 0 var(--shadow-amber)",
-            }}
-          >
-            <div
-              style={{ color: "var(--amber2)", flexShrink: 0, marginTop: 2 }}
-            >
-              <IcoAlert />
-            </div>
-            <div>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: "var(--text1)",
-                  marginBottom: 2,
-                }}
-              >
-                Why keep your streak?
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: "var(--text2)",
-                  lineHeight: 1.4,
-                }}
-              >
-                Your streak represents your momentum. Missing a daily check-in
-                will{" "}
-                <strong style={{ color: "var(--coral)" }}>
-                  reset your streak to 0
-                </strong>{" "}
-                and lower your daily XP bonus. Consistent tracking builds
-                self-awareness.
-              </div>
-            </div>
-          </motion.div>
 
           {/* STREAK WARNING */}
           {streakAtRisk && (
@@ -1773,13 +1180,12 @@ export default function DashboardClient({
                     style={{
                       width: "100%",
                       marginBottom: 0,
-                      background: `linear-gradient(to right,${
-                        stress <= 3
-                          ? "#5a8f6a"
-                          : stress <= 6
-                            ? "#c9982a"
-                            : "#e07b5a"
-                      } ${((stress - 1) / 9) * 100}%,#fde8c8 0%)`,
+                      background: `linear-gradient(to right,${stress <= 3
+                        ? "#5a8f6a"
+                        : stress <= 6
+                          ? "#c9982a"
+                          : "#e07b5a"
+                        } ${((stress - 1) / 9) * 100}%,#fde8c8 0%)`,
                     }}
                   />
                 </div>
@@ -1939,7 +1345,7 @@ export default function DashboardClient({
               </span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {quests.map(
+              {quests.filter(q => q.implemented).map(
                 (
                   {
                     Icon,
@@ -1950,74 +1356,9 @@ export default function DashboardClient({
                     href,
                     accent,
                     bg,
-                    implemented,
                   },
                   i,
                 ) => {
-                  if (!implemented) {
-                    return (
-                      <div
-                        key={title}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                          background: "var(--bg3)",
-                          border: "2px solid var(--border2)",
-                          borderRadius: 16,
-                          padding: "11px 13px",
-                          opacity: 0.45,
-                          filter: "grayscale(100%)",
-                          cursor: "not-allowed",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 12,
-                            flexShrink: 0,
-                            background: "var(--bg4)",
-                            border: "2px solid var(--border3)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "var(--text4)",
-                          }}
-                        >
-                          <Icon />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontSize: 13,
-                              fontWeight: 800,
-                              color: "var(--text3)",
-                            }}
-                          >
-                            {title}
-                          </div>
-                          <div style={{ fontSize: 11, color: "var(--text4)" }}>
-                            {desc}
-                          </div>
-                        </div>
-                        <span
-                          style={{
-                            background: "var(--bg4)",
-                            border: "1.5px solid var(--border3)",
-                            borderRadius: 50,
-                            padding: "3px 10px",
-                            fontSize: 10,
-                            fontWeight: 800,
-                            color: "var(--text4)",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {reward}
-                        </span>
-                      </div>
-                    );
-                  }
                   return (
                     <motion.div
                       key={title}
@@ -2103,138 +1444,279 @@ export default function DashboardClient({
             </div>
           </motion.div>
 
-          {/* Two columns as independent stacks: avoids a dead zone when one card is much taller */}
-          <div className="two-col">
-            <div className="two-col-chain">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="card dash-slot-lung"
-              >
-                <LungProjection daysClean={streak} />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="card dash-slot-badges"
-              >
-                <BadgesSection earnedBadges={earnedBadges} />
-              </motion.div>
+          {/* LUNG RECOVERY */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+          >
+            {/* section label */}
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                color: "var(--text3)",
+                textTransform: "uppercase",
+                letterSpacing: ".07em",
+                marginBottom: 10,
+              }}
+            >
+              Lung recovery
             </div>
 
-            <div className="two-col-chain">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.45 }}
-                className="card dash-slot-stress"
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 14,
-                  }}
-                >
-                  <IcoTrend />
-                  <span
+            {/* main grid: big lung card + 2 side badges */}
+            {(() => {
+              const BADGE_EMOJIS: Record<number, string> = {
+                1: "❤️", 3: "🔬", 7: "🌬️", 14: "🩸", 30: "💪", 90: "🌿", 365: "⭐",
+              };
+              const BADGE_LOTTIE: Record<number, string> = {
+                1: "/lottie/Growing Plant.lottie",
+                3: "/lottie/Tree Lottie animation.lottie",
+                7: "/lottie/Tree Lottie animation.lottie",
+              };
+              const reachedList = MILESTONES.filter((m) => streak >= m.days);
+              const upcomingList = MILESTONES.filter((m) => streak < m.days);
+              const sidePicks =
+                reachedList.length > 0
+                  ? [reachedList[reachedList.length - 1], upcomingList[0]].filter(Boolean)
+                  : upcomingList.slice(0, 2);
+              const pct = lungPct(streak);
+              const nextM = upcomingList[0];
+              const nextPct = nextM ? Math.round((streak / nextM.days) * 100) : 100;
+
+              return (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", gap: 10 }}>
+                  {/* big lung card — horizontal layout */}
+                  <div
                     style={{
-                      fontFamily: "'Fredoka',sans-serif",
-                      fontSize: 19,
-                      fontWeight: 600,
-                      color: "var(--text1)",
+                      background: "linear-gradient(135deg,var(--bg2) 0%,rgba(59,201,142,0.06) 100%)",
+                      border: "2px solid var(--border)",
+                      borderRadius: 20,
+                      padding: "16px 20px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 16,
+                      overflow: "hidden",
+                      position: "relative",
                     }}
                   >
-                    This Week&apos;s Stress
+                    {/* left: stats */}
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: "var(--text3)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>
+                          Recovery
+                        </div>
+                        <div style={{ fontSize: 38, fontWeight: 900, color: "var(--mint)", lineHeight: 1 }}>
+                          {Math.round(pct)}%
+                        </div>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text2)", marginTop: 2 }}>
+                          after {streak} day{streak !== 1 ? "s" : ""} clean
+                        </div>
+                      </div>
+
+                      {/* next milestone progress */}
+                      {nextM && (
+                        <div>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)" }}>
+                              Next: {nextM.label}
+                            </span>
+                            <span style={{ fontSize: 10, fontWeight: 800, color: nextM.accent }}>
+                              {nextM.days - streak}d away
+                            </span>
+                          </div>
+                          <div style={{ height: 6, background: "var(--bg3)", borderRadius: 4, overflow: "hidden" }}>
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(nextPct, 100)}%` }}
+                              transition={{ duration: 1.2, ease: [0.34,1.56,0.64,1], delay: 0.5 }}
+                              style={{ height: "100%", background: nextM.accent, borderRadius: 4 }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* current milestone desc */}
+                      {reachedList.length > 0 && (
+                        <div style={{
+                          fontSize: 10, fontWeight: 600, color: "var(--text3)",
+                          background: `${reachedList[reachedList.length-1].accent}14`,
+                          border: `1px solid ${reachedList[reachedList.length-1].accent}44`,
+                          borderRadius: 10, padding: "6px 10px", lineHeight: 1.4,
+                        }}>
+                          {BADGE_EMOJIS[reachedList[reachedList.length-1].days]} {reachedList[reachedList.length-1].desc}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* right: lung SVG */}
+                    <div style={{ flexShrink: 0 }}>
+                      <LungSvg pct={pct} />
+                    </div>
+                  </div>
+
+                  {/* 2 side milestone badges */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {sidePicks.map((m) => {
+                      const done = streak >= m.days;
+                      const daysAway = m.days - streak;
+                      const lottieFile = BADGE_LOTTIE[m.days];
+                      return (
+                        <div
+                          key={m.days}
+                          style={{
+                            flex: 1,
+                            background: done ? `${m.accent}14` : "var(--bg2)",
+                            border: `2px solid ${done ? m.accent : "var(--border)"}`,
+                            borderRadius: 16,
+                            padding: "10px 8px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 4,
+                            position: "relative",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {/* lottie background on reached cards */}
+                          {done && lottieFile && (
+                            <div style={{ position: "absolute", inset: 0, opacity: 0.35, pointerEvents: "none" }}>
+                              <LottiePlayer src={lottieFile} />
+                            </div>
+                          )}
+                          <span style={{ fontSize: 24, lineHeight: 1, position: "relative", zIndex: 1 }}>
+                            {BADGE_EMOJIS[m.days] ?? "🏅"}
+                          </span>
+                          <div style={{ fontSize: 10, fontWeight: 800, color: done ? m.accent : "var(--text1)", textAlign: "center", lineHeight: 1.2, position: "relative", zIndex: 1 }}>
+                            {m.label}
+                          </div>
+                          <div style={{ fontSize: 9, fontWeight: 600, color: done ? m.accent : "var(--text3)", textAlign: "center", position: "relative", zIndex: 1 }}>
+                            {done ? "✓ reached" : `${daysAway}d away`}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* milestones card — toggle + grid inside bordered card */}
+            <div
+              style={{
+                marginTop: 10,
+                background: "var(--bg2)",
+                border: "2px solid var(--border)",
+                borderRadius: 20,
+                overflow: "hidden",
+              }}
+            >
+              {/* toggle header */}
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setLungShowAll((v) => !v)}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 16px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "'Nunito',sans-serif",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 14 }}>🏅</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text1)" }}>
+                    All Milestones
+                  </span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700,
+                    background: "var(--mint3)", color: "var(--mint)",
+                    border: "1.5px solid var(--mint2)",
+                    borderRadius: 50, padding: "1px 7px",
+                  }}>
+                    {MILESTONES.filter(m => streak >= m.days).length}/{MILESTONES.length}
                   </span>
                 </div>
-                <WeekChart checkins={recentCheckins} />
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 10,
-                    marginTop: 16,
-                    flexWrap: "wrap",
-                  }}
+                <motion.span
+                  animate={{ rotate: lungShowAll ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ fontSize: 12, color: "var(--text3)", display: "inline-block" }}
                 >
-                  <div
-                    style={{
-                      flex: "1 1 140px",
-                      minWidth: 0,
-                      background: "var(--coral3)",
-                      borderRadius: 12,
-                      padding: "10px 12px",
-                      border: "1.5px solid var(--coral)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: "var(--coral2)",
-                        marginBottom: 2,
-                      }}
-                    >
-                      HIGHEST STRESS
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 800,
-                        color: "var(--text1)",
-                      }}
-                    >
-                      {highestStress}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      flex: "1 1 140px",
-                      minWidth: 0,
-                      background: "var(--mint3)",
-                      borderRadius: 12,
-                      padding: "10px 12px",
-                      border: "1.5px solid var(--mint2)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: "var(--mint2)",
-                        marginBottom: 2,
-                      }}
-                    >
-                      MOST COMMON MOOD
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 800,
-                        color: "var(--text1)",
-                      }}
-                    >
-                      {mostCommonMood}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+                  ▼
+                </motion.span>
+              </motion.button>
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.55 }}
-                className="card dash-slot-insights"
-              >
-                <AIInsights />
-              </motion.div>
+              {/* expanded grid */}
+              <AnimatePresence>
+                {lungShowAll && (
+                  <motion.div
+                    key="lung-all"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.22 }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div style={{ borderTop: "2px solid var(--border)", padding: "12px 16px" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
+                        {MILESTONES.map((m) => {
+                          const BADGE_EMOJIS: Record<number, string> = {
+                            1: "❤️", 3: "🔬", 7: "🌬️", 14: "🩸", 30: "💪", 90: "🌿", 365: "⭐",
+                          };
+                          const done = streak >= m.days;
+                          const daysAway = m.days - streak;
+                          return (
+                            <div
+                              key={m.days}
+                              style={{
+                                background: done ? `${m.accent}18` : "var(--bg3)",
+                                border: `2px solid ${done ? m.accent : "var(--border)"}`,
+                                borderRadius: 14,
+                                padding: "10px 6px",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                gap: 4,
+                                opacity: done ? 1 : 0.6,
+                              }}
+                            >
+                              <span style={{ fontSize: 20, lineHeight: 1, filter: done ? "none" : "grayscale(1)" }}>
+                                {BADGE_EMOJIS[m.days] ?? "🏅"}
+                              </span>
+                              <div style={{ fontSize: 9, fontWeight: 800, color: done ? m.accent : "var(--text2)", textAlign: "center", lineHeight: 1.2 }}>
+                                {m.label}
+                              </div>
+                              <div style={{ fontSize: 8, fontWeight: 700, color: done ? m.accent : "var(--text3)", textAlign: "center" }}>
+                                {done ? "✓" : `${daysAway}d`}
+                              </div>
+                              <div style={{ fontSize: 8, color: "var(--text3)", textAlign: "center", lineHeight: 1.3 }}>
+                                {m.desc}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </div>
+          </motion.div>
+
+          {/* BADGES CAROUSEL */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="card"
+          >
+            <BadgesSection earnedBadges={earnedBadges as any[]} />
+          </motion.div>
+
         </div>
       </div>
 
