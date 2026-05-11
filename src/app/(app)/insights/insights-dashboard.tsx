@@ -14,7 +14,6 @@ import TabDeepScan from "@/components/insights/tabs/TabDeepScan";
 
 // E5 component
 import InsightsClient from "./insights-client";
-import SectionRow from "@/components/insights/ui/SectionRow";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface CheckinPoint {
@@ -92,49 +91,18 @@ export default function InsightsDashboard(props: DashboardProps) {
   };
 
   return (
-    <div>
+    <div className="insights-dashboard-shell">
       {isDemoMode && (
-        <div
-          style={{
-            background:
-              "linear-gradient(135deg, var(--amber) 0%, var(--coral) 100%)",
-            color: "white",
-            padding: "12px 20px",
-            textAlign: "center",
-            fontSize: 14,
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            position: "sticky",
-            top: 0,
-            zIndex: 50,
-            marginBottom: 20,
-            borderRadius: 16,
-          }}
-        >
-          <span style={{ fontSize: 20 }}>💡</span>
-          <span>
-            Viewing Pattern Insights with 30-day Demo Data. Real patterns will
-            emerge as you check in.
-          </span>
+        <div className="insights-demo-note">
+          Viewing 30-day demo data. Your real patterns will replace this as you
+          check in.
         </div>
       )}
-      <InsightsTabBar activeTab={tab} onTabChange={handleTabChange} />
 
-      <p
-        style={{
-          fontSize: 13,
-          color: "var(--text2)",
-          lineHeight: 1.55,
-          margin: "0 0 18px",
-          maxWidth: 540,
-        }}
-      >
-        {TAB_HINTS[tab]}
-      </p>
+      <div className="insights-tab-shell">
+        <InsightsTabBar activeTab={tab} onTabChange={handleTabChange} />
+        <p className="insights-tab-hint">{TAB_HINTS[tab]}</p>
+      </div>
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -159,27 +127,11 @@ export default function InsightsDashboard(props: DashboardProps) {
           )}
 
           {tab === "correlation" && (
-            <div>
-              <SectionRow
-                title="Stress ↔ Urge Correlation Engine"
-                infoKey="e5"
-                openInfo={openInfo}
-                setOpenInfo={setOpenInfo}
-                infoTitle="About the E5 Correlation Engine"
-                infoLines={[
-                  "Source: checkins + urge_events (all time)",
-                  "Card 1 - Stress ↔ Urge Link: Spearman rank correlation between daily stress scores and urge counts. Requires 14 days + p ≤ 0.05.",
-                  "Card 2 - Trigger Probability: How often each trigger tag appears in your urge logs. Requires 10+ urge events.",
-                  "Card 3 - Time-of-Day Risk: Urges bucketed into morning / afternoon / evening / night. Requires 14 days + 10 urges.",
-                  "Cache: Invalidated after each check-in or urge log. Refreshes on demand.",
-                ]}
-              />
-              <InsightsClient
-                key={isDemoMode ? "demo" : "real"}
-                data={props.correlationData}
-                isDemoMode={isDemoMode}
-              />
-            </div>
+            <InsightsClient
+              key={isDemoMode ? "demo" : "real"}
+              data={props.correlationData}
+              isDemoMode={isDemoMode}
+            />
           )}
 
           {tab === "trends" && (

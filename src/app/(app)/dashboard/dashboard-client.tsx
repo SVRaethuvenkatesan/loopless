@@ -1,25 +1,27 @@
 "use client";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { useEffect, useState } from "react";
+
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { Hand, Sparkles } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
+
 import {
-  IcoFire,
-  IcoStar,
-  IcoZap,
   IcoAlert,
-  IcoClipboard,
-  IcoMessage,
-  IcoCheck,
-  IcoWind2,
   IcoArrow,
+  IcoCheck,
+  IcoClipboard,
+  IcoDollar,
+  IcoFire,
+  IcoMessage,
+  IcoStar,
+  IcoWind2,
+  IcoZap,
 } from "./dash-icons";
-import { computeLevel } from "@/lib/xp";
 import { LungSvg, MILESTONES, lungPct } from "./dash-lung";
 import { BadgesSection } from "./dash-badges";
-import dynamic from "next/dynamic";
+import { computeLevel } from "@/lib/xp";
+
 const SakuraLottie = dynamic(() => import("./sakura-lottie"), { ssr: false });
-const LottiePlayer = dynamic(() => import("./lottie-player"), { ssr: false });
 
 interface Checkin {
   id: string;
@@ -30,6 +32,7 @@ interface Checkin {
   sleepQuality?: number;
   energyLevel?: number;
 }
+
 export type CriticalInsightBanner = {
   variant: "risk" | "relapse" | "insight";
   emoji: string;
@@ -52,375 +55,268 @@ interface Props {
   criticalInsight?: CriticalInsightBanner | null;
 }
 
+const MOODS = [
+  {
+    v: "rough",
+    l: "Rough",
+    c: "#e07b5a",
+    sub: "Heavy load",
+    bars: [1, 0, 0],
+  },
+  {
+    v: "meh",
+    l: "Meh",
+    c: "#c9982a",
+    sub: "Low signal",
+    bars: [1, 1, 0],
+  },
+  {
+    v: "okay",
+    l: "Okay",
+    c: "#5bb8f5",
+    sub: "Stable",
+    bars: [1, 1, 1],
+  },
+  {
+    v: "good",
+    l: "Good",
+    c: "#5a8f6a",
+    sub: "Clear run",
+    bars: [1, 1, 1],
+  },
+];
+
+function stressTone(stress: number) {
+  if (stress <= 3) return { label: "Calm", color: "#5a8f6a" };
+  if (stress <= 6) return { label: "Steady", color: "#c9982a" };
+  return { label: "Hot zone", color: "#e07b5a" };
+}
+
+function MoodFace({
+  mood,
+  color,
+  active = false,
+  size = 58,
+}: {
+  mood: string;
+  color: string;
+  active?: boolean;
+  size?: number;
+}) {
+  const face = {
+    rough: {
+      leftEye: "M19 25 L25 28",
+      rightEye: "M39 28 L45 25",
+      mouth: "M25 43 C30 38 36 38 41 43",
+    },
+    meh: {
+      leftEye: "M20 27 H26",
+      rightEye: "M38 27 H44",
+      mouth: "M25 42 H41",
+    },
+    okay: {
+      leftEye: "M21 26 Q23 28 25 26",
+      rightEye: "M39 26 Q41 28 43 26",
+      mouth: "M25 40 C30 44 36 44 41 40",
+    },
+    good: {
+      leftEye: "M20 27 C22 24 25 24 27 27",
+      rightEye: "M37 27 C39 24 42 24 44 27",
+      mouth: "M24 38 C29 47 38 47 43 38",
+    },
+  }[mood] ?? {
+    leftEye: "M20 27 H26",
+    rightEye: "M38 27 H44",
+    mouth: "M25 42 H41",
+  };
+
+  return (
+    <motion.svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      aria-hidden
+      className="mood-svg"
+      animate={active ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+      transition={{ duration: 1.8, repeat: active ? Infinity : 0 }}
+    >
+      <defs>
+        <radialGradient id={`mood-${mood}-${color.replace("#", "")}`} cx="32%" cy="24%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+          <stop offset="42%" stopColor={color} stopOpacity="0.82" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.38" />
+        </radialGradient>
+      </defs>
+      <motion.circle
+        cx="32"
+        cy="32"
+        r="25"
+        fill={`url(#mood-${mood}-${color.replace("#", "")})`}
+        stroke={active ? color : "rgba(26,18,8,.12)"}
+        strokeWidth={active ? 3 : 2}
+        animate={active ? { r: [25, 26.5, 25] } : { r: 25 }}
+        transition={{ duration: 1.8, repeat: active ? Infinity : 0 }}
+      />
+      <circle cx="22" cy="23" r="3" fill="#fff" opacity=".32" />
+      <motion.path
+        d={face.leftEye}
+        stroke="#17211b"
+        strokeWidth="3"
+        strokeLinecap="round"
+        fill="none"
+        animate={active ? { y: [0, -0.8, 0] } : { y: 0 }}
+        transition={{ duration: 1.4, repeat: active ? Infinity : 0 }}
+      />
+      <motion.path
+        d={face.rightEye}
+        stroke="#17211b"
+        strokeWidth="3"
+        strokeLinecap="round"
+        fill="none"
+        animate={active ? { y: [0, -0.8, 0] } : { y: 0 }}
+        transition={{ duration: 1.4, repeat: active ? Infinity : 0 }}
+      />
+      <motion.path
+        d={face.mouth}
+        stroke="#17211b"
+        strokeWidth="3"
+        strokeLinecap="round"
+        fill="none"
+        animate={active ? { pathLength: [0.85, 1, 0.85] } : { pathLength: 1 }}
+        transition={{ duration: 1.8, repeat: active ? Infinity : 0 }}
+      />
+      {active && (
+        <motion.circle
+          cx="50"
+          cy="14"
+          r="4"
+          fill={color}
+          animate={{ opacity: [0.25, 0.8, 0.25], scale: [0.8, 1.2, 0.8] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
+      )}
+    </motion.svg>
+  );
+}
+
 function XPBar({ pct }: { pct: number }) {
   const reduceMotion = useReducedMotion();
-  const clamped = Math.min(Math.max(pct, 0), 100);
-
   return (
-    <div style={{ position: "relative" }}>
-      <div
-        style={{
-          position: "relative",
-          height: 14,
-          background: "rgba(255,255,255,.1)",
-          borderRadius: 7,
-          overflow: "hidden",
-        }}
-      >
-        {[25, 50, 75].map((t) => (
-          <div
-            key={t}
-            style={{
-              position: "absolute",
-              left: `${t}%`,
-              top: "15%",
-              bottom: "15%",
-              width: 1.5,
-              background: clamped >= t ? "rgba(0,0,0,.2)" : "rgba(255,255,255,.18)",
-              zIndex: 3,
-            }}
-          />
-        ))}
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${clamped}%` }}
-          transition={{
-            duration: reduceMotion ? 0 : 1.8,
-            ease: reduceMotion ? "linear" : [0.34, 1.56, 0.64, 1],
-            delay: reduceMotion ? 0 : 0.4,
-          }}
-          style={{
-            height: "100%",
-            background: "linear-gradient(90deg,#3bc98e,#5fe3b9 60%,#43d698)",
-            borderRadius: 7,
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          {clamped > 0 && !reduceMotion && (
-            <motion.span
-              aria-hidden
-              style={{
-                display: "block",
-                position: "absolute",
-                inset: "-20%",
-                background:
-                  "linear-gradient(115deg, transparent 30%, rgba(255,255,255,.65) 50%, transparent 70%)",
-              }}
-              animate={{ x: ["-80%", "140%"] }}
-              transition={{
-                duration: 2.2,
-                repeat: Infinity,
-                repeatDelay: 3.2,
-                ease: "easeInOut",
-              }}
-            />
-          )}
-          {!reduceMotion && clamped > 2 && (
-            <motion.div
-              aria-hidden
-              animate={{ opacity: [0.3, 0.9, 0.3] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-              style={{
-                position: "absolute",
-                right: 0,
-                top: 0,
-                bottom: 0,
-                width: 20,
-                background: "linear-gradient(90deg, transparent, rgba(255,255,255,.55))",
-                borderRadius: "0 7px 7px 0",
-              }}
-            />
-          )}
-        </motion.div>
-      </div>
-      {!reduceMotion && clamped > 5 && clamped < 97 && (
-        <motion.div
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: -2,
-            left: `${clamped}%`,
-            fontSize: 9,
-            fontWeight: 900,
-            color: "#5ddba8",
-            pointerEvents: "none",
-            transform: "translateX(-50%)",
-          }}
-          animate={{ opacity: [0, 1, 0], y: [0, -14, -22] }}
-          transition={{
-            duration: 1.3,
-            repeat: Infinity,
-            repeatDelay: 4.8,
-            delay: 1.5,
-            ease: "easeOut",
-          }}
-        >
-          +XP
-        </motion.div>
-      )}
+    <div className="dash-xp-track">
+      <motion.div
+        className="dash-xp-fill"
+        initial={reduceMotion ? false : { width: 0 }}
+        animate={{ width: `${Math.max(0, Math.min(100, pct))}%` }}
+        transition={{ duration: reduceMotion ? 0 : 1, ease: "easeOut" }}
+      />
     </div>
   );
-}
-
-function FloatingReaction({ emoji, delay, offsetX }: { emoji: string; delay: number; offsetX: number }) {
-  const rm = useReducedMotion();
-  if (rm) return null;
-  return (
-    <span
-      aria-hidden
-      style={{
-        position: "absolute",
-        right: offsetX,
-        bottom: 8,
-        fontSize: 16,
-        pointerEvents: "none",
-        zIndex: 3,
-        lineHeight: 1,
-        opacity: 0,
-        animation: `floatReact 8s ${delay}s ease-out infinite`,
-        willChange: "transform, opacity",
-      }}
-    >
-      {emoji}
-    </span>
-  );
-}
-
-function moodEmoji(mood?: string) {
-  const m: Record<string, string> = {
-    rough: "😣",
-    meh: "😐",
-    okay: "🙂",
-    good: "😊",
-  };
-  return mood && m[mood] ? m[mood] : mood ? "📝" : "-";
-}
-
-function stressCue(s: number): {
-  emoji: string;
-  phrase: string;
-  accent: string;
-} {
-  if (s <= 3)
-    return { emoji: "🌿", phrase: "Nicely grounded", accent: "#5a8f6a" };
-  if (s <= 6)
-    return {
-      emoji: "⚖️",
-      phrase: "In the messy middle - normal",
-      accent: "#c9982a",
-    };
-  return {
-    emoji: "🌋",
-    phrase: "Running hot - noting it counts",
-    accent: "#e07b5a",
-  };
 }
 
 function WeekChart({ checkins }: { checkins: Checkin[] }) {
-  const [hov, setHov] = useState<number | null>(null);
-  const MOOD_ROW = 22;
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    d.setHours(0, 0, 0, 0);
-    const e = checkins.find((c) => {
-      const cd = new Date(c.checkedInAt);
-      cd.setHours(0, 0, 0, 0);
-      return cd.getTime() === d.getTime();
-    });
-    return {
-      day: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"][d.getDay()],
-      stress: e?.stressLevel ?? 0,
-      has: !!e,
-      mood: e?.mood,
-      moodIco: moodEmoji(e?.mood),
-    };
-  });
-  const mx = Math.max(...days.map((d) => d.stress), 1);
-  const col = (s: number) =>
-    s <= 3 ? "#5a8f6a" : s <= 6 ? "#c9982a" : "#e07b5a";
-  const BAR_MAX = 64;
+  const days = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        d.setHours(0, 0, 0, 0);
+        const entry = checkins.find((c) => {
+          const cd = new Date(c.checkedInAt);
+          cd.setHours(0, 0, 0, 0);
+          return cd.getTime() === d.getTime();
+        });
+        return {
+          key: d.toISOString(),
+          label: d.toLocaleDateString("en-AU", { weekday: "short" }).slice(0, 2),
+          stress: entry?.stressLevel ?? 0,
+          has: Boolean(entry),
+        };
+      }),
+    [checkins],
+  );
+
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          height: BAR_MAX + 28 + MOOD_ROW,
-          alignItems: "flex-end",
-        }}
-      >
-        {days.map((g, i) => (
-          <div
-            key={i}
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              position: "relative",
-              height: "100%",
-            }}
-            onMouseEnter={() => setHov(i)}
-            onMouseLeave={() => setHov(null)}
-          >
-            <div
-              style={{
-                height: MOOD_ROW,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: g.has ? 16 : 11,
-                lineHeight: 1,
-                opacity: g.has ? 1 : 0.35,
-                userSelect: "none",
-              }}
-              aria-hidden
-            >
-              {g.has ? g.moodIco : "·"}
-            </div>
-            <AnimatePresence>
-              {hov === i && g.has && (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  style={{
-                    position: "absolute",
-                    bottom: MOOD_ROW + 28,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    background: "var(--text1)",
-                    color: "var(--bg0)",
-                    borderRadius: 8,
-                    padding: "4px 8px",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    whiteSpace: "nowrap",
-                    zIndex: 10,
-                  }}
-                >
-                  {g.moodIco} {g.stress}/10
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {g.has ? (
-              <motion.div
+    <div className="dash-week">
+      {days.map((d, i) => {
+        const tone = stressTone(d.stress);
+        return (
+          <div className="dash-week-col" key={d.key}>
+            <div className="dash-week-track">
+              <motion.span
                 initial={{ height: 0 }}
-                animate={{
-                  height: `${Math.max((g.stress / mx) * BAR_MAX, 5)}px`,
-                }}
-                transition={{
-                  delay: 0.1 + i * 0.07,
-                  duration: 0.55,
-                  ease: "easeOut",
-                }}
+                animate={{ height: d.has ? `${Math.max(d.stress * 9, 8)}%` : "5%" }}
+                transition={{ delay: 0.08 * i, duration: 0.45 }}
                 style={{
-                  width: "80%",
-                  borderRadius: "5px 5px 2px 2px",
-                  background: `linear-gradient(180deg,${col(g.stress)}99,${col(g.stress)})`,
-                  border: `1.5px solid ${col(g.stress)}`,
-                  borderBottom: "none",
+                  background: d.has ? tone.color : "var(--border2)",
+                  opacity: d.has ? 1 : 0.5,
                 }}
               />
-            ) : (
-              <div
-                style={{
-                  width: "80%",
-                  height: 4,
-                  borderRadius: "3px 3px 0 0",
-                  background: "var(--bg4)",
-                }}
-              />
-            )}
-            <div
-              style={{
-                width: "80%",
-                height: 2,
-                background: g.has ? col(g.stress) : "var(--bg4)",
-                borderRadius: "0 0 2px 2px",
-                flexShrink: 0,
-              }}
-            />
-            <div
-              style={{
-                fontSize: 9,
-                fontWeight: 800,
-                color: g.has ? "var(--text2)" : "var(--text4)",
-                marginTop: 4,
-                flexShrink: 0,
-              }}
-            >
-              {g.day}
             </div>
+            <small>{d.label}</small>
           </div>
-        ))}
-      </div>
-      <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text3)" }}>
-          😣😊 Mood · bars = stress height
-        </span>
-      </div>
-      <div style={{ display: "flex", gap: 12, marginTop: 4, flexWrap: "wrap" }}>
-        {[
-          { c: "#5a8f6a", l: "Low (1–3)" },
-          { c: "#c9982a", l: "Med (4–6)" },
-          { c: "#e07b5a", l: "High (7–10)" },
-        ].map((x) => (
-          <div
-            key={x.l}
-            style={{ display: "flex", alignItems: "center", gap: 5 }}
-          >
-            <div
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: 3,
-                background: x.c,
-              }}
-            />
-            <span
-              style={{ fontSize: 10, fontWeight: 600, color: "var(--text2)" }}
-            >
-              {x.l}
-            </span>
-          </div>
-        ))}
-      </div>
-      {!checkins.length && (
-        <p
-          style={{
-            fontSize: 11,
-            color: "var(--text3)",
-            fontWeight: 600,
-            marginTop: 8,
-          }}
-        >
-          No check-ins yet - log one below to see your week!
-        </p>
-      )}
+        );
+      })}
     </div>
   );
 }
 
-const C = "var(--bg2)",
-  B = "var(--border2)";
-function card(p: object) {
-  return {
-    background: C,
-    border: `2px solid ${B}`,
-    borderRadius: 22,
-    padding: 18,
-    boxShadow: "var(--shadow-card)",
-    ...p,
-  };
+function QuestCard({
+  icon,
+  title,
+  desc,
+  reward,
+  done,
+  href,
+  accent,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  reward: string;
+  done: boolean;
+  href: string;
+  accent: string;
+}) {
+  const content = (
+    <div className={`dash-quest ${done ? "done" : ""}`}>
+      <div className="dash-quest-icon" style={{ color: accent }}>
+        {done ? <IcoCheck /> : icon}
+      </div>
+      <div>
+        <strong>{title}</strong>
+        <span>{desc}</span>
+      </div>
+      <em>{done ? "Done" : reward}</em>
+    </div>
+  );
+
+  if (done) return content;
+  return <Link href={href}>{content}</Link>;
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+  icon,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="dash-stat">
+      <div className="dash-stat-icon">{icon}</div>
+      <p>{label}</p>
+      <strong>{value}</strong>
+      <span>{sub}</span>
+    </div>
+  );
 }
 
 export default function DashboardClient({
   userName,
-  userId,
   recentCheckins,
   serverXP,
   checkInStreak,
@@ -432,22 +328,23 @@ export default function DashboardClient({
   copingSessionsThisWeek,
   criticalInsight = null,
 }: Props) {
+  const reduceMotion = useReducedMotion();
   const [tod, setTod] = useState("morning");
   const [guestName, setGuestName] = useState("");
-  const [stress, setStress] = useState(5);
-  const [mood, setMood] = useState("");
+  const [stress, setStress] = useState(todayEntry?.stressLevel ?? 5);
+  const [mood, setMood] = useState(todayEntry?.mood ?? "");
   const [done, setDone] = useState(checkedInToday);
-  const [editing, setEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [celebrate, setCelebrate] = useState(false);
-  const reduceMotion = useReducedMotion();
-
+  const [showMilestones, setShowMilestones] = useState(false);
+  const [showHeroStats, setShowHeroStats] = useState(false);
 
   useEffect(() => {
     const h = new Date().getHours();
     setTod(h < 12 ? "morning" : h < 17 ? "afternoon" : "evening");
-    if (typeof window !== "undefined")
-      setGuestName(localStorage.getItem("loopless_guest_name") ?? "");
+    setGuestName(localStorage.getItem("loopless_guest_name") ?? "");
+  }, []);
+
+  useEffect(() => {
     setDone(checkedInToday);
     if (checkedInToday && todayEntry) {
       setStress(todayEntry.stressLevel);
@@ -455,104 +352,45 @@ export default function DashboardClient({
     }
   }, [checkedInToday, todayEntry]);
 
-  const [statsExpanded, setStatsExpanded] = useState(false);
-  const [lungShowAll, setLungShowAll] = useState(false);
-
   const name = (userName || guestName || "there").split(" ")[0];
-  const streak = checkInStreak;
+  const { level, xpInLevel, xpToNext } = computeLevel(serverXP);
+  const xpPct = Math.round((xpInLevel / xpToNext) * 100);
   const avgStress = recentCheckins.length
-    ? (recentCheckins.reduce((s, c) => s + c.stressLevel, 0) / recentCheckins.length).toFixed(1)
-    : "–";
-  const money = Math.round(streak * 2.5);
-  // Use server-computed XP to stay in sync with sidebar and profile API
-  const { level, xpInLevel: xpInLvl } = computeLevel(serverXP);
-
-  const quests = [
-    {
-      Icon: IcoClipboard,
-      title: "Daily check-in",
-      desc: "Log today's stress & mood",
-      reward: "+20 XP",
-      done: done,
-      href: "/checkin",
-      accent: "#5a8f6a",
-      bg: "var(--mint3)",
-      implemented: true,
-    },
-    {
-      Icon: IcoWind2,
-      title: "4-7-8 Breathing",
-      desc: "2 min breathing session",
-      reward: "+15 XP",
-      done: copingSessionsThisWeek > 0,
-      href: "/coping/breathing",
-      accent: "#5bb8f5",
-      bg: "var(--sky3)",
-      implemented: false,
-    },
-    {
-      Icon: IcoMessage,
-      title: "Log an urge",
-      desc: "Record & beat a craving",
-      reward: "+25 XP",
-      done: urgesThisWeek > 0,
-      href: "/urge",
-      accent: "#c9982a",
-      bg: "var(--amber3)",
-      implemented: true,
-    },
-    {
-      Icon: IcoStar,
-      title: "Myth card",
-      desc: "Learn a vaping fact",
-      reward: "+10 XP",
-      done: false,
-      href: "/myths",
-      accent: "#7b6fa0",
-      bg: "var(--lilac)",
-      implemented: false,
-    },
-  ];
-
-  const moods = [
-    { v: "rough", l: "Rough", c: "#e07b5a", emoji: "😣" },
-    { v: "meh", l: "Meh", c: "#c9982a", emoji: "😐" },
-    { v: "okay", l: "Okay", c: "#5bb8f5", emoji: "🙂" },
-    { v: "good", l: "Good", c: "#5a8f6a", emoji: "😊" },
-  ];
-
-  const stressLive = stressCue(stress);
+    ? recentCheckins.reduce((sum, c) => sum + c.stressLevel, 0) / recentCheckins.length
+    : null;
+  const stressLive = stressTone(stress);
+  const moodLive = MOODS.find((item) => item.v === mood);
+  const recoveryPct = lungPct(checkInStreak);
+  const nextMilestone = MILESTONES.find((m) => checkInStreak < m.days);
+  const moneySaved = Math.round(checkInStreak * 2.5);
+  const completedQuests = [
+    done,
+    copingSessionsThisWeek > 0,
+    urgesThisWeek > 0,
+  ].filter(Boolean).length;
 
   async function submit() {
     if (!mood) return;
     setSubmitting(true);
     try {
-      const gid =
-        typeof window !== "undefined"
-          ? localStorage.getItem("loopless_guest_id")
-          : null;
-      const h: Record<string, string> = { "Content-Type": "application/json" };
-      if (gid) h["x-guest-id"] = gid;
-      // Always use POST - server will upsert (update if already checked in today)
-      const r = await fetch("/api/checkin", {
+      const guestId = localStorage.getItem("loopless_guest_id");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (guestId) headers["x-guest-id"] = guestId;
+      const res = await fetch("/api/checkin", {
         method: "POST",
-        headers: h,
+        headers,
         body: JSON.stringify({
           stressLevel: stress,
           mood,
           timezoneOffset: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       });
-      if (r.ok) {
-        setDone(true);
-        setEditing(false);
-        if (streak > 0) setCelebrate(true);
-      }
-    } catch { }
-    setSubmitting(false);
+      if (res.ok) setDone(true);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  const streakAtRisk = !done && streak > 0;
   const greet = {
     morning: "Good morning",
     afternoon: "Good afternoon",
@@ -562,1228 +400,506 @@ export default function DashboardClient({
   return (
     <>
       <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
-      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-      h1,h2,h3,h4{font-family:'Fredoka',sans-serif;}
-      a{color:inherit;text-decoration:none;}
-      @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.9);opacity:.4;}}
-      @keyframes shimmerPulse{0%,100%{opacity:.4;}50%{opacity:.85;}}
-      @keyframes confetti{0%{transform:translateY(-10px) rotate(0);opacity:1;}100%{transform:translateY(100px) rotate(360deg);opacity:0;}}
-      @keyframes urgePulse{0%,100%{box-shadow:0 0 0 0 rgba(224,123,90,.5),4px 4px 0 rgba(26,18,8,.25);}70%{box-shadow:0 0 0 12px rgba(224,123,90,0),4px 4px 0 rgba(26,18,8,.25);}}
-      @keyframes floatReact{0%,100%{transform:translateY(0) scale(0.4);opacity:0;}5%{opacity:1;}30%{transform:translateY(-56px) scale(0.65);opacity:0;}}
-      @keyframes nameGlow{0%,100%{filter:none;}50%{filter:drop-shadow(0 0 10px rgba(93,219,168,.65));}}
-      @keyframes blobDrift1{0%,100%{transform:translate(0,0);opacity:.1;}33%{transform:translate(36px,-22px);opacity:.2;}66%{transform:translate(-18px,10px);opacity:.12;}}
-      @keyframes blobDrift2{0%,100%{transform:translate(0,0);opacity:.08;}33%{transform:translate(-26px,18px);opacity:.16;}66%{transform:translate(20px,-12px);opacity:.1;}}
-      @keyframes flameFlicker{0%,100%{transform:scaleY(1) scaleX(1);}20%{transform:scaleY(1.07) scaleX(0.96);}40%{transform:scaleY(0.95) scaleX(1.02);}60%{transform:scaleY(1.05) scaleX(0.97);}80%{transform:scaleY(0.98) scaleX(1.01);}}
-      .dash{margin-inline:auto;width:95%;max-width:none;box-sizing:border-box;padding:clamp(10px,2vw,18px);padding-bottom:clamp(96px,12vh,112px);}
-      @media(max-width:768px){
-        .dash{
-          width:100%;
-          padding-left:max(10px, env(safe-area-inset-left));
-          padding-right:max(10px, env(safe-area-inset-right));
-          padding-bottom:max(150px, calc(88px + env(safe-area-inset-bottom)));
-        }
-      }
-      .dash-stack{display:flex;flex-direction:column;gap:clamp(14px,2.8vw,18px);}
-      .card{background:var(--bg2);border:2px solid var(--border2);border-radius:22px;padding:clamp(14px,3vw,18px);box-shadow:var(--shadow-card);width:100%;min-width:0;box-sizing:border-box;}
-      .slider{-webkit-appearance:none;width:100%;height:12px;border-radius:6px;outline:none;cursor:pointer;border:2px solid var(--border3);}
-      .slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--bg2);border:2.5px solid var(--stroke);box-shadow:0 3px 8px rgba(0,0,0,.18);cursor:grab;}
-      .checkin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;width:100%;}
-      .qc-card{position:relative;padding-bottom:clamp(18px,4vw,22px)!important;}
-      .qc-xp-pills{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;}
-      .qc-xp-pill{
-        font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;
-        padding:6px 11px;border-radius:999px;
-        border:2px solid var(--mint2);background:var(--mint3);color:var(--text1);
-        box-shadow:2px 2px 0 rgba(91,167,129,.28);
-      }
-      .qc-stress-box{
-        padding:14px;background:linear-gradient(180deg,var(--bg3) 0%,var(--bg2) 100%);
-        border:2px solid var(--border2);border-radius:16px;margin-bottom:2px;
-      }
-      .qc-mood-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%;}
-      @media(max-width:520px){.qc-mood-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-      .qc-mood-chip{
-        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;
-        min-height:0;padding:11px 6px;border-radius:16px;border:2px solid var(--border2);background:var(--bg2);
-        cursor:pointer;transition:transform .14s ease, border-color .14s ease, box-shadow .14s ease;
-        font-family:'Nunito',sans-serif;-webkit-tap-highlight-color:transparent;
-      }
-      .qc-mood-chip:hover{border-color:rgba(26,18,8,.22);}
-      .qc-mood-chip .qc-ec{font-size:1.65rem;line-height:1;display:block;}
-      .qc-mood-chip .qc-tx{font-size:11px;font-weight:850;color:var(--text1);letter-spacing:.02em;}
-      .qc-mood-chip.sel{z-index:1;}
-      .qc-nudge{font-size:12px;font-weight:700;color:var(--amber2);margin:10px 0 0;display:flex;align-items:center;gap:6px;}
-      .qc-footer{margin-top:16px;padding-top:14px;border-top:2px dashed var(--border3);}
-      .qc-log-btn{font-family:'Nunito',sans-serif;-webkit-tap-highlight-color:transparent;}
-      .qc-log-btn-ready{animation:qcGlow 2.4s ease-in-out infinite;}
-      @keyframes qcGlow{
-        0%,100%{box-shadow:5px 5px 0 var(--shadow-mint),0 0 0 0 rgba(59,201,142,.38);}
-        50%{box-shadow:5px 5px 0 var(--shadow-mint),0 0 28px rgba(59,201,142,.42);}
-      }
-      @media (prefers-reduced-motion: reduce){
-        .qc-log-btn-ready{animation:none!important;}
-        .qc-mood-chip,.qc-log-btn{transition:none!important;}
-      }
-      .streak-warn-banner .streak-warn-cta{margin-left:auto;flex-shrink:0;}
-      @media(max-width:480px){.streak-warn-banner .streak-warn-cta{margin-left:0;width:100%;flex:1 1 100%;text-align:center;}}
-      .urge-fab{z-index:150;position:fixed;right:max(18px,env(safe-area-inset-right));left:auto;bottom:28px;}
-      @media(max-width:768px){.urge-fab{display:none;}}
-      .fab-row{z-index:150;position:fixed;display:none;}
-      @media(max-width:768px){
-        .fab-row{display:flex;gap:10px;left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));bottom:max(92px,calc(68px + env(safe-area-inset-bottom)));}
-      }
-      .fab-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border-radius:50px;padding:13px 16px;font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;border:2.5px solid #1a1208;box-shadow:4px 4px 0 rgba(26,18,8,.25);-webkit-tap-highlight-color:transparent;}
-      @media(prefers-reduced-motion:reduce){.fab-btn,.blobDrift1,.blobDrift2,.flameFlicker{animation:none!important;}}
-    `}</style>
+        .dash-v2{width:min(1180px,calc(100vw - 36px));margin:0 auto;padding:22px 0 112px;}
+        .dash-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:16px;align-items:start;}
+        .dash-stack{display:flex;flex-direction:column;gap:16px;}
+        .dash-card{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;box-shadow:0 14px 42px rgba(21,31,26,.07);overflow:hidden;}
+        .dark .dash-card{box-shadow:0 16px 48px rgba(0,0,0,.32);}
+        .dash-pad{padding:20px;}
+        .dash-hero{position:relative;min-height:280px;padding:24px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;background:linear-gradient(135deg,#102018,#1c3a2a 58%,#233f33);color:#fff;border-color:rgba(93,219,168,.22);}
+        .dash-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 18%,rgba(93,219,168,.28),transparent 28%),radial-gradient(circle at 12% 90%,rgba(224,123,90,.18),transparent 30%);pointer-events:none;}
+        .dash-hero > *{position:relative;z-index:1;}
+        .dash-hero h1{font-size:clamp(34px,5vw,58px);line-height:.96;color:#fff;margin:8px 0 12px;letter-spacing:0;}
+        .dash-hero p{color:rgba(255,255,255,.72);font-size:14px;line-height:1.65;max-width:560px;}
+        .dash-eyebrow{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin:0 0 8px;}
+        .dash-hero .dash-eyebrow{color:#78e5b8;}
+        .dash-hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;}
+        .dash-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid transparent;font-size:13px;font-weight:900;cursor:pointer;transition:transform .15s ease,opacity .15s ease;background:var(--text1);color:var(--bg0);}
+        .dash-btn:hover{transform:translateY(-1px);}
+        .dash-btn.secondary{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.18);color:#fff;}
+        .dash-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+        .hero-toggle{background:rgba(120,229,184,.12)!important;border-color:rgba(120,229,184,.32)!important;color:#bdf8df!important;}
+        .sakura-field{position:absolute;top:0;right:0;bottom:0;width:52%;height:100%;opacity:.82;pointer-events:none;mix-blend-mode:screen;transform:scaleX(-1);transform-origin:center;z-index:0!important;}
+        .sakura-field > div{width:100%!important;height:100%!important;}
+        .player-card{position:relative;align-self:stretch;border:1px solid rgba(255,255,255,.16);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));backdrop-filter:blur(7px);padding:16px;display:flex;flex-direction:column;justify-content:space-between;min-height:236px;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.13);}
+        .player-card:after{content:"";position:absolute;right:-34px;bottom:-46px;width:170px;height:170px;border-radius:50%;background:rgba(120,229,184,.07);filter:blur(10px);pointer-events:none;}
+        .player-card > *{position:relative;z-index:1;}
+        .player-level{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;}
+        .player-level strong{font-family:var(--font-display);font-size:42px;line-height:.86;color:#fff;text-shadow:0 8px 28px rgba(0,0,0,.22);}
+        .player-level span{font-size:11px;color:rgba(255,255,255,.62);font-weight:800;text-transform:uppercase;letter-spacing:.07em;}
+        .dash-xp-track{height:18px;padding:4px;background:rgba(6,20,14,.26);border:1px solid rgba(255,255,255,.13);border-radius:999px;overflow:hidden;box-shadow:inset 0 2px 10px rgba(0,0,0,.18);}
+        .dash-xp-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,rgba(61,201,142,.72),rgba(159,245,214,.92));position:relative;box-shadow:0 0 18px rgba(120,229,184,.28);}
+        .dash-xp-fill:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.52),transparent 70%);animation:xpSweep 2.8s ease-in-out infinite;}
+        @keyframes xpSweep{0%{transform:translateX(-110%)}55%,100%{transform:translateX(130%)}}
+        .xp-caption{display:flex;justify-content:space-between;gap:10px;margin-top:8px;color:rgba(255,255,255,.68);font-size:11px;font-weight:800;}
+        .xp-rank-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+        .xp-rank-row span{font-size:10px;color:rgba(255,255,255,.55);font-weight:900;text-transform:uppercase;letter-spacing:.07em;}
+        .xp-rank-pill{border:1px solid rgba(120,229,184,.26);background:rgba(120,229,184,.1);border-radius:999px;padding:4px 9px;color:#bdf8df!important;}
+        .hero-stats{grid-column:1 / -1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:2px;}
+        .hero-stat{border:1px solid rgba(255,255,255,.15);border-radius:14px;background:rgba(0,0,0,.16);padding:12px;min-width:0;}
+        .hero-stat-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.09);color:#78e5b8;margin-bottom:9px;}
+        .hero-stat span{display:block;font-size:10px;color:rgba(255,255,255,.58);font-weight:900;text-transform:uppercase;letter-spacing:.06em;}
+        .hero-stat strong{display:block;margin-top:2px;font-family:var(--font-display);font-size:24px;line-height:1;color:#fff;}
+        .hero-stat small{display:block;margin-top:5px;color:rgba(255,255,255,.56);font-size:10px;font-weight:800;line-height:1.35;}
+        .orbit{position:absolute;width:10px;height:10px;border-radius:50%;background:#78e5b8;box-shadow:0 0 22px #78e5b8;}
+        .orbit.a{right:34%;top:18%;}.orbit.b{right:10%;bottom:18%;background:#e07b5a;box-shadow:0 0 22px #e07b5a;}
+        .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+        .section-head h2{font-size:21px;letter-spacing:0;}
+        .section-head a,.section-head button{font-size:12px;font-weight:900;color:var(--mint2);background:none;border:0;cursor:pointer;}
+        .checkin-panel{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:16px;align-items:stretch;}
+        .stress-box{border:1px solid var(--border2);border-radius:16px;background:var(--bg0);padding:16px;}
+        .stress-read{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px;}
+        .stress-read strong{font-size:42px;line-height:.9;font-family:var(--font-display);}
+        .stress-read span{font-size:12px;font-weight:900;color:var(--text3);}
+        .slider{width:100%;accent-color:var(--mint2);}
+        .mood-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px;}
+        .mood-card{position:relative;min-height:132px;border-radius:16px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-weight:900;cursor:pointer;overflow:hidden;padding:10px;text-align:left;transition:border-color .15s ease,background .15s ease,transform .15s ease;}
+        .mood-card:before{content:"";position:absolute;inset:auto -22px -34px auto;width:82px;height:82px;border-radius:50%;background:var(--mood);opacity:.12;transition:opacity .15s ease,transform .15s ease;}
+        .mood-card.active{border-color:var(--mood);background:color-mix(in srgb,var(--mood) 10%,var(--bg2));color:var(--text1);box-shadow:0 10px 26px color-mix(in srgb,var(--mood) 18%,transparent);}
+        .mood-card.active:before{opacity:.24;transform:scale(1.1);}
+        .mood-top{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+        .mood-svg{flex:0 0 auto;filter:drop-shadow(0 10px 18px color-mix(in srgb,var(--mood) 20%,transparent));}
+        .mood-orb{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff, var(--mood) 40%, color-mix(in srgb,var(--mood) 68%,#111));box-shadow:0 0 18px color-mix(in srgb,var(--mood) 42%,transparent);}
+        .mood-signal{display:flex;gap:3px;align-items:end;height:18px;}
+        .mood-signal span{width:5px;border-radius:999px;background:var(--mood);opacity:.3;}
+        .mood-signal span.on{opacity:1;}
+        .mood-card strong,.mood-card small{position:relative;z-index:1;display:block;}
+        .mood-card strong{font-size:13px;color:var(--text1);}
+        .mood-card small{margin-top:3px;font-size:10px;color:var(--text3);font-weight:800;line-height:1.25;}
+        .mood-feedback{margin-top:12px;border:1px solid var(--border2);border-radius:14px;background:var(--bg2);padding:11px 12px;display:flex;align-items:center;gap:10px;color:var(--text2);font-size:12px;font-weight:800;}
+        .mood-feedback .mood-svg{width:34px;height:34px;flex:0 0 auto;}
+        .today-state{border-radius:16px;background:linear-gradient(180deg,rgba(61,201,142,.14),var(--bg0));border:1px solid rgba(61,201,142,.28);padding:16px;display:flex;flex-direction:column;justify-content:center;gap:12px;}
+        .today-state strong{font-size:24px;font-family:var(--font-display);}
+        .mood-reactor{display:flex;align-items:center;justify-content:center;min-height:106px;border:1px solid var(--border2);border-radius:16px;background:var(--bg2);position:relative;overflow:hidden;}
+        .mood-reactor:before{content:"";position:absolute;inset:auto -30px -40px auto;width:120px;height:120px;border-radius:50%;background:var(--reactor);opacity:.16;}
+        .mood-reactor > *{position:relative;z-index:1;}
+        .checkin-mini-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+        .checkin-mini{border:1px solid var(--border2);border-radius:12px;background:var(--bg2);padding:9px 10px;}
+        .checkin-mini span{display:block;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);}
+        .checkin-mini strong{display:block;font-family:var(--font-display);font-size:20px;line-height:1;color:var(--text1);}
+        .stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+        .dash-stat{border:1px solid var(--border2);border-radius:16px;background:var(--bg2);padding:14px;min-width:0;}
+        .dash-stat-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:var(--bg0);color:var(--mint2);margin-bottom:10px;}
+        .dash-stat p{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:900;margin:0 0 3px;}
+        .dash-stat strong{display:block;font-family:var(--font-display);font-size:25px;line-height:1;color:var(--text1);}
+        .dash-stat span{display:block;margin-top:4px;font-size:11px;color:var(--text3);font-weight:700;line-height:1.35;}
+        .dash-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;min-height:128px;}
+        .dash-week-col{display:grid;grid-template-rows:1fr auto;gap:7px;text-align:center;font-size:10px;font-weight:900;color:var(--text3);}
+        .dash-week-track{min-height:104px;border-radius:12px;background:var(--bg0);display:flex;align-items:end;justify-content:center;overflow:hidden;}
+        .dash-week-track span{width:min(30px,68%);border-radius:999px 999px 0 0;}
+        .dash-quest{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border2);border-radius:14px;background:var(--bg2);transition:transform .15s ease,border-color .15s ease;}
+        .dash-quest:hover{transform:translateY(-1px);border-color:var(--border3);}
+        .dash-quest.done{background:rgba(61,201,142,.1);opacity:.85;}
+        .dash-quest-icon{width:40px;height:40px;border-radius:12px;background:var(--bg0);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+        .dash-quest strong,.dash-quest span{display:block;}
+        .dash-quest strong{font-size:13px;color:var(--text1);}
+        .dash-quest span{font-size:11px;color:var(--text3);font-weight:700;margin-top:2px;}
+        .dash-quest em{margin-left:auto;font-style:normal;font-size:10px;font-weight:900;color:var(--amber);border:1px solid rgba(201,152,42,.35);border-radius:999px;padding:3px 9px;background:rgba(201,152,42,.08);white-space:nowrap;}
+        .quest-stack{display:flex;flex-direction:column;gap:9px;}
+        .insight-card{display:flex;gap:12px;border-radius:16px;border:1px solid var(--border2);background:linear-gradient(135deg,rgba(91,184,245,.1),var(--bg2));padding:14px;}
+        .insight-card.risk{background:linear-gradient(135deg,rgba(224,123,90,.13),var(--bg2));border-color:rgba(224,123,90,.34);}
+        .insight-card p{font-size:12px;line-height:1.55;color:var(--text2);margin:5px 0 10px;}
+        .recovery-card{display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:14px;align-items:center;}
+        .recovery-score{font-size:44px;font-family:var(--font-display);line-height:1;color:var(--mint2);font-weight:900;}
+        .milestone-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px;}
+        .milestone{border:1px solid var(--border2);border-radius:12px;background:var(--bg0);padding:9px;text-align:center;min-height:72px;display:flex;flex-direction:column;justify-content:center;gap:3px;}
+        .milestone.done{background:rgba(61,201,142,.1);border-color:rgba(61,201,142,.28);}
+        .milestone strong{font-size:11px;color:var(--text1);}
+        .milestone span{font-size:9px;color:var(--text3);font-weight:800;}
+        .fab-row,.urge-fab{display:none;}
+        @media(max-width:1020px){.dash-grid,.checkin-panel,.recovery-card{grid-template-columns:1fr}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.dash-hero{grid-template-columns:1fr}.player-card{min-height:230px}.hero-stats{grid-template-columns:repeat(2,minmax(0,1fr));}.dash-v2{width:min(100% - 24px,1180px);}}
+        @media(max-width:620px){.mood-grid,.stat-grid,.milestone-grid,.hero-stats{grid-template-columns:1fr 1fr}.dash-hero{padding:20px;min-height:0}.dash-card{border-radius:16px}.dash-pad{padding:16px}.sakura-field{width:70%;opacity:.42}}
+      `}</style>
 
-      {/* Celebration overlay */}
-      <AnimatePresence>
-        {celebrate && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 900,
-              background: "linear-gradient(135deg,#1a3d28,#2d5a3d)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onClick={() => setCelebrate(false)}
-          >
-            <motion.div
-              animate={{ scale: [1, 1.15, 1], rotate: [0, -5, 5, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity }}
-            >
-              <IcoFire />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              style={{
-                fontFamily: "'Fredoka',sans-serif",
-                fontSize: 34,
-                fontWeight: 600,
-                color: "white",
-                marginTop: 16,
-              }}
-            >
-              Day {streak} streak!
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: "rgba(255,255,255,.6)",
-                marginTop: 8,
-              }}
-            >
-              Tap to continue
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="dash">
+      <main className="dash-v2">
         <div className="dash-stack">
-          {/* HERO */}
-          <motion.div
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            style={{
-              borderRadius: 26,
-              padding: "18px 20px 16px",
-              background: "linear-gradient(135deg,#1a3d28,#2d5a3d)",
-              border: "2.5px solid #1a1208",
-              boxShadow: "6px 6px 0 rgba(26,18,8,.22)",
-              position: "relative",
-              overflow: "hidden",
-            }}
+          <motion.section
+            className="dash-card dash-hero"
+            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
           >
             {!reduceMotion && (
               <>
-                <div aria-hidden style={{ position: "absolute", top: "-22%", left: "-14%", width: 210, height: 210, borderRadius: "50%", background: "radial-gradient(circle, rgba(93,219,168,0.55) 0%, transparent 70%)", filter: "blur(36px)", pointerEvents: "none", zIndex: 0, animation: "blobDrift1 11s ease-in-out infinite", willChange: "transform" }} />
-                <div aria-hidden style={{ position: "absolute", bottom: "-28%", right: "-18%", width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(224,123,90,0.4) 0%, transparent 70%)", filter: "blur(42px)", pointerEvents: "none", zIndex: 0, animation: "blobDrift2 9s ease-in-out infinite", willChange: "transform" }} />
-                <div aria-hidden style={{ position: "absolute", top: 0, right: "-11%", width: "62%", height: "120%", pointerEvents: "none", zIndex: 1, opacity: 0.5 }}>
-                  <div style={{ width: "100%", height: "100%", transform: "scaleX(-1)" }}>
-                    <SakuraLottie />
-                  </div>
+                <div className="sakura-field" aria-hidden>
+                  <SakuraLottie />
                 </div>
+                <motion.span
+                  className="orbit a"
+                  animate={{ y: [0, -14, 0], opacity: [0.55, 1, 0.55] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+                <motion.span
+                  className="orbit b"
+                  animate={{ y: [0, 12, 0], opacity: [0.45, 0.9, 0.45] }}
+                  transition={{ duration: 5, repeat: Infinity }}
+                />
               </>
             )}
-            <div style={{ position: "relative", zIndex: 2 }}>
-              {/* Row 1: greeting + streak pill */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.5)" }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5ddba8", display: "inline-block", flexShrink: 0, animation: reduceMotion ? "none" : "pulseDot 2s infinite" }} />
-                  {greet}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,.1)", border: "1.5px solid rgba(255,100,50,.35)", borderRadius: 50, padding: "4px 10px 4px 7px" }}>
-                  <span style={{ fontSize: 15, lineHeight: 1, animation: reduceMotion ? "none" : "flameFlicker 2s ease-in-out infinite" }}>🔥</span>
-                  <span style={{ fontFamily: "'Fredoka',sans-serif", fontSize: 16, fontWeight: 600, color: "white", lineHeight: 1 }}>{streak}</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.6)", letterSpacing: ".04em" }}>streak</span>
-                </div>
-              </div>
-              {/* Row 2: name + level badge */}
-              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px 10px", marginBottom: 12 }}>
-                <span style={{ fontFamily: "'Fredoka',sans-serif", fontSize: "clamp(1.35rem,5.5vw,1.8rem)", fontWeight: 600, color: "white", lineHeight: 1.1, display: "inline-flex", alignItems: "baseline", animation: reduceMotion ? "none" : "nameGlow 3.8s ease-in-out 1.5s infinite" }}>
-                  {(name + "!").split("").map((char, i) => (
-                    <motion.span key={i} initial={{ opacity: 0, y: 18, scale: 0.55 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={reduceMotion ? { duration: 0 } : { delay: 0.28 + i * 0.07, type: "spring", bounce: 0.62, duration: 0.5 }} style={{ display: "inline-block", textShadow: "0 4px 18px rgba(0,0,0,.35)" }}>
-                      {char === " " ? " " : char}
-                    </motion.span>
-                  ))}
-                </span>
-                <motion.span aria-hidden animate={reduceMotion ? undefined : { rotate: [0, 22, -12, 16, -8, 0] }} transition={{ repeat: Infinity, duration: 1.15, repeatDelay: 7.8, ease: "easeInOut" }} style={{ display: "inline-flex", alignItems: "center", filter: "drop-shadow(0 3px 6px rgba(0,0,0,.38))" }}>
-                  <Hand size={24} strokeWidth={2} color="#fff" />
-                </motion.span>
-                <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,.12)", border: "1.5px solid rgba(255,255,255,.2)", borderRadius: 50, padding: "3px 9px", fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,.88)" }}>
-                  <Sparkles size={10} strokeWidth={2.4} color="rgba(255,255,255,0.85)" />
-                  Lv.{level} Loop Breaker
-                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#5ddba8", display: "inline-block", animation: reduceMotion ? "none" : "pulseDot 2s infinite" }} />
-                </motion.div>
-              </div>
-              {/* Stats row */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: statsExpanded ? 6 : 12, alignItems: "center" }}>
-                {([
-                  { emoji: "📊", val: avgStress, label: "/10 stress" },
-                  { emoji: "⚡", val: String(urgesThisWeek), label: "urges" },
-                  { emoji: "🧘", val: String(copingSessionsThisWeek), label: "coping" },
-                ] as { emoji: string; val: string; label: string }[]).map(({ emoji, val, label }) => (
-                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 50, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.9)" }}>
-                    <span style={{ fontSize: 13 }}>{emoji}</span>
-                    <span style={{ fontWeight: 800 }}>{val}</span>
-                    <span style={{ opacity: .6, fontSize: 10 }}>{label}</span>
-                  </div>
-                ))}
-                <button onClick={() => setStatsExpanded((p: boolean) => !p)} style={{ display: "inline-flex", alignItems: "center", gap: 3, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.16)", borderRadius: 50, padding: "4px 10px", fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,.65)", cursor: "pointer", fontFamily: "'Nunito',sans-serif", transition: "background .15s" }}>
-                  {statsExpanded ? "▲ less" : "▼ more"}
+
+            <div>
+              <p className="dash-eyebrow">Player dashboard</p>
+              <h1>
+                {greet}, {name}.
+              </h1>
+              <p>
+                Your next move is simple: protect the streak, cool down urges,
+                and build XP without turning recovery into another stressful task.
+              </p>
+              <div className="dash-hero-actions">
+                <Link className="dash-btn" href={done ? "/insights" : "/checkin"}>
+                  {done ? "Review patterns" : "Start today's quest"} <IcoArrow />
+                </Link>
+                <Link className="dash-btn secondary" href="/urge">
+                  <IcoZap /> Log urge
+                </Link>
+                <Link className="dash-btn secondary" href="/coping">
+                  <IcoWind2 /> Calm tool
+                </Link>
+                <button
+                  className="dash-btn secondary hero-toggle"
+                  type="button"
+                  onClick={() => setShowHeroStats((value) => !value)}
+                >
+                  {showHeroStats ? "Hide stats" : "Show stats"}
                 </button>
               </div>
-              {/* Expanded stats */}
-              <AnimatePresence>
-                {statsExpanded && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }} style={{ overflow: "hidden", marginBottom: 12 }}>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, paddingTop: 2 }}>
-                      {([
-                        { emoji: "💰", val: `$${money}`, label: "saved est." },
-                        { emoji: "📋", val: String(recentCheckins.length), label: "check-ins" },
-                      ] as { emoji: string; val: string; label: string }[]).map(({ emoji, val, label }) => (
-                        <div key={label} style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 50, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.9)" }}>
-                          <span style={{ fontSize: 13 }}>{emoji}</span>
-                          <span style={{ fontWeight: 800 }}>{val}</span>
-                          <span style={{ opacity: .6, fontSize: 10 }}>{label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              {/* XP bar */}
-              <div style={{ borderTop: "1px solid rgba(255,255,255,.1)", paddingTop: 11 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: ".06em" }}>XP to Level {level + 1}</span>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: "#5ddba8" }}>{xpInLvl}/500</span>
-                </div>
-                <XPBar pct={(xpInLvl / 500) * 100} />
-                <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,.32)", marginTop: 5 }}>
-                  {500 - xpInLvl} XP to level up · complete daily quests
-                </div>
-              </div>
             </div>
-          </motion.div>
 
-          {/* Single highest-priority insight (mirrors Patterns page priority) */}
-          {criticalInsight && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12, duration: 0.35 }}
-              whileHover={{ y: -2 }}
-              style={{
-                ...card({
-                  padding: "14px 16px",
-                }),
-                border:
-                  criticalInsight.variant === "risk"
-                    ? "2px solid rgba(224,123,90,0.55)"
-                    : criticalInsight.variant === "relapse"
-                      ? "2px solid rgba(201,152,42,0.5)"
-                      : "2px solid rgba(91,143,245,0.45)",
-                background:
-                  criticalInsight.variant === "risk"
-                    ? "linear-gradient(135deg, var(--coral3), var(--bg2))"
-                    : criticalInsight.variant === "relapse"
-                      ? "linear-gradient(135deg, var(--amber3), var(--bg2))"
-                      : "linear-gradient(135deg, var(--sky3), var(--bg2))",
-              }}
-            >
-              <Link
-                href="/insights"
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
-                <div
-                  style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
-                >
-                  <span
-                    style={{
-                      fontSize: 28,
-                      lineHeight: 1,
-                      flexShrink: 0,
-                    }}
-                    aria-hidden
-                  >
-                    {criticalInsight.emoji}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 800,
-                        letterSpacing: "0.04em",
-                        textTransform: "uppercase",
-                        color: "var(--text3)",
-                        marginBottom: 4,
-                      }}
-                    >
-                      {criticalInsight.variant === "insight"
-                        ? "Insights · focus"
-                        : criticalInsight.variant === "risk"
-                          ? "Safety · heads up"
-                          : "Insights · watch"}
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: "'Fredoka',sans-serif",
-                        fontSize: 17,
-                        fontWeight: 600,
-                        color: "var(--text1)",
-                        marginBottom: 6,
-                        lineHeight: 1.25,
-                      }}
-                    >
-                      {criticalInsight.title}
-                    </div>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: "var(--text2)",
-                        lineHeight: 1.45,
-                      }}
-                    >
-                      {criticalInsight.detail}
-                    </p>
-                    <div
-                      style={{
-                        marginTop: 10,
-                        fontSize: 12,
-                        fontWeight: 800,
-                        color: "var(--mint2)",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                      }}
-                    >
-                      Open Insights
-                      <IcoArrow />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          )}
-
-          {/* STREAK WARNING */}
-          {streakAtRisk && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="streak-warn-banner"
-              style={{
-                background: "var(--coral3)",
-                border: "2px solid var(--coral)",
-                borderRadius: 16,
-                padding: "12px 16px",
-                marginBottom: 0,
-                display: "flex",
-                alignItems: "flex-start",
-                flexWrap: "wrap",
-                gap: 10,
-                boxShadow: "3px 3px 0 var(--shadow-coral)",
-              }}
-            >
-              <div style={{ color: "var(--coral)", flexShrink: 0 }}>
-                <IcoAlert />
-              </div>
-              <div style={{ flex: 1, minWidth: "min(100%, 200px)" }}>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 800,
-                    color: "var(--text1)",
-                  }}
-                >
-                  Your {streak}-day streak is at risk!
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "var(--text3)",
-                  }}
-                >
-                  Missing today will reset your streak to 0. You've worked hard
-                  - check in now.
-                </div>
-              </div>
-              <Link
-                className="streak-warn-cta"
-                href="/checkin"
-                style={{
-                  background: "#e07b5a",
-                  color: "white",
-                  border: "2px solid #1a1208",
-                  borderRadius: 10,
-                  padding: "8px 16px",
-                  fontSize: 12,
-                  fontWeight: 800,
-                  whiteSpace: "nowrap",
-                  boxShadow: "2px 2px 0 rgba(168,75,42,.35)",
-                  marginLeft: "auto",
-                }}
-              >
-                Check in
-              </Link>
-            </motion.div>
-          )}
-
-          {/* QUICK CHECK-IN */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", bounce: 0.2 }}
-            className="card qc-card"
-          >
-            <div className="checkin-head" style={{ marginBottom: 12 }}>
+            <aside className="player-card" aria-label="Player progress">
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    fontFamily: "'Fredoka',sans-serif",
-                    fontSize: "clamp(17px, 4vw, 19px)",
-                    fontWeight: 600,
-                    color: "var(--text1)",
-                  }}
-                >
-                  <IcoClipboard /> Quick check-in
+                <div className="player-level">
+                  <div>
+                    <span>Loop breaker</span>
+                    <strong>Lv.{level}</strong>
+                  </div>
+                  <motion.div
+                    animate={reduceMotion ? undefined : { rotate: [0, 6, -6, 0] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                    style={{ color: "#78e5b8" }}
+                  >
+                    <IcoStar />
+                  </motion.div>
                 </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "var(--text3)",
-                    marginTop: 4,
-                    lineHeight: 1.35,
-                    maxWidth: 280,
-                  }}
-                >
-                  Two taps protect your streak and feed your Patterns.
+                <div className="xp-rank-row">
+                  <span>XP charge</span>
+                  <span className="xp-rank-pill">Rank {level}</span>
+                </div>
+                <XPBar pct={xpPct} />
+                <div className="xp-caption">
+                  <span>{xpInLevel}/{xpToNext} XP</span>
+                  <span>{xpPct}% charged</span>
                 </div>
               </div>
-              {done && !editing ? (
-                <span
-                  style={{
-                    background: "var(--mint3)",
-                    border: "1.5px solid var(--mint2)",
-                    borderRadius: 50,
-                    padding: "5px 12px",
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: "var(--mint2)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 5,
-                  }}
+              <div>
+                <p style={{ margin: 0, color: "rgba(255,255,255,.64)", fontSize: 12, fontWeight: 800 }}>
+                  {done ? "Daily quest cleared. Keep the streak safe." : "Daily quest still open."}
+                </p>
+              </div>
+            </aside>
+
+            <AnimatePresence>
+              {showHeroStats && (
+                <motion.div
+                  className="hero-stats"
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -8, height: 0 }}
+                  transition={{ duration: 0.22 }}
+                  style={{ overflow: "hidden" }}
                 >
-                  <IcoCheck /> Done today
-                </span>
-              ) : (
-                <motion.div whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}>
-                  <Link
-                    href="/checkin"
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 800,
-                      color: "var(--mint2)",
-                    }}
-                  >
-                    More detail → full check-in
-                  </Link>
+                  <div className="hero-stat">
+                    <div className="hero-stat-icon"><IcoFire /></div>
+                    <span>Streak</span>
+                    <strong>{checkInStreak}d</strong>
+                    <small>Daily chain</small>
+                  </div>
+                  <div className="hero-stat">
+                    <div className="hero-stat-icon"><IcoStar /></div>
+                    <span>Level</span>
+                    <strong>{level}</strong>
+                    <small>{xpPct}% to next</small>
+                  </div>
+                  <div className="hero-stat">
+                    <div className="hero-stat-icon"><IcoAlert /></div>
+                    <span>Stress</span>
+                    <strong>{avgStress === null ? "-" : avgStress.toFixed(1)}</strong>
+                    <small>{avgStress === null ? "No week yet" : stressTone(avgStress).label}</small>
+                  </div>
+                  <div className="hero-stat">
+                    <div className="hero-stat-icon"><IcoZap /></div>
+                    <span>Urges</span>
+                    <strong>{urgesThisWeek}</strong>
+                    <small>This week</small>
+                  </div>
+                  <div className="hero-stat">
+                    <div className="hero-stat-icon"><IcoDollar /></div>
+                    <span>Saved</span>
+                    <strong>${moneySaved}</strong>
+                    <small>Estimated</small>
+                  </div>
                 </motion.div>
               )}
-            </div>
-            {done && !editing ? (
-              <div
-                style={{
-                  background: "var(--mint3)",
-                  border: "1.5px solid var(--mint2)",
-                  borderRadius: 14,
-                  padding: "14px 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                }}
-              >
-                <div style={{ color: "var(--mint2)" }}>
-                  <IcoCheck />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 800,
-                      color: "var(--text1)",
-                    }}
-                  >
-                    Checked in today
+            </AnimatePresence>
+          </motion.section>
+
+          <div className="dash-grid">
+            <div className="dash-stack">
+              <section className="dash-card dash-pad">
+                <div className="section-head">
+                  <div>
+                    <p className="dash-eyebrow">Daily quest</p>
+                    <h2>{done ? "Check-in complete" : "Quick check-in"}</h2>
                   </div>
-                  {todayEntry && (
-                    <div style={{ fontSize: 11, color: "var(--text2)" }}>
-                      Stress: {todayEntry.stressLevel}/10 · Mood:{" "}
-                      <span aria-hidden>{moodEmoji(todayEntry.mood)} </span>
-                      <span style={{ textTransform: "capitalize" }}>
-                        {todayEntry.mood}
-                      </span>
+                  <Link href="/checkin">{done ? "Edit" : "Full check-in"}</Link>
+                </div>
+
+                <div className="checkin-panel">
+                  <div className="stress-box">
+                    <div className="stress-read">
+                      <div>
+                        <strong style={{ color: stressLive.color }}>{stress}</strong>
+                        <span>/10 stress</span>
+                      </div>
+                      <span style={{ color: stressLive.color }}>{stressLive.label}</span>
                     </div>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEditing(true)}
-                  style={{
-                    background: "var(--bg2)",
-                    border: "1.5px solid var(--mint2)",
-                    borderRadius: 10,
-                    padding: "6px 12px",
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: "var(--mint2)",
-                    cursor: "pointer",
-                    boxShadow: "2px 2px 0 var(--shadow-mint)",
-                  }}
-                >
-                  Edit
-                </button>
-              </div>
-            ) : (
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 14 }}
-              >
-                {!editing && (
-                  <div className="qc-xp-pills" aria-hidden>
-                    <span className="qc-xp-pill">+20 XP on log</span>
-                    <span className="qc-xp-pill">
-                      🔥 Keeps streak & insights fresh
-                    </span>
-                  </div>
-                )}
-                {editing && (
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "var(--amber2)",
-                      background: "var(--amber3)",
-                      border: "1.5px solid var(--amber)",
-                      borderRadius: 10,
-                      padding: "7px 12px",
-                    }}
-                  >
-                    Updating today's check-in
-                  </div>
-                )}
-                <div className="qc-stress-box">
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 10,
-                      marginBottom: 8,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 900,
-                        letterSpacing: "0.08em",
-                        color: "var(--text3)",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Stress right now
-                    </span>
+                    <input
+                      className="slider"
+                      min={1}
+                      max={10}
+                      type="range"
+                      value={stress}
+                      onChange={(event) => setStress(Number(event.target.value))}
+                      aria-label="Stress level"
+                    />
+                    <div className="mood-grid">
+                      {MOODS.map((item) => (
+                        <motion.button
+                          key={item.v}
+                          className={`mood-card ${mood === item.v ? "active" : ""}`}
+                          style={{ ["--mood" as string]: item.c }}
+                          type="button"
+                          whileHover={{ y: -3 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => setMood(item.v)}
+                        >
+                          <span className="mood-top">
+                            <MoodFace
+                              mood={item.v}
+                              color={item.c}
+                              active={mood === item.v}
+                              size={56}
+                            />
+                            <span className="mood-signal" aria-hidden>
+                              {item.bars.map((on, index) => (
+                                <span
+                                  key={index}
+                                  className={on ? "on" : ""}
+                                  style={{ height: `${8 + index * 5}px` }}
+                                />
+                              ))}
+                            </span>
+                          </span>
+                          <strong>{item.l}</strong>
+                          <small>{item.sub}</small>
+                        </motion.button>
+                      ))}
+                    </div>
                     <AnimatePresence mode="wait">
-                      <motion.span
-                        key={`${stress}-${stressLive.emoji}`}
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.18 }}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 6,
-                          fontSize: 14,
-                          fontWeight: 800,
-                          color: stressLive.accent,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        <span aria-hidden>{stressLive.emoji}</span>
-                        <span>{stress}/10</span>
-                      </motion.span>
+                      {moodLive && (
+                        <motion.div
+                          key={moodLive.v}
+                          className="mood-feedback"
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                        >
+                          <MoodFace
+                            mood={moodLive.v}
+                            color={moodLive.c}
+                            active
+                            size={34}
+                          />
+                          <span>
+                            Mood locked: {moodLive.l}. Stress signal is {stressLive.label.toLowerCase()}.
+                          </span>
+                        </motion.div>
+                      )}
                     </AnimatePresence>
                   </div>
-                  <p
-                    style={{
-                      margin: "0 0 12px",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "var(--text2)",
-                      lineHeight: 1.35,
-                    }}
-                  >
-                    {stressLive.phrase} - tune the slider until it fits.
-                  </p>
-                  <input
-                    type="range"
-                    min={1}
-                    max={10}
-                    value={stress}
-                    onChange={(e) => setStress(+e.target.value)}
-                    className="slider"
-                    aria-valuetext={`${stress} out of 10`}
-                    style={{
-                      width: "100%",
-                      marginBottom: 0,
-                      background: `linear-gradient(to right,${stress <= 3
-                        ? "#5a8f6a"
-                        : stress <= 6
-                          ? "#c9982a"
-                          : "#e07b5a"
-                        } ${((stress - 1) / 9) * 100}%,#fde8c8 0%)`,
-                    }}
-                  />
-                </div>
 
-                <div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 900,
-                      letterSpacing: "0.07em",
-                      color: "var(--text3)",
-                      textTransform: "uppercase",
-                      marginBottom: 10,
-                    }}
-                  >
-                    How&apos;s your mood?
-                  </div>
-                  <div className="qc-mood-grid" role="group" aria-label="Mood">
-                    {moods.map((m, idx) => {
-                      const sel = mood === m.v;
-                      return (
-                        <motion.button
-                          type="button"
-                          key={m.v}
-                          className={`qc-mood-chip${sel ? " sel" : ""}`}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.06 * idx }}
-                          whileHover={{ y: -3 }}
-                          whileTap={{ scale: 0.94 }}
-                          style={{
-                            borderColor: sel ? m.c : "var(--border2)",
-                            background: sel ? m.c + "22" : "var(--bg2)",
-                            boxShadow: sel
-                              ? `4px 4px 0 ${m.c}55`
-                              : "2px 2px 0 rgba(26,18,8,.06)",
-                          }}
-                          aria-pressed={sel}
-                          onClick={() => setMood(sel ? "" : m.v)}
-                        >
-                          <span className="qc-ec" aria-hidden>
-                            {m.emoji}
-                          </span>
-                          <span className="qc-tx">{m.l}</span>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <AnimatePresence>
-                  {!mood && (
-                    <motion.div
-                      className="qc-nudge"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
+                  <div className="today-state">
+                    <div
+                      className="mood-reactor"
+                      style={{ ["--reactor" as string]: moodLive?.c ?? stressLive.color }}
                     >
-                      <span aria-hidden>👆</span> Pick how you feel - unlocks{" "}
-                      <strong style={{ color: "var(--text1)" }}>
-                        Log check-in
-                      </strong>
-                      .
+                      <MoodFace
+                        mood={moodLive?.v ?? "meh"}
+                        color={moodLive?.c ?? stressLive.color}
+                        active={Boolean(moodLive)}
+                        size={92}
+                      />
+                    </div>
+                    <strong>{done ? "Check-in saved" : "+20 XP ready"}</strong>
+                    <p style={{ margin: 0, color: "var(--text2)", fontSize: 13, lineHeight: 1.5 }}>
+                      {done
+                        ? "You can still adjust mood or stress here. Saving again updates today's check-in."
+                        : "Pick a mood signal and stress level, then save without leaving the dashboard."}
+                    </p>
+                    <div className="checkin-mini-row">
+                      <div className="checkin-mini">
+                        <span>Stress</span>
+                        <strong>{stress}/10</strong>
+                      </div>
+                      <div className="checkin-mini">
+                        <span>Mood</span>
+                        <strong>{moodLive?.l ?? "Pick"}</strong>
+                      </div>
+                    </div>
+                    <button
+                      className="dash-btn"
+                      disabled={!mood || submitting}
+                      type="button"
+                      onClick={submit}
+                    >
+                      {submitting
+                        ? "Saving..."
+                        : done
+                          ? "Update check-in"
+                          : "Save check-in"}{" "}
+                      <IcoCheck />
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              {criticalInsight && (
+                <section
+                  className={`insight-card ${criticalInsight.variant === "risk" ? "risk" : ""}`}
+                >
+                  <div className="dash-quest-icon">
+                    {criticalInsight.variant === "risk" ? <IcoAlert /> : <IcoStar />}
+                  </div>
+                  <div>
+                    <p className="dash-eyebrow">Signal detected</p>
+                    <h2 style={{ margin: 0, fontSize: 20 }}>{criticalInsight.title}</h2>
+                    <p>{criticalInsight.detail}</p>
+                    <Link style={{ color: "var(--mint2)", fontWeight: 900, fontSize: 13 }} href="/insights">
+                      Open Insights
+                    </Link>
+                  </div>
+                </section>
+              )}
+
+              <section className="dash-card dash-pad">
+                <div className="section-head">
+                  <div>
+                    <p className="dash-eyebrow">Week map</p>
+                    <h2>Stress rhythm</h2>
+                  </div>
+                  <Link href="/checkin">History</Link>
+                </div>
+                <WeekChart checkins={recentCheckins} />
+              </section>
+
+              <section className="dash-card dash-pad">
+                <div className="section-head">
+                  <div>
+                    <p className="dash-eyebrow">Recovery game</p>
+                    <h2>Lung recovery</h2>
+                  </div>
+                  <button type="button" onClick={() => setShowMilestones((v) => !v)}>
+                    {showMilestones ? "Hide" : "Milestones"}
+                  </button>
+                </div>
+                <div className="recovery-card">
+                  <div>
+                    <div className="recovery-score">{recoveryPct}%</div>
+                    <p style={{ margin: "6px 0 0", color: "var(--text2)", fontSize: 13 }}>
+                      after {checkInStreak} clean day{checkInStreak === 1 ? "" : "s"}
+                    </p>
+                    {nextMilestone && (
+                      <p style={{ margin: "12px 0 0", color: "var(--text3)", fontSize: 12, lineHeight: 1.5 }}>
+                        Next checkpoint: <strong>{nextMilestone.label}</strong> in{" "}
+                        {nextMilestone.days - checkInStreak} day
+                        {nextMilestone.days - checkInStreak === 1 ? "" : "s"}.
+                      </p>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <LungSvg pct={recoveryPct} />
+                  </div>
+                </div>
+                <AnimatePresence>
+                  {showMilestones && (
+                    <motion.div
+                      className="milestone-grid"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      {MILESTONES.map((m) => {
+                        const complete = checkInStreak >= m.days;
+                        return (
+                          <div className={`milestone ${complete ? "done" : ""}`} key={m.days}>
+                            <strong>{m.label}</strong>
+                            <span>{complete ? "Reached" : `${m.days - checkInStreak}d away`}</span>
+                          </div>
+                        );
+                      })}
                     </motion.div>
                   )}
                 </AnimatePresence>
+              </section>
+            </div>
 
-                <div className="qc-footer">
-                  <div style={{ display: "flex", gap: 8 }}>
-                    {editing && (
-                      <button
-                        type="button"
-                        onClick={() => setEditing(false)}
-                        style={{
-                          flex: "0 0 auto",
-                          background: "var(--bg2)",
-                          border: "2px solid var(--border2)",
-                          borderRadius: 12,
-                          padding: "12px 16px",
-                          fontSize: 13,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          color: "var(--text2)",
-                        }}
-                      >
-                        Cancel
-                      </button>
-                    )}
-                    <motion.button
-                      type="button"
-                      className={`qc-log-btn${mood && !submitting ? " qc-log-btn-ready" : ""}`}
-                      onClick={() => submit()}
-                      disabled={!mood || submitting}
-                      whileHover={mood && !submitting ? { scale: 1.02 } : {}}
-                      whileTap={mood && !submitting ? { scale: 0.97 } : {}}
-                      style={{
-                        flex: 1,
-                        background: mood ? "var(--mint)" : "var(--bg4)",
-                        color: mood ? "var(--bg0)" : "var(--text3)",
-                        border: "3px solid var(--stroke)",
-                        borderRadius: 16,
-                        padding: "15px 16px",
-                        fontSize: 15,
-                        fontWeight: 800,
-                        cursor: mood && !submitting ? "pointer" : "not-allowed",
-                        boxShadow:
-                          mood && !submitting
-                            ? "5px 5px 0 var(--shadow-mint)"
-                            : "none",
-                        transition:
-                          "background .18s,color .18s,border-color .18s",
-                      }}
-                    >
-                      {submitting
-                        ? "Saving…"
-                        : editing
-                          ? "Update · +XP"
-                          : mood
-                            ? "Log today · bank +20 XP ✨"
-                            : "Tap a mood to log"}
-                    </motion.button>
+            <aside className="dash-stack">
+              <section className="dash-card dash-pad">
+                <div className="section-head">
+                  <div>
+                    <p className="dash-eyebrow">Today's quests</p>
+                    <h2>{completedQuests}/3 cleared</h2>
                   </div>
                 </div>
-              </div>
-            )}
-          </motion.div>
-
-          {/* TODAY'S QUESTS */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="card"
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 12,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Fredoka',sans-serif",
-                  fontSize: 19,
-                  fontWeight: 600,
-                  color: "var(--text1)",
-                }}
-              >
-                Today's Quests
-              </div>
-              <span
-                style={{ fontSize: 11, fontWeight: 700, color: "var(--text3)" }}
-              >
-                {quests.filter((q) => q.done).length}/{quests.length} done
-              </span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {quests.filter(q => q.implemented).map(
-                (
-                  {
-                    Icon,
-                    title,
-                    desc,
-                    reward,
-                    done: qd,
-                    href,
-                    accent,
-                    bg,
-                  },
-                  i,
-                ) => {
-                  return (
-                    <motion.div
-                      key={title}
-                      initial={{ opacity: 0, x: -14 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.32 + i * 0.07 }}
-                      whileHover={!qd ? { x: 3 } : {}}
-                    >
-                      <Link
-                        href={qd ? "#" : href}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                            background: qd ? "var(--mint3)" : "var(--bg2)",
-                            border: `2px solid ${qd ? "var(--mint-glow)" : "var(--border2)"}`,
-                            borderRadius: 16,
-                            padding: "11px 13px",
-                            boxShadow: qd
-                              ? "2px 2px 0 rgba(61,107,79,.15)"
-                              : "var(--shadow-card)",
-                            opacity: qd ? 0.8 : 1,
-                            transition: "all 0.2s",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: 12,
-                              flexShrink: 0,
-                              background: bg,
-                              border: `2px solid ${accent}44`,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: qd ? "var(--mint)" : accent,
-                              boxShadow: `2px 2px 0 ${accent}22`,
-                            }}
-                          >
-                            {qd ? <IcoCheck /> : <Icon />}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div
-                              style={{
-                                fontSize: 13,
-                                fontWeight: 800,
-                                color: "var(--text1)",
-                                textDecoration: qd ? "line-through" : "none",
-                              }}
-                            >
-                              {title}
-                            </div>
-                            <div
-                              style={{ fontSize: 11, color: "var(--text2)" }}
-                            >
-                              {desc}
-                            </div>
-                          </div>
-                          <span
-                            style={{
-                              background: qd ? "var(--mint3)" : "var(--amber3)",
-                              border: `1.5px solid ${qd ? "var(--mint)" : "var(--amber)"}`,
-                              borderRadius: 50,
-                              padding: "3px 10px",
-                              fontSize: 10,
-                              fontWeight: 800,
-                              color: qd ? "var(--mint)" : "var(--amber2)",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {reward}
-                          </span>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  );
-                },
-              )}
-            </div>
-          </motion.div>
-
-          {/* LUNG RECOVERY */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-          >
-            {/* section label */}
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "var(--text3)",
-                textTransform: "uppercase",
-                letterSpacing: ".07em",
-                marginBottom: 10,
-              }}
-            >
-              Lung recovery
-            </div>
-
-            {/* main grid: big lung card + 2 side badges */}
-            {(() => {
-              const BADGE_EMOJIS: Record<number, string> = {
-                1: "❤️", 3: "🔬", 7: "🌬️", 14: "🩸", 30: "💪", 90: "🌿", 365: "⭐",
-              };
-              const BADGE_LOTTIE: Record<number, string> = {
-                1: "/lottie/Growing Plant.lottie",
-                3: "/lottie/Tree Lottie animation.lottie",
-                7: "/lottie/Tree Lottie animation.lottie",
-              };
-              const reachedList = MILESTONES.filter((m) => streak >= m.days);
-              const upcomingList = MILESTONES.filter((m) => streak < m.days);
-              const sidePicks =
-                reachedList.length > 0
-                  ? [reachedList[reachedList.length - 1], upcomingList[0]].filter(Boolean)
-                  : upcomingList.slice(0, 2);
-              const pct = lungPct(streak);
-              const nextM = upcomingList[0];
-              const nextPct = nextM ? Math.round((streak / nextM.days) * 100) : 100;
-
-              return (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", gap: 10 }}>
-                  {/* big lung card — horizontal layout */}
-                  <div
-                    style={{
-                      background: "linear-gradient(135deg,var(--bg2) 0%,rgba(59,201,142,0.06) 100%)",
-                      border: "2px solid var(--border)",
-                      borderRadius: 20,
-                      padding: "16px 20px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 16,
-                      overflow: "hidden",
-                      position: "relative",
-                    }}
-                  >
-                    {/* left: stats */}
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-                      <div>
-                        <div style={{ fontSize: 11, fontWeight: 800, color: "var(--text3)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>
-                          Recovery
-                        </div>
-                        <div style={{ fontSize: 38, fontWeight: 900, color: "var(--mint)", lineHeight: 1 }}>
-                          {Math.round(pct)}%
-                        </div>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text2)", marginTop: 2 }}>
-                          after {streak} day{streak !== 1 ? "s" : ""} clean
-                        </div>
-                      </div>
-
-                      {/* next milestone progress */}
-                      {nextM && (
-                        <div>
-                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)" }}>
-                              Next: {nextM.label}
-                            </span>
-                            <span style={{ fontSize: 10, fontWeight: 800, color: nextM.accent }}>
-                              {nextM.days - streak}d away
-                            </span>
-                          </div>
-                          <div style={{ height: 6, background: "var(--bg3)", borderRadius: 4, overflow: "hidden" }}>
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${Math.min(nextPct, 100)}%` }}
-                              transition={{ duration: 1.2, ease: [0.34,1.56,0.64,1], delay: 0.5 }}
-                              style={{ height: "100%", background: nextM.accent, borderRadius: 4 }}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* current milestone desc */}
-                      {reachedList.length > 0 && (
-                        <div style={{
-                          fontSize: 10, fontWeight: 600, color: "var(--text3)",
-                          background: `${reachedList[reachedList.length-1].accent}14`,
-                          border: `1px solid ${reachedList[reachedList.length-1].accent}44`,
-                          borderRadius: 10, padding: "6px 10px", lineHeight: 1.4,
-                        }}>
-                          {BADGE_EMOJIS[reachedList[reachedList.length-1].days]} {reachedList[reachedList.length-1].desc}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* right: lung SVG */}
-                    <div style={{ flexShrink: 0 }}>
-                      <LungSvg pct={pct} />
-                    </div>
-                  </div>
-
-                  {/* 2 side milestone badges */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {sidePicks.map((m) => {
-                      const done = streak >= m.days;
-                      const daysAway = m.days - streak;
-                      const lottieFile = BADGE_LOTTIE[m.days];
-                      return (
-                        <div
-                          key={m.days}
-                          style={{
-                            flex: 1,
-                            background: done ? `${m.accent}14` : "var(--bg2)",
-                            border: `2px solid ${done ? m.accent : "var(--border)"}`,
-                            borderRadius: 16,
-                            padding: "10px 8px",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            gap: 4,
-                            position: "relative",
-                            overflow: "hidden",
-                          }}
-                        >
-                          {/* lottie background on reached cards */}
-                          {done && lottieFile && (
-                            <div style={{ position: "absolute", inset: 0, opacity: 0.35, pointerEvents: "none" }}>
-                              <LottiePlayer src={lottieFile} />
-                            </div>
-                          )}
-                          <span style={{ fontSize: 24, lineHeight: 1, position: "relative", zIndex: 1 }}>
-                            {BADGE_EMOJIS[m.days] ?? "🏅"}
-                          </span>
-                          <div style={{ fontSize: 10, fontWeight: 800, color: done ? m.accent : "var(--text1)", textAlign: "center", lineHeight: 1.2, position: "relative", zIndex: 1 }}>
-                            {m.label}
-                          </div>
-                          <div style={{ fontSize: 9, fontWeight: 600, color: done ? m.accent : "var(--text3)", textAlign: "center", position: "relative", zIndex: 1 }}>
-                            {done ? "✓ reached" : `${daysAway}d away`}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div className="quest-stack">
+                  <QuestCard
+                    icon={<IcoClipboard />}
+                    title="Daily check-in"
+                    desc="Log stress and mood"
+                    reward="+20 XP"
+                    done={done}
+                    href="/checkin"
+                    accent="#5a8f6a"
+                  />
+                  <QuestCard
+                    icon={<IcoWind2 />}
+                    title="Calm tool"
+                    desc="Use a coping session"
+                    reward="+15 XP"
+                    done={copingSessionsThisWeek > 0}
+                    href="/coping"
+                    accent="#5bb8f5"
+                  />
+                  <QuestCard
+                    icon={<IcoMessage />}
+                    title="Log an urge"
+                    desc="Track a craving before it loops"
+                    reward="+25 XP"
+                    done={urgesThisWeek > 0}
+                    href="/urge"
+                    accent="#e07b5a"
+                  />
                 </div>
-              );
-            })()}
+              </section>
 
-            {/* milestones card — toggle + grid inside bordered card */}
-            <div
-              style={{
-                marginTop: 10,
-                background: "var(--bg2)",
-                border: "2px solid var(--border)",
-                borderRadius: 20,
-                overflow: "hidden",
-              }}
-            >
-              {/* toggle header */}
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setLungShowAll((v) => !v)}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "12px 16px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontFamily: "'Nunito',sans-serif",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 14 }}>🏅</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text1)" }}>
-                    All Milestones
-                  </span>
-                  <span style={{
-                    fontSize: 10, fontWeight: 700,
-                    background: "var(--mint3)", color: "var(--mint)",
-                    border: "1.5px solid var(--mint2)",
-                    borderRadius: 50, padding: "1px 7px",
-                  }}>
-                    {MILESTONES.filter(m => streak >= m.days).length}/{MILESTONES.length}
-                  </span>
-                </div>
-                <motion.span
-                  animate={{ rotate: lungShowAll ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                  style={{ fontSize: 12, color: "var(--text3)", display: "inline-block" }}
-                >
-                  ▼
-                </motion.span>
-              </motion.button>
-
-              {/* expanded grid */}
-              <AnimatePresence>
-                {lungShowAll && (
-                  <motion.div
-                    key="lung-all"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.22 }}
-                    style={{ overflow: "hidden" }}
-                  >
-                    <div style={{ borderTop: "2px solid var(--border)", padding: "12px 16px" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
-                        {MILESTONES.map((m) => {
-                          const BADGE_EMOJIS: Record<number, string> = {
-                            1: "❤️", 3: "🔬", 7: "🌬️", 14: "🩸", 30: "💪", 90: "🌿", 365: "⭐",
-                          };
-                          const done = streak >= m.days;
-                          const daysAway = m.days - streak;
-                          return (
-                            <div
-                              key={m.days}
-                              style={{
-                                background: done ? `${m.accent}18` : "var(--bg3)",
-                                border: `2px solid ${done ? m.accent : "var(--border)"}`,
-                                borderRadius: 14,
-                                padding: "10px 6px",
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                gap: 4,
-                                opacity: done ? 1 : 0.6,
-                              }}
-                            >
-                              <span style={{ fontSize: 20, lineHeight: 1, filter: done ? "none" : "grayscale(1)" }}>
-                                {BADGE_EMOJIS[m.days] ?? "🏅"}
-                              </span>
-                              <div style={{ fontSize: 9, fontWeight: 800, color: done ? m.accent : "var(--text2)", textAlign: "center", lineHeight: 1.2 }}>
-                                {m.label}
-                              </div>
-                              <div style={{ fontSize: 8, fontWeight: 700, color: done ? m.accent : "var(--text3)", textAlign: "center" }}>
-                                {done ? "✓" : `${daysAway}d`}
-                              </div>
-                              <div style={{ fontSize: 8, color: "var(--text3)", textAlign: "center", lineHeight: 1.3 }}>
-                                {m.desc}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-
-          {/* BADGES CAROUSEL */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-            className="card"
-          >
-            <BadgesSection earnedBadges={earnedBadges as any[]} />
-          </motion.div>
-
+              <section className="dash-card dash-pad">
+                <BadgesSection earnedBadges={earnedBadges as any[]} />
+              </section>
+            </aside>
+          </div>
         </div>
-      </div>
-
-      {/* MOBILE FAB ROW — support + urge side by side */}
-      <motion.div
-        className="fab-row"
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.8, type: "spring", bounce: 0.4 }}
-      >
-        <Link href="/support" style={{ flex: 1, textDecoration: "none" }}>
-          <motion.button
-            className="fab-btn"
-            whileTap={{ scale: 0.93 }}
-            style={{ background: "#3b7dd8", color: "white" }}
-          >
-            💙 Support
-          </motion.button>
-        </Link>
-        <Link href="/urge" style={{ flex: 1, textDecoration: "none" }}>
-          <motion.button
-            className="fab-btn"
-            whileTap={{ scale: 0.93 }}
-            style={{
-              background: "#e07b5a",
-              color: "white",
-              animation: "urgePulse 2.5s ease-out 2s 3",
-            }}
-          >
-            <IcoZap /> Log Urge
-          </motion.button>
-        </Link>
-      </motion.div>
-
-      {/* DESKTOP URGE FAB only */}
-      <motion.div
-        className="urge-fab"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.8, type: "spring", bounce: 0.5 }}
-      >
-        <Link href="/urge">
-          <motion.button
-            whileHover={{ scale: 1.08, y: -3 }}
-            whileTap={{ scale: 0.93 }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              background: "#e07b5a",
-              color: "white",
-              border: "2.5px solid #1a1208",
-              borderRadius: 50,
-              padding: "13px 20px",
-              fontSize: 14,
-              fontWeight: 800,
-              fontFamily: "'Nunito',sans-serif",
-              cursor: "pointer",
-              animation: "urgePulse 2.5s ease-out 2s 3",
-              boxShadow: "4px 4px 0 rgba(26,18,8,.25)",
-            }}
-          >
-            <IcoZap />
-            Log Urge
-          </motion.button>
-        </Link>
-      </motion.div>
+      </main>
     </>
   );
 }

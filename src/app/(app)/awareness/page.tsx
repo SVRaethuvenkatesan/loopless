@@ -1,492 +1,832 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import type { CSSProperties } from "react";
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Activity,
+  BarChart3,
   Brain,
-  Globe,
-  HeartPulse,
+  ChevronRight,
+  Database,
+  FileText,
   FlaskConical,
-  Users,
+  Globe2,
+  HeartPulse,
   Info,
-  Sparkles,
+  type LucideIcon,
+  ShieldCheck,
+  Users,
 } from "lucide-react";
 
-import awarenessData from "@/data/awareness-stats.json";
-import DataWheel from "@/components/awareness/DataWheel";
 import ChartRenderer from "@/components/awareness/ChartRenderer";
+import DataWheel from "@/components/awareness/DataWheel";
 import TypewriterText from "@/components/awareness/TypewriterText";
+import awarenessData from "@/data/awareness-stats.json";
 
-const WHEEL_ITEMS = [
-  { id: "aihw-youth",  title: "Youth Usage Trends",     color: "#ff6b5b", icon: <Activity size={22} />   },
-  { id: "abs-mental",  title: "Mental Health Metrics",   color: "#5ddba8", icon: <Brain size={22} />      },
-  { id: "who-global",  title: "Global Tobacco Control",  color: "#f5a623", icon: <Globe size={22} />      },
-  { id: "abs-physical",title: "Physical Health Risks",   color: "#5bb8f5", icon: <HeartPulse size={22} /> },
-  { id: "gen-vape",    title: "Generation Vape Tracker", color: "#a78bfa", icon: <FlaskConical size={22} />},
-  { id: "mission-au",  title: "Youth Wellbeing Pulse",   color: "#f5a623", icon: <Users size={22} />      },
-];
+type Source = (typeof awarenessData.sources)[number];
+type Story = Source["storyA"];
+type StoryTab = "A" | "B";
 
-const SOURCE_NOTES: Record<string, string> = {
-  "gen-vape": "Each \"Wave\" is a survey round conducted every 6 months by Cancer Council NSW, tracking ~3,000 Australians aged 14–17 from 2022 to 2025.",
+const SOURCE_META: Record<string, { icon: LucideIcon; label: string }> = {
+  "aihw-youth": { icon: Activity, label: "Youth trends" },
+  "abs-mental": { icon: Brain, label: "Mental health" },
+  "who-global": { icon: Globe2, label: "Policy context" },
+  "abs-physical": { icon: HeartPulse, label: "Body impact" },
+  "gen-vape": { icon: FlaskConical, label: "Survey waves" },
+  "mission-au": { icon: Users, label: "Youth wellbeing" },
 };
 
-export default function AwarenessPage() {
-  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"A" | "B">("A");
+const SOURCE_NOTES: Record<string, string> = {
+  "gen-vape":
+    "Each wave is a survey round conducted every 6 months by Cancer Council NSW, tracking about 3,000 Australians aged 14-17 from 2022 to 2025.",
+};
 
-  function selectSource(id: string) {
-    setSelectedSourceId(id);
+function AwarenessStyles() {
+  return (
+    <style>{`
+      .awareness-page {
+        width: min(1160px, calc(100vw - 48px));
+        margin: 0 auto;
+        padding: 28px 0 120px;
+      }
+
+      .awareness-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        gap: 18px;
+        align-items: stretch;
+        margin-bottom: 18px;
+      }
+
+      .awareness-hero-main,
+      .awareness-hero-side,
+      .awareness-source-panel,
+      .awareness-story-panel,
+      .awareness-analysis,
+      .awareness-source-note {
+        background: var(--bg2);
+        border: 1px solid var(--border2);
+        border-radius: 18px;
+        box-shadow: 0 16px 44px rgba(21, 31, 26, 0.07);
+      }
+
+      .dark .awareness-hero-main,
+      .dark .awareness-hero-side,
+      .dark .awareness-source-panel,
+      .dark .awareness-story-panel,
+      .dark .awareness-analysis,
+      .dark .awareness-source-note {
+        box-shadow: none;
+      }
+
+      .awareness-hero-main {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 176px;
+        background:
+          radial-gradient(circle at top right, color-mix(in srgb, var(--mint) 16%, transparent), transparent 32%),
+          var(--bg2);
+      }
+
+      .awareness-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        min-height: 30px;
+        padding: 0 11px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--mint) 14%, transparent);
+        color: var(--mint2);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .awareness-hero h1 {
+        margin: 14px 0 8px;
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: clamp(30px, 4vw, 48px);
+        line-height: 1;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+
+      .awareness-hero p {
+        max-width: 720px;
+        color: var(--text2);
+        font-size: 15px;
+        line-height: 1.65;
+        font-weight: 700;
+      }
+
+      .awareness-hero-side {
+        padding: 18px;
+        display: grid;
+        gap: 12px;
+        align-content: center;
+      }
+
+      .awareness-hero-stat {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .awareness-icon-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        background: var(--bg0);
+        border: 1px solid var(--border2);
+        color: var(--mint2);
+      }
+
+      .awareness-hero-stat strong {
+        display: block;
+        color: var(--text1);
+        font-size: 21px;
+        line-height: 1;
+        font-weight: 950;
+      }
+
+      .awareness-hero-stat span {
+        display: block;
+        margin-top: 4px;
+        color: var(--text3);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .awareness-layout {
+        display: grid;
+        grid-template-columns: 324px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .awareness-source-panel {
+        position: sticky;
+        top: 88px;
+        padding: 16px;
+      }
+
+      .awareness-section-label {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 950;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      .awareness-panel-title {
+        margin-top: 4px;
+        color: var(--text1);
+        font-size: 18px;
+        font-weight: 950;
+      }
+
+      .awareness-wheel-card {
+        margin-top: 14px;
+        padding: 14px 12px 12px;
+        border: 1px solid var(--border2);
+        border-radius: 16px;
+        background:
+          radial-gradient(circle at top, color-mix(in srgb, var(--mint) 10%, transparent), transparent 55%),
+          var(--bg0);
+      }
+
+      .awareness-wheel-card p {
+        margin: 10px auto 0;
+        max-width: 230px;
+        color: var(--text3);
+        font-size: 11px;
+        line-height: 1.45;
+        font-weight: 850;
+        text-align: center;
+      }
+
+      .awareness-source-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .awareness-source-button {
+        width: 100%;
+        min-height: 78px;
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr) 22px;
+        gap: 12px;
+        align-items: center;
+        padding: 12px;
+        border: 1px solid var(--border2);
+        border-radius: 14px;
+        background: var(--bg0);
+        color: var(--text1);
+        cursor: pointer;
+        text-align: left;
+        font-family: var(--font-sans);
+        transition: transform .16s ease, border-color .16s ease, background .16s ease;
+      }
+
+      .awareness-source-button:hover {
+        transform: translateY(-1px);
+        border-color: var(--border3);
+      }
+
+      .awareness-source-button.is-active {
+        background:
+          linear-gradient(135deg, color-mix(in srgb, var(--source-accent) 13%, transparent), var(--bg0));
+        border-color: color-mix(in srgb, var(--source-accent) 52%, var(--border2));
+      }
+
+      .awareness-source-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--source-accent);
+        background: color-mix(in srgb, var(--source-accent) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--source-accent) 26%, var(--border2));
+      }
+
+      .awareness-source-button strong {
+        display: block;
+        color: var(--text1);
+        font-size: 13px;
+        font-weight: 950;
+        line-height: 1.25;
+      }
+
+      .awareness-source-button span {
+        display: block;
+        margin-top: 4px;
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 850;
+      }
+
+      .awareness-source-chevron {
+        color: var(--text3);
+        transition: transform .16s ease, color .16s ease;
+      }
+
+      .awareness-source-button.is-active .awareness-source-chevron {
+        color: var(--source-accent);
+        transform: translateX(2px);
+      }
+
+      .awareness-story-panel {
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .awareness-story-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+        padding: 20px;
+        border-bottom: 1px solid var(--border2);
+        background:
+          linear-gradient(135deg, color-mix(in srgb, var(--source-accent) 10%, transparent), transparent 52%),
+          var(--bg2);
+      }
+
+      .awareness-source-title {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .awareness-source-title h2 {
+        color: var(--text1);
+        font-size: 24px;
+        line-height: 1.15;
+        font-weight: 950;
+        letter-spacing: 0;
+      }
+
+      .awareness-source-title p {
+        margin-top: 6px;
+        color: var(--text3);
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .awareness-story-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+        gap: 8px;
+        width: min(420px, 100%);
+      }
+
+      .awareness-story-tab {
+        min-height: 50px;
+        padding: 9px 12px;
+        border: 1px solid var(--border2);
+        border-radius: 13px;
+        background: var(--bg0);
+        color: var(--text2);
+        cursor: pointer;
+        text-align: left;
+        font-family: var(--font-sans);
+        transition: background .16s ease, border-color .16s ease, color .16s ease;
+      }
+
+      .awareness-story-tab.is-active {
+        background: var(--text1);
+        color: var(--bg0);
+        border-color: var(--text1);
+      }
+
+      .awareness-story-tab span {
+        display: block;
+        color: inherit;
+        font-size: 10px;
+        font-weight: 950;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        opacity: .68;
+      }
+
+      .awareness-story-tab strong {
+        display: block;
+        margin-top: 3px;
+        font-size: 12px;
+        line-height: 1.25;
+        font-weight: 950;
+      }
+
+      .awareness-story-body {
+        padding: 20px;
+        background: var(--bg0);
+      }
+
+      .awareness-story-intro {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+        gap: 16px;
+        align-items: start;
+        margin-bottom: 18px;
+      }
+
+      .awareness-story-copy {
+        min-width: 0;
+      }
+
+      .awareness-story-copy h3 {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: clamp(24px, 3vw, 34px);
+        line-height: 1.05;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+
+      .awareness-story-copy p {
+        margin-top: 9px;
+        max-width: 680px;
+        color: var(--text2);
+        font-size: 15px;
+        line-height: 1.6;
+        font-weight: 750;
+      }
+
+      .awareness-stat-grid {
+        display: grid;
+        gap: 8px;
+      }
+
+      .awareness-stat {
+        display: grid;
+        gap: 3px;
+        min-height: 70px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid color-mix(in srgb, var(--source-accent) 26%, var(--border2));
+        background: color-mix(in srgb, var(--source-accent) 10%, var(--bg2));
+      }
+
+      .awareness-stat span {
+        color: var(--text3);
+        font-size: 10px;
+        font-weight: 950;
+        letter-spacing: .07em;
+        line-height: 1.25;
+        text-transform: uppercase;
+      }
+
+      .awareness-stat strong {
+        color: var(--text1);
+        font-size: 22px;
+        font-weight: 950;
+        line-height: 1;
+      }
+
+      .awareness-chart-wrap {
+        min-width: 0;
+      }
+
+      .awareness-chart-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .awareness-chart-heading h4 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text1);
+        font-size: 14px;
+        font-weight: 950;
+      }
+
+      .awareness-chart-heading span {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .awareness-chart-wrap .card {
+        box-shadow: none;
+        border: 1px solid var(--border2);
+        border-radius: 16px;
+        background: var(--bg2);
+      }
+
+      .awareness-analysis {
+        margin-top: 16px;
+        padding: 18px;
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 12px;
+        box-shadow: none;
+        background: var(--bg2);
+      }
+
+      .awareness-analysis h4 {
+        color: var(--text1);
+        font-size: 14px;
+        font-weight: 950;
+        margin-bottom: 6px;
+      }
+
+      .awareness-analysis p {
+        color: var(--text2);
+        font-size: 14px;
+        line-height: 1.65;
+        font-weight: 700;
+      }
+
+      .awareness-source-note p {
+        color: var(--text2);
+        font-size: 14px;
+        line-height: 1.65;
+        font-weight: 700;
+      }
+
+      .awareness-source-note {
+        margin-top: 16px;
+        padding: 14px 16px;
+        display: flex;
+        gap: 10px;
+        box-shadow: none;
+        border-style: dashed;
+      }
+
+      .awareness-footer-source {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 20px;
+        border-top: 1px solid var(--border2);
+        background: var(--bg2);
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 950;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+      }
+
+      @media (max-width: 1040px) {
+        .awareness-page {
+          width: min(100% - 32px, 960px);
+        }
+
+        .awareness-hero,
+        .awareness-layout,
+        .awareness-story-intro {
+          grid-template-columns: 1fr;
+        }
+
+        .awareness-source-panel {
+          position: static;
+        }
+
+        .awareness-source-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .awareness-story-header {
+          grid-template-columns: 1fr;
+        }
+
+        .awareness-story-tabs {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .awareness-page {
+          width: calc(100% - 24px);
+          padding-top: 18px;
+          padding-bottom: 96px;
+        }
+
+        .awareness-hero-main,
+        .awareness-hero-side,
+        .awareness-story-header,
+        .awareness-story-body {
+          padding: 16px;
+        }
+
+        .awareness-source-panel {
+          padding: 12px;
+        }
+
+        .awareness-source-list,
+        .awareness-story-tabs {
+          grid-template-columns: 1fr;
+        }
+
+        .awareness-source-button {
+          min-height: 68px;
+        }
+
+        .awareness-chart-heading {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .awareness-analysis {
+          grid-template-columns: 1fr;
+        }
+      }
+    `}</style>
+  );
+}
+
+function getSourceStyle(source: Source): CSSProperties {
+  return { "--source-accent": source.color } as CSSProperties;
+}
+
+function SourceIcon({ source, size = 20 }: { source: Source; size?: number }) {
+  const Icon = SOURCE_META[source.id]?.icon ?? Database;
+
+  return (
+    <div className="awareness-source-icon" style={getSourceStyle(source)}>
+      <Icon size={size} strokeWidth={2.25} />
+    </div>
+  );
+}
+
+export default function AwarenessPage() {
+  const sources = awarenessData.sources;
+  const [selectedSourceId, setSelectedSourceId] = useState(sources[0]?.id ?? "");
+  const [activeTab, setActiveTab] = useState<StoryTab>("A");
+
+  const wheelItems = useMemo(
+    () =>
+      sources.map((source) => {
+        const Icon = SOURCE_META[source.id]?.icon ?? Database;
+
+        return {
+          id: source.id,
+          title: source.title,
+          color: source.color,
+          icon: <Icon size={18} strokeWidth={2.35} />,
+        };
+      }),
+    [sources],
+  );
+
+  const selectedSource = useMemo(
+    () => sources.find((source) => source.id === selectedSourceId) ?? sources[0],
+    [selectedSourceId, sources],
+  );
+
+  if (!selectedSource) {
+    return null;
+  }
+
+  const currentStory: Story = activeTab === "A" ? selectedSource.storyA : selectedSource.storyB;
+  const selectedStyle = getSourceStyle(selectedSource);
+  const sourceNote = SOURCE_NOTES[selectedSource.id];
+
+  function selectSource(sourceId: string) {
+    setSelectedSourceId(sourceId);
     setActiveTab("A");
   }
 
-  const sourceInfo = selectedSourceId
-    ? awarenessData.sources.find((s) => s.id === selectedSourceId)
-    : null;
-
-  const currentStory = sourceInfo
-    ? activeTab === "A" ? sourceInfo.storyA : sourceInfo.storyB
-    : null;
-
-  const sourceNote = selectedSourceId ? SOURCE_NOTES[selectedSourceId] : null;
-  const wheelItem = selectedSourceId ? WHEEL_ITEMS.find((w) => w.id === selectedSourceId) : null;
-
   return (
     <>
-      <style>{`
-        @media (max-width: 900px) {
-          .awareness-grid { grid-template-columns: 1fr !important; }
-          .wheel-sticky { position: static !important; }
-        }
-        @media (max-width: 640px) {
-          .awareness-wrap { padding: 14px 14px 90px !important; }
-        }
-      `}</style>
-
-      <div
-        className="awareness-wrap"
-        style={{ padding: "24px 28px 80px", maxWidth: 1200, margin: "0 auto" }}
-      >
-        {/* ── Hero ── */}
-        <motion.div
-          initial={{ opacity: 0, y: -16 }}
+      <AwarenessStyles />
+      <main className="awareness-page">
+        <motion.header
+          className="awareness-hero"
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          style={{
-            borderRadius: 26,
-            padding: "22px 26px 20px",
-            background: "linear-gradient(135deg,#1a3d28,#2d5a3d)",
-            border: "2.5px solid #1a1208",
-            boxShadow: "6px 6px 0 rgba(26,18,8,.22)",
-            marginBottom: 24,
-            position: "relative",
-            overflow: "hidden",
-          }}
+          transition={{ duration: 0.28 }}
         >
-          {/* decorative blobs */}
-          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "rgba(93,219,168,.06)" }} />
-            <div style={{ position: "absolute", bottom: -20, left: "30%", width: 120, height: 120, borderRadius: "50%", background: "rgba(245,166,35,.04)" }} />
-          </div>
+          <section className="awareness-hero-main">
+            <div className="awareness-kicker">
+              <ShieldCheck size={15} />
+              Research-backed awareness
+            </div>
+            <h1>Understand the pattern without the noise.</h1>
+            <p>
+              Pick one evidence source, compare two focused stories, then use the chart and key signals to understand what is happening.
+            </p>
+          </section>
 
-          <div style={{ position: "relative", zIndex: 2 }}>
-            <motion.div
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 7,
-                background: "rgba(255,255,255,.12)",
-                border: "1.5px solid rgba(255,255,255,.2)",
-                borderRadius: 50,
-                padding: "5px 14px",
-                fontSize: 11,
-                fontWeight: 800,
-                color: "rgba(255,255,255,.9)",
-                marginBottom: 12,
-              }}
-            >
-              <Sparkles size={12} />
-              Research-backed data
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 36,
-                fontWeight: 600,
-                color: "white",
-                marginBottom: 8,
-                lineHeight: 1.1,
-              }}
-            >
-              Data{" "}
-              <span style={{ color: "var(--mint)" }}>Intelligence</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.35 }}
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: "rgba(255,255,255,.6)",
-                maxWidth: 540,
-                lineHeight: 1.65,
-              }}
-            >
-              Explore empirical datasets driving the vaping epidemic. Spin the wheel or select a source to uncover the data stories inside.
-            </motion.p>
-          </div>
-        </motion.div>
-
-        {/* ── Two-column layout ── */}
-        <div
-          className="awareness-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "260px 1fr",
-            gap: 24,
-            alignItems: "start",
-          }}
-        >
-          {/* ── Left: Wheel + source list ── */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="wheel-sticky"
-            style={{ position: "sticky", top: 24 }}
-          >
-            <DataWheel items={WHEEL_ITEMS} onSpinEnd={selectSource} />
-
-            {/* Source quick-select */}
-            <div style={{ marginTop: 20 }}>
-              <div style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "var(--text3)",
-                textTransform: "uppercase",
-                letterSpacing: ".07em",
-                marginBottom: 10,
-                textAlign: "center",
-              }}>
-                Or pick directly
+          <aside className="awareness-hero-side" aria-label="Awareness overview">
+            <div className="awareness-hero-stat">
+              <div className="awareness-icon-box">
+                <Database size={20} />
               </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {WHEEL_ITEMS.map((item, i) => {
-                  const active = selectedSourceId === item.id;
-                  return (
-                    <motion.button
-                      key={item.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + i * 0.05 }}
-                      whileHover={{ x: 3 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => selectSource(item.id)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: "9px 12px",
-                        borderRadius: 12,
-                        border: `2px solid ${active ? "var(--stroke)" : "var(--border2)"}`,
-                        background: active ? "var(--text1)" : "var(--bg2)",
-                        cursor: "pointer",
-                        textAlign: "left",
-                        boxShadow: active ? "3px 3px 0 var(--shadow-card)" : "2px 2px 0 var(--stroke-light)",
-                        transition: "all 0.12s",
-                        fontFamily: "var(--font-sans)",
-                      }}
-                    >
-                      <div style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: 9,
-                        background: item.color,
-                        border: "1.5px solid rgba(26,18,8,.18)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        color: "#1a1208",
-                      }}>
-                        {item.icon}
-                      </div>
-                      <span style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: active ? "var(--bg0)" : "var(--text1)",
-                        lineHeight: 1.35,
-                      }}>
-                        {item.title}
-                      </span>
-                    </motion.button>
-                  );
-                })}
+              <div>
+                <strong>{sources.length}</strong>
+                <span>Verified source groups</span>
               </div>
             </div>
-          </motion.div>
+            <div className="awareness-hero-stat">
+              <div className="awareness-icon-box">
+                <BarChart3 size={20} />
+              </div>
+              <div>
+                <strong>{sources.length * 2}</strong>
+                <span>Readable data stories</span>
+              </div>
+            </div>
+          </aside>
+        </motion.header>
 
-          {/* ── Right: Visualization viewer ── */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.25 }}
-          >
-            <AnimatePresence mode="wait">
-              {!selectedSourceId || !sourceInfo || !currentStory ? (
-                /* Empty state */
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  style={{
-                    background: "var(--bg2)",
-                    border: "2px dashed var(--border2)",
-                    borderRadius: 22,
-                    padding: 40,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minHeight: 460,
-                    textAlign: "center",
-                    boxShadow: "var(--shadow-card)",
-                  }}
-                >
-                  <motion.div
-                    animate={{ rotate: [0, 8, -8, 0], y: [0, -6, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    style={{ fontSize: 56, marginBottom: 16, opacity: 0.45 }}
+        <div className="awareness-layout">
+          <aside className="awareness-source-panel" aria-label="Evidence sources">
+            <div className="awareness-section-label">Choose a source</div>
+            <div className="awareness-panel-title">Evidence library</div>
+
+            <div className="awareness-wheel-card">
+              <DataWheel items={wheelItems} onSpinEnd={selectSource} />
+              <p>Spin when you want a guided pick, or choose the exact evidence source below.</p>
+            </div>
+
+            <div className="awareness-source-list">
+              {sources.map((source, index) => {
+                const isActive = source.id === selectedSource.id;
+                const meta = SOURCE_META[source.id];
+
+                return (
+                  <motion.button
+                    key={source.id}
+                    className={`awareness-source-button${isActive ? " is-active" : ""}`}
+                    style={getSourceStyle(source)}
+                    onClick={() => selectSource(source.id)}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                    aria-pressed={isActive}
                   >
-                    🎡
-                  </motion.div>
-                  <h2 style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: 22,
-                    fontWeight: 600,
-                    color: "var(--text2)",
-                    textTransform: "uppercase",
-                    marginBottom: 8,
-                  }}>
-                    Awaiting Selection
-                  </h2>
-                  <p style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "var(--text3)",
-                    maxWidth: 260,
-                    lineHeight: 1.6,
-                  }}>
-                    Spin the wheel or choose a source from the list to load verified data.
-                  </p>
-                  <div style={{ display: "flex", gap: 6, marginTop: 24, flexWrap: "wrap", justifyContent: "center" }}>
-                    {WHEEL_ITEMS.map((item) => (
-                      <motion.div
-                        key={item.id}
-                        whileHover={{ scale: 1.4 }}
-                        onClick={() => selectSource(item.id)}
-                        style={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: "50%",
-                          background: item.color,
-                          border: "1.5px solid rgba(26,18,8,.15)",
-                          cursor: "pointer",
-                        }}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              ) : (
-                /* Source content card */
-                <motion.div
-                  key={selectedSourceId + activeTab}
-                  initial={{ opacity: 0, y: 14, scale: 0.985 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.985 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  style={{
-                    background: "var(--bg2)",
-                    border: "2.5px solid var(--border3)",
-                    borderRadius: 22,
-                    boxShadow: "var(--shadow-card-lg)",
-                    overflow: "hidden",
-                  }}
-                >
-                  {/* Card header */}
-                  <div style={{
-                    padding: "20px 24px 16px",
-                    borderBottom: "2px dashed var(--border2)",
-                    background: wheelItem
-                      ? `color-mix(in srgb, ${wheelItem.color} 8%, var(--bg2))`
-                      : "var(--bg2)",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
-                      {wheelItem && (
-                        <div style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 12,
-                          background: wheelItem.color,
-                          border: "2px solid rgba(26,18,8,.2)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#1a1208",
-                          flexShrink: 0,
-                          boxShadow: "3px 3px 0 rgba(26,18,8,.12)",
-                        }}>
-                          {wheelItem.icon}
-                        </div>
-                      )}
-                      <div>
-                        <h2 style={{
-                          fontFamily: "var(--font-display)",
-                          fontSize: 21,
-                          fontWeight: 600,
-                          color: "var(--text1)",
-                          textTransform: "uppercase",
-                          letterSpacing: "-0.01em",
-                          lineHeight: 1.2,
-                        }}>
-                          {sourceInfo.title}
-                        </h2>
-                        {sourceNote && (
-                          <p style={{
-                            display: "flex",
-                            alignItems: "flex-start",
-                            gap: 5,
-                            marginTop: 6,
-                            fontSize: 11.5,
-                            fontWeight: 600,
-                            color: "var(--text3)",
-                            lineHeight: 1.5,
-                          }}>
-                            <Info size={13} style={{ flexShrink: 0, marginTop: 1 }} />
-                            {sourceNote}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Story tabs */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-                      <button
-                        onClick={() => setActiveTab("A")}
-                        className={`chip ${activeTab === "A" ? "selected" : ""}`}
-                      >
-                        <span style={{ fontWeight: 800 }}>1.</span>{" "}
-                        {sourceInfo.storyA.title}
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("B")}
-                        className={`chip ${activeTab === "B" ? "selected" : ""}`}
-                      >
-                        <span style={{ fontWeight: 800 }}>2.</span>{" "}
-                        {sourceInfo.storyB.title}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Story body */}
-                  <div style={{ padding: "24px", background: "var(--bg0)" }}>
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.22 }}
-                      >
-                        <div style={{ marginBottom: 20 }}>
-                          <h3 style={{
-                            fontFamily: "var(--font-display)",
-                            fontSize: 22,
-                            fontWeight: 600,
-                            color: "var(--text1)",
-                            textTransform: "uppercase",
-                            lineHeight: 1.2,
-                            marginBottom: 6,
-                          }}>
-                            {currentStory!.title}
-                          </h3>
-                          <p style={{
-                            fontSize: 13.5,
-                            fontWeight: 600,
-                            color: "var(--text2)",
-                            lineHeight: 1.55,
-                          }}>
-                            {currentStory!.subtitle}
-                          </p>
-                        </div>
-
-                        <div style={{ width: "100%" }}>
-                          <ChartRenderer storyId={currentStory!.id} />
-                        </div>
-
-                        {(currentStory as any).analysis && (
-                          <div style={{ marginTop: 24 }}>
-                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-                              {(currentStory as any).keyStats?.map((stat: any, i: number) => (
-                                <div key={i} style={{
-                                  background: `${sourceInfo.color}15`,
-                                  border: `1.5px solid ${sourceInfo.color}44`,
-                                  padding: "4px 10px",
-                                  borderRadius: 50,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 6
-                                }}>
-                                  <span style={{ fontSize: 10, fontWeight: 800, color: sourceInfo.color, textTransform: "uppercase", letterSpacing: "0.05em" }}>{stat.label}</span>
-                                  <span style={{ fontSize: 13, fontWeight: 900, color: "var(--text1)" }}>{stat.value}</span>
-                                </div>
-                              ))}
-                            </div>
-                            <TypewriterText text={(currentStory as any).analysis} speed={25} />
-                          </div>
-                        )}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Footer */}
-                  <div style={{
-                    padding: "10px 24px",
-                    borderTop: "2px dashed var(--border2)",
-                    background: "var(--bg1)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                  }}>
-                    <Globe size={12} style={{ color: "var(--text3)" }} />
-                    <span style={{
-                      fontSize: 10.5,
-                      fontWeight: 800,
-                      textTransform: "uppercase",
-                      letterSpacing: ".07em",
-                      color: "var(--text3)",
-                    }}>
-                      Source: {sourceInfo.source}
+                    <SourceIcon source={source} />
+                    <span>
+                      <strong>{source.title}</strong>
+                      <span>{meta?.label ?? "Dataset"}</span>
                     </span>
+                    <ChevronRight className="awareness-source-chevron" size={18} />
+                  </motion.button>
+                );
+              })}
+            </div>
+          </aside>
+
+          <section className="awareness-story-panel" style={selectedStyle}>
+            <div className="awareness-story-header">
+              <div className="awareness-source-title">
+                <SourceIcon source={selectedSource} size={22} />
+                <div>
+                  <h2>{selectedSource.title}</h2>
+                  <p>{selectedSource.source}</p>
+                </div>
+              </div>
+
+              <div className="awareness-story-tabs" role="tablist" aria-label="Story view">
+                <button
+                  className={`awareness-story-tab${activeTab === "A" ? " is-active" : ""}`}
+                  onClick={() => setActiveTab("A")}
+                  role="tab"
+                  aria-selected={activeTab === "A"}
+                >
+                  <span>Story 1</span>
+                  <strong>{selectedSource.storyA.title}</strong>
+                </button>
+                <button
+                  className={`awareness-story-tab${activeTab === "B" ? " is-active" : ""}`}
+                  onClick={() => setActiveTab("B")}
+                  role="tab"
+                  aria-selected={activeTab === "B"}
+                >
+                  <span>Story 2</span>
+                  <strong>{selectedSource.storyB.title}</strong>
+                </button>
+              </div>
+            </div>
+
+            <div className="awareness-story-body">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${selectedSource.id}-${activeTab}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="awareness-story-intro">
+                    <div className="awareness-story-copy">
+                      <h3>{currentStory.title}</h3>
+                      <p>{currentStory.subtitle}</p>
+                    </div>
+
+                    <div className="awareness-stat-grid" aria-label="Key statistics">
+                      {currentStory.keyStats.map((stat) => (
+                        <div className="awareness-stat" key={`${stat.label}-${stat.value}`}>
+                          <span>{stat.label}</span>
+                          <strong>{stat.value}</strong>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+
+                  <div className="awareness-chart-wrap">
+                    <div className="awareness-chart-heading">
+                      <h4>
+                        <BarChart3 size={16} />
+                        Data representation
+                      </h4>
+                      <span>Hover or tap the chart for exact values</span>
+                    </div>
+                    <ChartRenderer storyId={currentStory.id} />
+                  </div>
+
+                  <article className="awareness-analysis">
+                    <div className="awareness-icon-box">
+                      <FileText size={18} />
+                    </div>
+                    <div>
+                      <h4>What this means</h4>
+                      <TypewriterText
+                        text={currentStory.analysis}
+                        speed={12}
+                        showLabel={false}
+                        accent="var(--source-accent)"
+                        compact
+                      />
+                    </div>
+                  </article>
+
+                  {sourceNote ? (
+                    <aside className="awareness-source-note">
+                      <Info size={18} color="var(--source-accent)" />
+                      <p>{sourceNote}</p>
+                    </aside>
+                  ) : null}
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <footer className="awareness-footer-source">
+              <ShieldCheck size={14} />
+              Source: {selectedSource.source}
+            </footer>
+          </section>
         </div>
-      </div>
+      </main>
     </>
   );
 }

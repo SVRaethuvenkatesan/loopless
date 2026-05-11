@@ -19,82 +19,26 @@ const TABS: { id: InsightsTab; label: string; icon: React.ReactNode }[] = [
 
 export default function InsightsTabBar({ activeTab, onTabChange }: InsightsTabBarProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 6,
-        marginBottom: 20,
-        overflowX: "auto",
-        paddingBottom: 4,
-        position: "relative",
-        zIndex: 10,
-        // Hide scrollbar for a cleaner look
-        scrollbarWidth: "none",
-        msOverflowStyle: "none",
-      }}
-      className="hide-scroll"
-    >
-      <style>{`
-        .hide-scroll::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
+    <div className="insights-tabs" role="tablist" aria-label="Insight views">
       {TABS.map((t) => {
         const active = activeTab === t.id;
         return (
           <button
             key={t.id}
             onClick={() => onTabChange(t.id)}
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "10px 16px",
-              borderRadius: 50,
-              background: "transparent",
-              color: active ? "var(--bg0)" : "var(--text2)",
-              fontSize: 13.5,
-              fontWeight: 700,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              border: "none",
-              outline: "none",
-              transition: "color 0.2s",
-            }}
+            className={`insights-tab ${active ? "active" : ""}`}
+            role="tab"
+            aria-selected={active}
           >
             {active && (
               <motion.div
                 layoutId="activeTabIndicator"
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: 50,
-                  background: "var(--text1)",
-                  border: "1.5px solid var(--border3)",
-                  boxShadow: "var(--shadow-card)",
-                  zIndex: -1,
-                }}
+                className="insights-tab-indicator"
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
             )}
-            {!active && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: 50,
-                  border: "1.5px solid var(--border2)",
-                  background: "var(--bg1)",
-                  boxShadow: "var(--tab-pill-shadow-idle)",
-                  zIndex: -1,
-                }}
-              />
-            )}
-            <span style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center" }}>
-              {t.icon}
-            </span>
-            <span style={{ position: "relative", zIndex: 1 }}>{t.label}</span>
+            <span>{t.icon}</span>
+            <span>{t.label}</span>
           </button>
         );
       })}

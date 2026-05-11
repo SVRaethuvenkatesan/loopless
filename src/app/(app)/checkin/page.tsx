@@ -1,588 +1,1281 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
+import type { MouseEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Battery,
+  Bed,
+  Brain,
+  Briefcase,
+  CalendarCheck2,
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
+  Coffee,
+  Flame,
+  Gauge,
+  Heart,
+  History,
+  Loader2,
+  LockKeyhole,
+  MessageCircle,
+  Moon,
+  PartyPopper,
+  RefreshCw,
+  ShieldCheck,
+  Smile,
+  Sparkles,
+  Trophy,
+  Users,
+  Wind,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 
-/* ─── Types ─────────────────────────────── */
-type Mood = {
-  val: string;
-  emoji: string;
-  label: string;
-  color: string;
-  bg: string;
-  roar: string;
-};
 type CheckInRecord = {
   id: string;
   stressLevel: number;
   mood: string;
   triggerType: string | null;
+  sleepQuality?: number | null;
+  energyLevel?: number | null;
   checkedInAt: string;
   timezoneOffset: string | null;
 };
+
 type Tab = "checkin" | "history";
 
-/* ─── Mood config ────────────────────────── */
+type Mood = {
+  val: string;
+  label: string;
+  sub: string;
+  tone: string;
+  Icon: LucideIcon;
+  response: string;
+};
+
+type Trigger = {
+  val: string;
+  label: string;
+  Icon: LucideIcon;
+};
+
 const MOODS: Mood[] = [
   {
     val: "overwhelmed",
-    emoji: "😫",
     label: "Overwhelmed",
-    color: "#e07b5a",
-    bg: "#fdf0ea",
-    roar: "You're carrying a lot right now. That's real, and you showed up anyway. 💪",
+    sub: "Too much",
+    tone: "var(--coral)",
+    Icon: AlertTriangle,
+    response: "You are carrying a lot. Logging it is a useful first step.",
   },
   {
     val: "anxious",
-    emoji: "😰",
     label: "Anxious",
-    color: "#c9982a",
-    bg: "#fffbef",
-    roar: "Anxiety is your nervous system being over-protective. You're safe. Let's breathe. 🌬️",
+    sub: "On edge",
+    tone: "var(--amber)",
+    Icon: Wind,
+    response: "Your nervous system is alert. Keep the next move small.",
   },
   {
     val: "flat",
-    emoji: "😶",
-    label: "Flat / Numb",
-    color: "#7b6fa0",
-    bg: "#f0edf8",
-    roar: "Feeling flat is valid. Rest is data too. You still showed up - that counts. ✨",
+    label: "Flat",
+    sub: "Low signal",
+    tone: "var(--purple)",
+    Icon: Moon,
+    response: "Flat days still count. Rest and low energy are data too.",
   },
   {
     val: "okay",
-    emoji: "😐",
     label: "Okay",
-    color: "#5bb8f5",
-    bg: "#dff0fd",
-    roar: "Okay is underrated. Stable is powerful. You're building something real here. 🔨",
+    sub: "Steady",
+    tone: "var(--sky)",
+    Icon: Smile,
+    response: "Steady is valuable. This is the state patterns are built from.",
   },
   {
     val: "good",
-    emoji: "🙂",
     label: "Good",
-    color: "#5a8f6a",
-    bg: "#e8f5ec",
-    roar: "Bank this feeling. Your brain is learning what good actually feels like. 🌱",
+    sub: "Settled",
+    tone: "var(--mint2)",
+    Icon: Heart,
+    response: "Good matters. Notice what helped create this state.",
   },
   {
     val: "energised",
-    emoji: "😄",
     label: "Energised",
-    color: "#3bc98e",
-    bg: "#c6f7e6",
-    roar: "This is your body thanking you. The loop is breaking. Keep this fire going! 🔥",
+    sub: "Activated",
+    tone: "var(--mint)",
+    Icon: Zap,
+    response: "This is useful momentum. Bank the context around it.",
   },
   {
     val: "grateful",
-    emoji: "🥹",
     label: "Grateful",
-    color: "#e07b5a",
-    bg: "#fff0f0",
-    roar: "Gratitude rewires your reward system faster than anything. You're doing the work. 💛",
+    sub: "Grounded",
+    tone: "var(--coral)",
+    Icon: Sparkles,
+    response: "Gratitude is a strong recovery signal. Mark what made it easier.",
   },
   {
     val: "proud",
-    emoji: "😤",
     label: "Proud",
-    color: "#f5c842",
-    bg: "#fffbef",
-    roar: "You SHOULD be proud. Do you know how rare it is to even try? Legend. 🏆",
+    sub: "Progress",
+    tone: "var(--amber)",
+    Icon: Trophy,
+    response: "Pride is evidence. You did something today worth recording.",
   },
 ];
 
-/* ─── Trigger config with SVG icons ─────── */
-const TRIGGERS = [
-  { val: "stress", label: "Work stress", icon: "stress" },
-  { val: "boredom", label: "Boredom", icon: "boredom" },
-  { val: "social", label: "Social", icon: "social" },
-  { val: "anxiety", label: "Anxiety", icon: "anxiety" },
-  { val: "routine", label: "Routine", icon: "routine" },
-  { val: "alcohol", label: "Drinking", icon: "alcohol" },
-  { val: "break", label: "Work break", icon: "break" },
-  { val: "emotions", label: "Big feelings", icon: "emotions" },
-  { val: "none", label: "No urge", icon: "none" },
+const TRIGGERS: Trigger[] = [
+  { val: "stress", label: "Work stress", Icon: Briefcase },
+  { val: "boredom", label: "Boredom", Icon: Clock3 },
+  { val: "social", label: "Social", Icon: Users },
+  { val: "anxiety", label: "Anxiety", Icon: Brain },
+  { val: "routine", label: "Routine", Icon: RefreshCw },
+  { val: "alcohol", label: "Drinking", Icon: Coffee },
+  { val: "break", label: "Work break", Icon: Coffee },
+  { val: "emotions", label: "Big feelings", Icon: Heart },
+  { val: "none", label: "No urge", Icon: ShieldCheck },
 ];
 
-/* ─── SVG trigger icons ──────────────────── */
-function TriggerIcon({
-  val,
-  color = "currentColor",
-}: {
-  val: string;
-  color?: string;
-}) {
-  const s = {
-    fill: "none" as const,
-    stroke: color,
-    strokeWidth: 2,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-  const icons: Record<string, React.ReactNode> = {
-    stress: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
-    boredom: (
-      <>
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
-      </>
-    ),
-    social: (
-      <>
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </>
-    ),
-    anxiety: (
-      <>
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-        <line x1="12" y1="9" x2="12" y2="13" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </>
-    ),
-    routine: (
-      <>
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
-      </>
-    ),
-    alcohol: (
-      <>
-        <path d="M8 22h8" />
-        <path d="M7 10h10" />
-        <path d="M12 22V10" />
-        <path d="M7 2h10l-2 8H9L7 2z" />
-      </>
-    ),
-    break: (
-      <>
-        <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-        <line x1="6" y1="1" x2="6" y2="4" />
-        <line x1="10" y1="1" x2="10" y2="4" />
-        <line x1="14" y1="1" x2="14" y2="4" />
-      </>
-    ),
-    emotions: (
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    ),
-    none: (
-      <>
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-        <polyline points="22 4 12 14.01 9 11.01" />
-      </>
-    ),
-  };
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" {...s}>
-      {icons[val] ?? <circle cx="12" cy="12" r="10" />}
-    </svg>
-  );
-}
-
-/* ─── Helpers ───────────────────────────── */
-const stressColor = (s: number) =>
-  s <= 3 ? "#5a8f6a" : s <= 6 ? "#c9982a" : "#e07b5a";
-const stressEmoji = (s: number) =>
-  s <= 2 ? "😌" : s <= 4 ? "🙂" : s <= 6 ? "😐" : s <= 8 ? "😰" : "😫";
-const stressLabel = (s: number) =>
-  s <= 3 ? "Low" : s <= 6 ? "Medium" : s <= 8 ? "High" : "Very High";
-
 const STRESS_HINTS: Record<number, string> = {
-  1: "Barely any stress 🌱",
-  2: "Really low - nice.",
-  3: "Pretty calm today.",
+  1: "Barely any stress.",
+  2: "Really low.",
+  3: "Pretty calm.",
   4: "Light load.",
   5: "Middle ground.",
-  6: "Feeling the pressure.",
-  7: "Getting heavy. Your tools are ready.",
-  8: "High stress! Check-in is the right move.",
-  9: "That sounds really tough. You're doing great by logging this.",
-  10: "Maximum stress. Let's get you a coping tool right after this.",
+  6: "Feeling pressure.",
+  7: "Heavy. A coping tool may help after this.",
+  8: "High stress. Log it, then slow the next action down.",
+  9: "Very high. Keep this check-in simple.",
+  10: "Maximum stress. Use a coping tool after logging.",
 };
 
-function fmt(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-AU", {
+const STREAK_MILESTONES: Record<number, { Icon: LucideIcon; title: string; sub: string }> = {
+  7: { Icon: Wind, title: "7-day streak", sub: "You have a full week of useful pattern data." },
+  12: { Icon: ShieldCheck, title: "12-day streak", sub: "Your check-ins are becoming a reliable habit." },
+  30: { Icon: Trophy, title: "30-day streak", sub: "A month of evidence is enough to show real patterns." },
+  100: { Icon: Flame, title: "100-day streak", sub: "This is a long-term recovery signal." },
+};
+
+const BADGE_DISPLAY: Record<string, { Icon: LucideIcon; name: string; color: string }> = {
+  first_checkin: { Icon: CalendarCheck2, name: "First Breath", color: "var(--mint2)" },
+  streak_7: { Icon: Wind, name: "Deep Breath", color: "var(--sky)" },
+  streak_12: { Icon: ShieldCheck, name: "Clear Airways", color: "var(--purple)" },
+  streak_30: { Icon: Trophy, name: "Lung Warrior", color: "var(--amber)" },
+  streak_100: { Icon: Flame, name: "Lung Champion", color: "var(--coral)" },
+};
+
+function stressColor(stress: number) {
+  if (stress <= 3) return "var(--mint2)";
+  if (stress <= 6) return "var(--amber)";
+  return "var(--coral)";
+}
+
+function stressLabel(stress: number) {
+  if (stress <= 3) return "Low";
+  if (stress <= 6) return "Medium";
+  if (stress <= 8) return "High";
+  return "Very high";
+}
+
+function stressReaction(stress: number): { Icon: LucideIcon; title: string; text: string } {
+  if (stress <= 3) {
+    return {
+      Icon: Wind,
+      title: "Calm window",
+      text: "Your system has room today. Notice what is helping.",
+    };
+  }
+  if (stress <= 6) {
+    return {
+      Icon: Gauge,
+      title: "Pressure rising",
+      text: "This is a good moment to keep the next action small.",
+    };
+  }
+  if (stress <= 8) {
+    return {
+      Icon: AlertTriangle,
+      title: "High load",
+      text: "Log it, then use one grounding tool before the next task.",
+    };
+  }
+  return {
+    Icon: Flame,
+    title: "Red zone",
+    text: "Do not solve everything now. Save this and move to support.",
+  };
+}
+
+function stressFace(stress: number): { label: string; mouth: string; brow: number; color: string } {
+  if (stress <= 3) {
+    return {
+      label: "steady",
+      mouth: "M17 33 Q24 39 31 33",
+      brow: 0,
+      color: "var(--mint2)",
+    };
+  }
+  if (stress <= 6) {
+    return {
+      label: "loaded",
+      mouth: "M18 35 Q24 33 30 35",
+      brow: 2,
+      color: "var(--amber)",
+    };
+  }
+  if (stress <= 8) {
+    return {
+      label: "strained",
+      mouth: "M17 37 Q24 31 31 37",
+      brow: 5,
+      color: "var(--coral)",
+    };
+  }
+  return {
+    label: "red zone",
+    mouth: "M17 38 Q24 29 31 38",
+    brow: 8,
+    color: "var(--coral)",
+  };
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("en-AU", {
     weekday: "short",
     day: "numeric",
     month: "short",
   });
 }
 
-/* ─── Floating XP ───────────────────────── */
+function getGuestHeaders(): Record<string, string> {
+  const guestId =
+    typeof window !== "undefined" ? localStorage.getItem("loopless_guest_id") : null;
+
+  return guestId ? { "x-guest-id": guestId } : {};
+}
+
+function Styles() {
+  return (
+    <style>{`
+      .checkin-page {
+        width: min(1180px, calc(100vw - 48px));
+        margin: 0 auto;
+        padding: 28px 0 120px;
+      }
+
+      .checkin-top {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: end;
+        margin-bottom: 18px;
+      }
+
+      .checkin-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text3);
+        font-size: 13px;
+        font-weight: 900;
+        margin-bottom: 14px;
+      }
+
+      .checkin-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 30px;
+        padding: 0 11px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--mint) 14%, transparent);
+        color: var(--mint2);
+        font-size: 12px;
+        font-weight: 950;
+      }
+
+      .checkin-title {
+        margin-top: 12px;
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: clamp(32px, 4.6vw, 54px);
+        line-height: 1;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+
+      .checkin-subtitle {
+        max-width: 660px;
+        margin-top: 10px;
+        color: var(--text2);
+        font-size: 15px;
+        line-height: 1.6;
+        font-weight: 750;
+      }
+
+      .checkin-status-card,
+      .checkin-card,
+      .checkin-recap,
+      .checkin-modal-card {
+        background: var(--bg2);
+        border: 1px solid var(--border2);
+        border-radius: 18px;
+        box-shadow: 0 16px 44px rgba(21,31,26,.07);
+      }
+
+      .dark .checkin-status-card,
+      .dark .checkin-card,
+      .dark .checkin-recap,
+      .dark .checkin-modal-card {
+        box-shadow: none;
+      }
+
+      .checkin-status-card {
+        min-width: 250px;
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .checkin-status-row {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+
+      .checkin-icon-box {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        border-radius: 13px;
+        background: var(--bg0);
+        color: var(--mint2);
+        border: 1px solid var(--border2);
+      }
+
+      .checkin-status-row strong {
+        display: block;
+        color: var(--text1);
+        font-size: 15px;
+        font-weight: 950;
+      }
+
+      .checkin-status-row span {
+        display: block;
+        margin-top: 3px;
+        color: var(--text3);
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .checkin-tabs {
+        display: inline-grid;
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+        gap: 6px;
+        padding: 5px;
+        border-radius: 15px;
+        background: var(--bg2);
+        border: 1px solid var(--border2);
+        margin-bottom: 18px;
+      }
+
+      .checkin-tab {
+        min-height: 42px;
+        border: 0;
+        border-radius: 11px;
+        background: transparent;
+        color: var(--text3);
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 950;
+        cursor: pointer;
+      }
+
+      .checkin-tab.is-active {
+        background: var(--text1);
+        color: var(--bg0);
+      }
+
+      .checkin-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 18px;
+        align-items: start;
+      }
+
+      .checkin-form {
+        display: grid;
+        gap: 14px;
+      }
+
+      .checkin-card {
+        padding: 20px;
+      }
+
+      .checkin-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .checkin-card-head h2,
+      .checkin-card-head h3 {
+        color: var(--text1);
+        font-size: 18px;
+        line-height: 1.2;
+        font-weight: 950;
+      }
+
+      .checkin-card-head p {
+        margin-top: 4px;
+        color: var(--text3);
+        font-size: 12px;
+        line-height: 1.45;
+        font-weight: 800;
+      }
+
+      .stress-display {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .stress-number {
+        color: var(--stress-color);
+        font-family: var(--font-display);
+        font-size: 58px;
+        font-weight: 650;
+        line-height: .85;
+      }
+
+      .stress-reaction {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 13px;
+        align-items: center;
+        margin-top: 18px;
+        padding: 14px;
+        border: 1px solid color-mix(in srgb, var(--stress-color) 34%, var(--border2));
+        border-radius: 16px;
+        background:
+          radial-gradient(circle at top left, color-mix(in srgb, var(--stress-color) 16%, transparent), transparent 44%),
+          var(--bg0);
+      }
+
+      .stress-orb {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        background: color-mix(in srgb, var(--stress-color) 14%, transparent);
+        color: var(--stress-color);
+      }
+
+      .stress-orb::before {
+        content: "";
+        position: absolute;
+        inset: -7px;
+        border-radius: 20px;
+        border: 1px solid color-mix(in srgb, var(--stress-color) 30%, transparent);
+        opacity: .65;
+        animation: stress-pulse var(--stress-speed, 2.2s) ease-out infinite;
+      }
+
+      .stress-reaction strong {
+        display: block;
+        color: var(--text1);
+        font-size: 14px;
+        font-weight: 950;
+      }
+
+      .stress-reaction p {
+        margin-top: 4px;
+        color: var(--text2);
+        font-size: 12px;
+        line-height: 1.45;
+        font-weight: 800;
+      }
+
+      @keyframes stress-pulse {
+        0% { transform: scale(.86); opacity: .7; }
+        100% { transform: scale(1.22); opacity: 0; }
+      }
+
+      .stress-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 30px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--stress-color) 12%, transparent);
+        color: var(--stress-color);
+        font-size: 12px;
+        font-weight: 950;
+      }
+
+      .stress-slider {
+        width: 100%;
+        height: 12px;
+        border-radius: 999px;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
+        cursor: pointer;
+        background:
+          linear-gradient(90deg, var(--mint2), var(--amber), var(--coral));
+      }
+
+      .stress-slider-zone {
+        position: relative;
+        padding-top: 64px;
+      }
+
+      .stress-face-bubble {
+        position: absolute;
+        top: 0;
+        left: var(--stress-pos);
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        padding: 5px;
+        border: 1px solid color-mix(in srgb, var(--stress-color) 38%, var(--border2));
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--bg2) 94%, transparent);
+        color: var(--stress-color);
+        box-shadow: 0 14px 36px rgba(21,31,26,.12);
+        backdrop-filter: blur(14px);
+        pointer-events: none;
+      }
+
+      .stress-face {
+        width: 38px;
+        height: 38px;
+        flex: 0 0 auto;
+        filter: drop-shadow(0 7px 12px rgba(21,31,26,.14));
+      }
+
+      .stress-track-burst {
+        position: absolute;
+        left: var(--stress-pos);
+        top: 53px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--stress-color) 18%, transparent);
+        pointer-events: none;
+      }
+
+      .stress-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--bg2);
+        border: 3px solid var(--stress-color);
+        box-shadow: 0 8px 20px rgba(21,31,26,.18);
+      }
+
+      .stress-slider::-moz-range-thumb {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--bg2);
+        border: 3px solid var(--stress-color);
+      }
+
+      .scale-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .mood-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 9px;
+      }
+
+      .choice-button {
+        min-width: 0;
+        min-height: 92px;
+        padding: 12px 10px;
+        border: 1px solid var(--border2);
+        border-radius: 15px;
+        background: var(--bg0);
+        color: var(--text1);
+        font-family: var(--font-sans);
+        cursor: pointer;
+        text-align: left;
+        transition: transform .16s ease, border-color .16s ease, background .16s ease;
+      }
+
+      .choice-button:hover {
+        transform: translateY(-1px);
+        border-color: var(--border3);
+      }
+
+      .choice-button.is-active {
+        background: linear-gradient(135deg, color-mix(in srgb, var(--choice-tone) 12%, transparent), var(--bg0));
+        border-color: color-mix(in srgb, var(--choice-tone) 48%, var(--border2));
+      }
+
+      .choice-icon {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        border-radius: 11px;
+        color: var(--choice-tone);
+        background: color-mix(in srgb, var(--choice-tone) 10%, transparent);
+      }
+
+      .choice-button strong {
+        display: block;
+        overflow-wrap: anywhere;
+        color: var(--text1);
+        font-size: 12px;
+        font-weight: 950;
+        line-height: 1.2;
+      }
+
+      .choice-button span {
+        display: block;
+        margin-top: 3px;
+        color: var(--text3);
+        font-size: 10px;
+        font-weight: 850;
+      }
+
+      .trigger-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 9px;
+      }
+
+      .trigger-button {
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--border2);
+        border-radius: 14px;
+        background: var(--bg0);
+        color: var(--text2);
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+        text-align: left;
+        transition: transform .16s ease, border-color .16s ease, background .16s ease;
+      }
+
+      .trigger-button:hover {
+        transform: translateY(-1px);
+        border-color: var(--border3);
+      }
+
+      .trigger-button.is-active {
+        color: var(--text1);
+        background: color-mix(in srgb, var(--mint) 10%, var(--bg0));
+        border-color: color-mix(in srgb, var(--mint) 42%, var(--border2));
+      }
+
+      .optional-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .mini-scale {
+        border: 1px solid var(--border2);
+        border-radius: 15px;
+        background: var(--bg0);
+        padding: 13px;
+      }
+
+      .mini-scale-head {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--text1);
+        font-size: 13px;
+        font-weight: 950;
+        margin-bottom: 10px;
+      }
+
+      .mini-options {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .mini-option {
+        min-height: 34px;
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        background: var(--bg2);
+        color: var(--text3);
+        font-family: var(--font-sans);
+        font-weight: 950;
+        cursor: pointer;
+      }
+
+      .mini-option.is-active {
+        background: var(--text1);
+        color: var(--bg0);
+        border-color: var(--text1);
+      }
+
+      .submit-row {
+        position: sticky;
+        bottom: 14px;
+        z-index: 20;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid var(--border2);
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--bg2) 92%, transparent);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 18px 54px rgba(21,31,26,.12);
+      }
+
+      .submit-row p {
+        padding-left: 6px;
+        color: var(--text3);
+        font-size: 12px;
+        line-height: 1.35;
+        font-weight: 850;
+      }
+
+      .primary-button,
+      .secondary-button {
+        min-height: 46px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 13px;
+        padding: 0 16px;
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 950;
+        cursor: pointer;
+        transition: transform .16s ease, opacity .16s ease;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .primary-button {
+        border: 1px solid transparent;
+        background: var(--text1);
+        color: var(--bg0);
+      }
+
+      .secondary-button {
+        border: 1px solid var(--border2);
+        background: var(--bg0);
+        color: var(--text1);
+      }
+
+      .primary-button:hover,
+      .secondary-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .primary-button:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .checkin-recap {
+        position: sticky;
+        top: 88px;
+        padding: 18px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .recap-block {
+        border: 1px solid var(--border2);
+        border-radius: 15px;
+        background: var(--bg0);
+        padding: 14px;
+      }
+
+      .recap-label {
+        color: var(--text3);
+        font-size: 10px;
+        font-weight: 950;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      .recap-value {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 7px;
+        color: var(--text1);
+        font-size: 15px;
+        font-weight: 950;
+      }
+
+      .coach-card {
+        border: 1px solid color-mix(in srgb, var(--mint) 34%, var(--border2));
+        border-radius: 15px;
+        background: linear-gradient(135deg, color-mix(in srgb, var(--mint) 10%, transparent), var(--bg0));
+        padding: 14px;
+      }
+
+      .coach-card p {
+        margin-top: 7px;
+        color: var(--text2);
+        font-size: 13px;
+        line-height: 1.55;
+        font-weight: 750;
+      }
+
+      .success-card {
+        display: grid;
+        gap: 14px;
+      }
+
+      .success-hero {
+        background: linear-gradient(135deg, color-mix(in srgb, var(--mint) 16%, transparent), var(--bg2));
+        border-color: color-mix(in srgb, var(--mint) 34%, var(--border2));
+      }
+
+      .success-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .history-grid {
+        display: grid;
+        grid-template-columns: 340px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .history-stats {
+        display: grid;
+        gap: 10px;
+      }
+
+      .stat-card {
+        border: 1px solid var(--border2);
+        border-radius: 15px;
+        background: var(--bg0);
+        padding: 14px;
+      }
+
+      .stat-card span {
+        display: block;
+        color: var(--text3);
+        font-size: 10px;
+        font-weight: 950;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+      }
+
+      .stat-card strong {
+        display: block;
+        margin-top: 6px;
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 650;
+        line-height: 1;
+      }
+
+      .mini-chart {
+        display: flex;
+        align-items: end;
+        gap: 7px;
+        min-height: 110px;
+        padding-top: 12px;
+      }
+
+      .bar-column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .bar {
+        width: 100%;
+        min-height: 5px;
+        border-radius: 8px 8px 3px 3px;
+        background: var(--bar-color);
+      }
+
+      .bar-column span {
+        color: var(--text3);
+        font-size: 9px;
+        font-weight: 900;
+      }
+
+      .history-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .history-item {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 13px;
+        border: 1px solid var(--border2);
+        border-radius: 15px;
+        background: var(--bg2);
+      }
+
+      .history-stress {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: color-mix(in srgb, var(--entry-color) 12%, transparent);
+        color: var(--entry-color);
+        font-family: var(--font-display);
+        font-size: 23px;
+        font-weight: 650;
+      }
+
+      .history-item strong {
+        color: var(--text1);
+        font-size: 14px;
+        font-weight: 950;
+      }
+
+      .history-item p {
+        margin-top: 4px;
+        color: var(--text3);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(0,0,0,.56);
+      }
+
+      .checkin-modal-card {
+        width: min(360px, 100%);
+        padding: 28px;
+        text-align: center;
+      }
+
+      .modal-icon {
+        width: 72px;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 14px;
+        border-radius: 22px;
+        background: color-mix(in srgb, var(--modal-color) 14%, transparent);
+        color: var(--modal-color);
+      }
+
+      .checkin-modal-card h2 {
+        color: var(--text1);
+        font-size: 24px;
+        font-weight: 950;
+      }
+
+      .checkin-modal-card p {
+        margin-top: 8px;
+        color: var(--text2);
+        font-size: 14px;
+        line-height: 1.6;
+        font-weight: 750;
+      }
+
+      @media (max-width: 1040px) {
+        .checkin-page {
+          width: min(100% - 32px, 860px);
+        }
+
+        .checkin-top,
+        .checkin-grid,
+        .history-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .checkin-recap {
+          position: static;
+        }
+
+        .checkin-status-card {
+          min-width: 0;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .checkin-page {
+          width: calc(100% - 24px);
+          padding-top: 18px;
+          padding-bottom: 96px;
+        }
+
+        .checkin-card {
+          padding: 16px;
+        }
+
+        .mood-grid,
+        .trigger-grid,
+        .optional-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .submit-row {
+          grid-template-columns: 1fr;
+        }
+
+        .primary-button,
+        .secondary-button {
+          width: 100%;
+        }
+
+        .history-item {
+          grid-template-columns: 44px minmax(0, 1fr);
+        }
+
+        .history-item > svg {
+          display: none;
+        }
+
+        .stress-slider-zone {
+          padding-top: 58px;
+        }
+
+      }
+
+      @media (max-width: 430px) {
+        .mood-grid,
+        .trigger-grid,
+        .optional-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    `}</style>
+  );
+}
+
 function FloatingXP({ xp, x, y }: { xp: number; x: number; y: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 0 }}
-      animate={{ opacity: [0, 1, 1, 0], y: -70 }}
+      initial={{ opacity: 0, y: 0, scale: 0.92 }}
+      animate={{ opacity: [0, 1, 1, 0], y: -70, scale: [0.92, 1, 1] }}
       transition={{ duration: 1.2 }}
       style={{
         position: "fixed",
-        left: x - 24,
+        left: x - 36,
         top: y,
         zIndex: 9999,
         pointerEvents: "none",
-        fontFamily: "'Fredoka',sans-serif",
-        fontSize: 20,
-        fontWeight: 600,
-        color: "#f5c842",
-        background: "rgba(26,18,8,.9)",
-        border: "2px solid #f5c842",
-        borderRadius: 50,
-        padding: "4px 14px",
+        padding: "7px 13px",
+        borderRadius: 999,
+        background: "var(--text1)",
+        color: "var(--bg0)",
+        fontSize: 13,
+        fontWeight: 950,
       }}
     >
-      +{xp} XP ⚡
+      +{xp} XP
     </motion.div>
   );
 }
 
-/* ─── Inline mood reaction card ─────────── */
-function MoodRoarCard({ mood }: { mood: Mood }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -8, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -4, scale: 0.97 }}
-      transition={{ type: "spring", bounce: 0.28, duration: 0.4 }}
-      style={{
-        background: mood.bg,
-        border: `2px solid ${mood.color}66`,
-        borderRadius: 16,
-        padding: "14px 16px",
-        marginTop: 12,
-        display: "flex",
-        gap: 12,
-        alignItems: "flex-start",
-      }}
-    >
-      <span style={{ fontSize: 34, flexShrink: 0, lineHeight: 1 }}>
-        {mood.emoji}
-      </span>
-      <p
-        style={{
-          fontSize: 13.5,
-          fontWeight: 700,
-          color: "#1a1208",
-          lineHeight: 1.55,
-          margin: 0,
-        }}
-      >
-        {mood.roar}
-      </p>
-    </motion.div>
-  );
-}
-
-/* ─── Coach bubble ──────────────────────── */
-function CoachBubble({ text, loading }: { text: string; loading: boolean }) {
-  if (!text && !loading) return null;
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{
-        background: "linear-gradient(135deg,#1a3d28,#2d5a3d)",
-        border: "2px solid #5a8f6a",
-        borderRadius: 18,
-        padding: "14px 18px",
-        marginTop: 12,
-        display: "flex",
-        gap: 12,
-      }}
-    >
-      <motion.div
-        animate={loading ? { rotate: 360 } : {}}
-        transition={
-          loading ? { duration: 1, repeat: Infinity, ease: "linear" } : {}
-        }
-        style={{ fontSize: 22, flexShrink: 0 }}
-      >
-        {loading ? "⚙️" : "💬"}
-      </motion.div>
-      <div>
-        <div
-          style={{
-            fontSize: 10,
-            fontWeight: 800,
-            color: "rgba(255,255,255,.5)",
-            textTransform: "uppercase",
-            letterSpacing: ".06em",
-            marginBottom: 3,
-          }}
-        >
-          Coach
-        </div>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: loading ? "rgba(255,255,255,.5)" : "white",
-            lineHeight: 1.6,
-          }}
-        >
-          {loading ? "Analysing your check-in…" : text}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ─── History card ──────────────────────── */
-function HistoryCard({
-  entry,
-  index,
-}: {
-  entry: CheckInRecord;
-  index: number;
-}) {
-  const mood = MOODS.find((m) => m.val === entry.mood);
-  const trig = TRIGGERS.find((t) => t.val === entry.triggerType);
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06 }}
-      style={{
-        background: "var(--bg2)",
-        border: "2px solid var(--border2)",
-        borderRadius: 18,
-        padding: "16px 18px",
-        boxShadow: "var(--shadow-card)",
-        display: "flex",
-        alignItems: "center",
-        gap: 14,
-        marginBottom: 10,
-      }}
-    >
-      <div
-        style={{
-          width: 50,
-          height: 50,
-          borderRadius: 14,
-          background: mood?.bg ?? "#fef9f0",
-          border: `2px solid ${mood?.color ?? "#5a8f6a"}44`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 26,
-          flexShrink: 0,
-        }}
-      >
-        {mood?.emoji ?? "😐"}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 4,
-          }}
-        >
-          <span
-            style={{
-              fontFamily: "'Fredoka',sans-serif",
-              fontSize: 22,
-              fontWeight: 600,
-              color: stressColor(entry.stressLevel),
-            }}
-          >
-            {entry.stressLevel}/10
-          </span>
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: stressColor(entry.stressLevel),
-              background: `${stressColor(entry.stressLevel)}15`,
-              border: `1.5px solid ${stressColor(entry.stressLevel)}44`,
-              borderRadius: 50,
-              padding: "2px 8px",
-            }}
-          >
-            {stressLabel(entry.stressLevel)}
-          </span>
-          {trig && <span style={{ fontSize: 12 }}>{trig.label}</span>}
-        </div>
-        <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--text3)" }}>
-          {fmt(entry.checkedInAt)}
-        </div>
-      </div>
-      <div style={{ fontSize: 22 }}>{stressEmoji(entry.stressLevel)}</div>
-    </motion.div>
-  );
-}
-
-/* ─── Analytics tile ────────────────────── */
-function AnalyticsTile({
-  emoji,
-  label,
+function MiniScale({
+  title,
+  Icon,
   value,
-  sub,
-  color,
-  bg,
+  onChange,
 }: {
-  emoji: string;
-  label: string;
-  value: string;
-  sub: string;
-  color: string;
-  bg: string;
+  title: string;
+  Icon: LucideIcon;
+  value: number | null;
+  onChange: (value: number | null) => void;
 }) {
   return (
-    <div
-      style={{
-        background: bg,
-        border: `2px solid ${color}44`,
-        borderRadius: 16,
-        padding: "14px 12px",
-        boxShadow: `3px 3px 0 ${color}33`,
+    <div className="mini-scale">
+      <div className="mini-scale-head">
+        <Icon size={16} />
+        {title}
+      </div>
+      <div className="mini-options">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            className={`mini-option${value === n ? " is-active" : ""}`}
+            onClick={() => onChange(value === n ? null : n)}
+            type="button"
+            aria-pressed={value === n}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StressFace({
+  stress,
+  dragging,
+}: {
+  stress: number;
+  dragging: boolean;
+}) {
+  const face = stressFace(stress);
+
+  return (
+    <motion.svg
+      className="stress-face"
+      viewBox="0 0 48 48"
+      aria-hidden="true"
+      animate={{
+        rotate: dragging && stress >= 7 ? [0, -5, 5, -3, 0] : 0,
+        scale: dragging ? 1.08 : 1,
+      }}
+      transition={{
+        duration: stress >= 7 ? 0.42 : 0.7,
+        repeat: dragging ? Infinity : 0,
+        ease: "easeInOut",
       }}
     >
-      <div style={{ fontSize: 22, marginBottom: 6 }}>{emoji}</div>
-      <div
-        style={{
-          fontFamily: "'Fredoka',sans-serif",
-          fontSize: 22,
-          fontWeight: 600,
-          color,
-          lineHeight: 1,
-          marginBottom: 4,
-        }}
-      >
-        {value}
-      </div>
-      <div
-        style={{
-          fontSize: 11.5,
-          fontWeight: 800,
-          color: "var(--text1)",
-          marginBottom: 2,
-        }}
-      >
-        {label}
-      </div>
-      <div style={{ fontSize: 10.5, fontWeight: 500, color: "var(--text2)" }}>
-        {sub}
-      </div>
-    </div>
+      <circle cx="24" cy="24" r="20" fill="var(--bg2)" stroke={face.color} strokeWidth="3" />
+      <motion.path
+        d={`M14 ${18 + face.brow} L21 ${20 - face.brow / 2}`}
+        stroke="var(--text1)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        animate={{ y: dragging ? [0, -1, 0] : 0 }}
+        transition={{ duration: 0.6, repeat: dragging ? Infinity : 0 }}
+      />
+      <motion.path
+        d={`M34 ${18 + face.brow} L27 ${20 - face.brow / 2}`}
+        stroke="var(--text1)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        animate={{ y: dragging ? [0, -1, 0] : 0 }}
+        transition={{ duration: 0.6, repeat: dragging ? Infinity : 0 }}
+      />
+      <motion.circle
+        cx="18"
+        cy="25"
+        r={stress >= 8 ? 2.2 : 2.8}
+        fill="var(--text1)"
+        animate={{ scaleY: dragging && stress <= 3 ? [1, 0.25, 1] : 1 }}
+        transition={{ duration: 1.2, repeat: dragging && stress <= 3 ? Infinity : 0 }}
+      />
+      <motion.circle
+        cx="30"
+        cy="25"
+        r={stress >= 8 ? 2.2 : 2.8}
+        fill="var(--text1)"
+        animate={{ scaleY: dragging && stress <= 3 ? [1, 0.25, 1] : 1 }}
+        transition={{ duration: 1.2, repeat: dragging && stress <= 3 ? Infinity : 0 }}
+      />
+      {stress >= 8 ? (
+        <>
+          <path d="M11 13 L8 9" stroke={face.color} strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M37 13 L40 9" stroke={face.color} strokeWidth="2.5" strokeLinecap="round" />
+        </>
+      ) : null}
+      <motion.path
+        d={face.mouth}
+        fill="none"
+        stroke="var(--text1)"
+        strokeWidth="2.7"
+        strokeLinecap="round"
+        animate={{ pathLength: dragging ? [0.75, 1, 0.75] : 1 }}
+        transition={{ duration: 0.8, repeat: dragging ? Infinity : 0 }}
+      />
+    </motion.svg>
   );
 }
 
-/* ─── Mini bar chart ────────────────────── */
-function MiniChart({ history }: { history: CheckInRecord[] }) {
-  const last7 = history.slice(0, 7).reverse();
-  const max = Math.max(...last7.map((h) => h.stressLevel), 1);
+function MilestoneModal({
+  milestone,
+  onClose,
+}: {
+  milestone: { Icon: LucideIcon; title: string; sub: string };
+  onClose: () => void;
+}) {
+  const Icon = milestone.Icon;
+
   return (
-    <div
-      style={{ display: "flex", gap: 6, alignItems: "flex-end", height: 56 }}
-    >
-      {last7.map((h, i) => (
-        <div
-          key={i}
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 3,
-          }}
-        >
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: (h.stressLevel / max) * 48 }}
-            transition={{ delay: 0.05 * i, duration: 0.5, ease: "easeOut" }}
-            style={{
-              width: "100%",
-              borderRadius: "3px 3px 0 0",
-              background: stressColor(h.stressLevel),
-              border: "1.5px solid var(--border2)",
-              minHeight: 3,
-            }}
-          />
-          <div style={{ fontSize: 8, fontWeight: 700, color: "var(--text3)" }}>
-            {new Date(h.checkedInAt).toLocaleDateString("en", {
-              weekday: "narrow",
-            })}
-          </div>
+    <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+      <motion.div
+        className="checkin-modal-card"
+        style={{ "--modal-color": "var(--amber)" } as React.CSSProperties}
+        initial={{ scale: 0.92, y: 18 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.96, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-icon">
+          <Icon size={34} />
         </div>
-      ))}
-      {last7.length < 7 &&
-        Array.from({ length: 7 - last7.length }).map((_, i) => (
-          <div
-            key={`e${i}`}
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 3,
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                height: 4,
-                borderRadius: 3,
-                background: "var(--bg4)",
-                border: "1.5px solid var(--border)",
-              }}
-            />
-            <div
-              style={{ fontSize: 8, fontWeight: 700, color: "var(--text4)" }}
-            >
-              -
-            </div>
-          </div>
-        ))}
-    </div>
+        <h2>{milestone.title}</h2>
+        <p>{milestone.sub}</p>
+        <button className="primary-button" onClick={onClose} style={{ marginTop: 18 }}>
+          Continue
+        </button>
+      </motion.div>
+    </motion.div>
   );
 }
 
-/* ─── Streak milestone configs ──────────── */
-const STREAK_MILESTONES: Record<
-  number,
-  { emoji: string; title: string; sub: string }
-> = {
-  7: {
-    emoji: "🫁",
-    title: "7-day streak!",
-    sub: "Lung cilia are already recovering. Science is on your side.",
-  },
-  12: {
-    emoji: "💨",
-    title: "12-day streak!",
-    sub: "Airways less inflamed - breathing is measurably easier.",
-  },
-  30: {
-    emoji: "🏆",
-    title: "30-day streak!",
-    sub: "Lung function up to 30% better this month. Incredible.",
-  },
-  100: {
-    emoji: "🔥",
-    title: "100 days!",
-    sub: "Your lung cancer risk has started to fall. You changed your biology.",
-  },
-};
-
-/* ─── Badge unlock modal ─────────────────── */
-const BADGE_DISPLAY: Record<
-  string,
-  { emoji: string; name: string; color: string }
-> = {
-  first_checkin: { emoji: "🌱", name: "First Breath", color: "#5a8f6a" },
-  streak_7: { emoji: "🫁", name: "Deep Breath", color: "#5bb8f5" },
-  streak_12: { emoji: "💨", name: "Clear Airways", color: "#7b6fa0" },
-  streak_30: { emoji: "🏆", name: "Lung Warrior", color: "#c9982a" },
-  streak_100: { emoji: "🔥", name: "Lung Champion", color: "#e07b5a" },
-};
-
-function BadgeUnlockModal({
+function BadgeModal({
   badgeType,
   milestoneMsg,
   onClose,
@@ -592,380 +1285,242 @@ function BadgeUnlockModal({
   onClose: () => void;
 }) {
   const meta = BADGE_DISPLAY[badgeType] ?? {
-    emoji: "🎖️",
+    Icon: Trophy,
     name: "New Badge",
-    color: "#5a8f6a",
+    color: "var(--mint2)",
   };
+  const Icon = meta.Icon;
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 2000,
-        background: "rgba(0,0,0,0.65)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-      }}
-      onClick={onClose}
-    >
+    <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
-        initial={{ scale: 0.7, y: 40 }}
+        className="checkin-modal-card"
+        style={{ "--modal-color": meta.color } as React.CSSProperties}
+        initial={{ scale: 0.92, y: 18 }}
         animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.85, opacity: 0 }}
-        transition={{ type: "spring", bounce: 0.45 }}
+        exit={{ scale: 0.96, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: "var(--bg2)",
-          border: `3px solid ${meta.color}`,
-          borderRadius: 28,
-          padding: "32px 28px",
-          maxWidth: 340,
-          width: "100%",
-          textAlign: "center",
-          boxShadow: `0 0 40px ${meta.color}44, 0 20px 60px rgba(0,0,0,0.3)`,
-        }}
       >
-        <motion.div
-          animate={{
-            scale: [1, 1.3, 0.9, 1.15, 1],
-            rotate: [0, -12, 12, -6, 0],
-          }}
-          transition={{ duration: 0.7 }}
-          style={{ fontSize: 80, display: "inline-block", marginBottom: 12 }}
-        >
-          {meta.emoji}
-        </motion.div>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 800,
-            color: meta.color,
-            textTransform: "uppercase",
-            letterSpacing: ".1em",
-            marginBottom: 6,
-          }}
-        >
-          Badge unlocked!
+        <div className="modal-icon">
+          <Icon size={34} />
         </div>
-        <div
-          style={{
-            fontFamily: "'Fredoka',sans-serif",
-            fontSize: 26,
-            fontWeight: 600,
-            color: "var(--text1)",
-            marginBottom: 8,
-          }}
-        >
-          {meta.name}
-        </div>
-        {milestoneMsg && (
-          <p
-            style={{
-              fontSize: 13.5,
-              fontWeight: 600,
-              color: "var(--text2)",
-              lineHeight: 1.6,
-              marginBottom: 20,
-            }}
-          >
-            {milestoneMsg}
-          </p>
-        )}
-        <button
-          onClick={onClose}
-          style={{
-            background: meta.color,
-            color: "white",
-            border: "2.5px solid rgba(0,0,0,.15)",
-            borderRadius: 14,
-            padding: "12px 28px",
-            fontSize: 15,
-            fontWeight: 800,
-            cursor: "pointer",
-            fontFamily: "'Nunito',sans-serif",
-            boxShadow: "3px 3px 0 rgba(0,0,0,.15)",
-          }}
-        >
-          Keep it up! 💪
+        <h2>{meta.name}</h2>
+        <p>{milestoneMsg || "Badge unlocked. Your consistency has been saved."}</p>
+        <button className="primary-button" onClick={onClose} style={{ marginTop: 18 }}>
+          Continue
         </button>
       </motion.div>
     </motion.div>
   );
 }
 
-function LevelUpModal({
-  newLevel,
-  onClose,
-}: {
-  newLevel: number;
-  onClose: () => void;
-}) {
+function LevelUpModal({ newLevel, onClose }: { newLevel: number; onClose: () => void }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 2100,
-        background: "rgba(0,0,0,0.7)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-      }}
-      onClick={onClose}
-    >
+    <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
-        initial={{ scale: 0.5, y: 60 }}
+        className="checkin-modal-card"
+        style={{ "--modal-color": "var(--mint)" } as React.CSSProperties}
+        initial={{ scale: 0.92, y: 18 }}
         animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: "spring", bounce: 0.5 }}
+        exit={{ scale: 0.96, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: "linear-gradient(135deg,#1a3d28,#2d5a3d)",
-          border: "3px solid #5ddba8",
-          borderRadius: 28,
-          padding: "36px 28px",
-          maxWidth: 320,
-          width: "100%",
-          textAlign: "center",
-          boxShadow:
-            "0 0 60px rgba(93,219,168,.35), 0 20px 60px rgba(0,0,0,.4)",
-        }}
       >
-        <motion.div
-          animate={{
-            scale: [1, 1.4, 0.85, 1.2, 1],
-            rotate: [0, 20, -20, 10, 0],
-          }}
-          transition={{ duration: 0.9 }}
-          style={{ fontSize: 80, display: "inline-block", marginBottom: 10 }}
-        >
-          ⚡
-        </motion.div>
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 800,
-            color: "rgba(255,255,255,.6)",
-            textTransform: "uppercase",
-            letterSpacing: ".12em",
-            marginBottom: 4,
-          }}
-        >
-          Level up!
+        <div className="modal-icon">
+          <Zap size={34} />
         </div>
-        <div
-          style={{
-            fontFamily: "'Fredoka',sans-serif",
-            fontSize: 52,
-            fontWeight: 600,
-            color: "#5ddba8",
-            lineHeight: 1,
-          }}
-        >
-          Lv {newLevel}
-        </div>
-        <p
-          style={{
-            fontSize: 13.5,
-            fontWeight: 600,
-            color: "rgba(255,255,255,.75)",
-            marginTop: 12,
-            marginBottom: 24,
-            lineHeight: 1.6,
-          }}
-        >
-          Your consistency is paying off. Every check-in rewires the loop.
-        </p>
-        <button
-          onClick={onClose}
-          style={{
-            background: "#5ddba8",
-            color: "#0a1a10",
-            border: "none",
-            borderRadius: 14,
-            padding: "12px 28px",
-            fontSize: 15,
-            fontWeight: 800,
-            cursor: "pointer",
-            fontFamily: "'Nunito',sans-serif",
-          }}
-        >
-          Let&apos;s go! 🚀
+        <h2>Level {newLevel}</h2>
+        <p>Your check-in XP pushed you to a new level.</p>
+        <button className="primary-button" onClick={onClose} style={{ marginTop: 18 }}>
+          Continue
         </button>
       </motion.div>
     </motion.div>
   );
 }
 
-/* ══════════════════════════════════════════
-   MAIN PAGE
-══════════════════════════════════════════ */
+function MiniChart({ history }: { history: CheckInRecord[] }) {
+  const last7 = history.slice(0, 7).reverse();
+
+  return (
+    <div className="mini-chart">
+      {last7.length === 0
+        ? Array.from({ length: 7 }).map((_, i) => (
+            <div className="bar-column" key={i}>
+              <div className="bar" style={{ height: 6, "--bar-color": "var(--border2)" } as React.CSSProperties} />
+              <span>-</span>
+            </div>
+          ))
+        : last7.map((entry) => (
+            <div className="bar-column" key={entry.id}>
+              <motion.div
+                className="bar"
+                initial={{ height: 6 }}
+                animate={{ height: Math.max(8, entry.stressLevel * 9) }}
+                style={{ "--bar-color": stressColor(entry.stressLevel) } as React.CSSProperties}
+              />
+              <span>
+                {new Date(entry.checkedInAt).toLocaleDateString("en-AU", {
+                  weekday: "narrow",
+                })}
+              </span>
+            </div>
+          ))}
+    </div>
+  );
+}
+
 export default function CheckInPage() {
   const { data: session } = useSession();
 
   const [tab, setTab] = useState<Tab>("checkin");
   const [stress, setStress] = useState(5);
+  const [stressDragging, setStressDragging] = useState(false);
   const [mood, setMood] = useState("");
   const [trigger, setTrigger] = useState("");
-  const [note, setNote] = useState("");
+  const [sleepQuality, setSleepQuality] = useState<number | null>(null);
+  const [energyLevel, setEnergyLevel] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [alreadyDone, setAlreadyDone] = useState(false);
-  const [todayEntry, setTodayEntry] = useState<CheckInRecord | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [earnedXP, setEarnedXP] = useState(0);
-
-  // Inline mood roar
-  const [showRoar, setShowRoar] = useState(false);
-  const roarTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Coach
+  const [todayEntry, setTodayEntry] = useState<CheckInRecord | null>(null);
   const [aiText, setAiText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
 
-  // History
   const [history, setHistory] = useState<CheckInRecord[]>([]);
   const [histLoading, setHistLoading] = useState(false);
   const [aiInsight, setAiInsight] = useState("");
   const [insightLoading, setInsightLoading] = useState(false);
 
-  // XP float effects
-  const [xpPops, setXpPops] = useState<
-    { id: number; xp: number; x: number; y: number }[]
-  >([]);
-  const popId = useRef(0);
+  const [xpPops, setXpPops] = useState<{ id: number; xp: number; x: number; y: number }[]>([]);
+  const [popId, setPopId] = useState(0);
 
-  // Celebration state
   const [badgeQueue, setBadgeQueue] = useState<string[]>([]);
   const [currentBadge, setCurrentBadge] = useState<string | null>(null);
   const [milestoneMsg, setMilestoneMsg] = useState("");
   const [streakCelebration, setStreakCelebration] = useState<{
-    emoji: string;
+    Icon: LucideIcon;
     title: string;
     sub: string;
   } | null>(null);
   const [levelUp, setLevelUp] = useState<number | null>(null);
 
-  // Direct stress hint - no useEffect needed
-  const stressHint = STRESS_HINTS[stress] ?? "";
+  const selectedMood = MOODS.find((item) => item.val === mood) ?? null;
+  const selectedTrigger = TRIGGERS.find((item) => item.val === trigger) ?? null;
+  const canSubmit = Boolean(mood && trigger && !loading);
+  const estimatedXP = 20 + (stress >= 7 ? 10 : 0) + (sleepQuality ? 10 : 0) + (energyLevel ? 10 : 0);
 
-  // Load today's status
+  const avgStress = history.length
+    ? +(history.reduce((sum, entry) => sum + entry.stressLevel, 0) / history.length).toFixed(1)
+    : 0;
+  const highDays = history.filter((entry) => entry.stressLevel >= 7).length;
+  const topTrigger = useMemo(() => {
+    const counts: Record<string, number> = {};
+    history.forEach((entry) => {
+      if (entry.triggerType) counts[entry.triggerType] = (counts[entry.triggerType] ?? 0) + 1;
+    });
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    return top ? TRIGGERS.find((item) => item.val === top[0]) : null;
+  }, [history]);
+
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch("/api/checkin/today");
-        const d = await r.json();
-        if (d.exists && d.checkin) {
+        const res = await fetch("/api/checkin/today", { headers: getGuestHeaders() });
+        const data = await res.json();
+
+        if (data.exists && data.checkin) {
+          const entry = data.checkin as CheckInRecord;
           setAlreadyDone(true);
-          setTodayEntry(d.checkin);
+          setTodayEntry(entry);
+          setStress(entry.stressLevel);
+          setMood(entry.mood);
+          setTrigger(entry.triggerType ?? "");
+          setSleepQuality(entry.sleepQuality ?? null);
+          setEnergyLevel(entry.energyLevel ?? null);
         }
       } catch {}
     })();
   }, []);
 
-  // Load history when tab switches
   useEffect(() => {
     if (tab !== "history" || history.length > 0) return;
+
     setHistLoading(true);
     (async () => {
       try {
-        const r = await fetch("/api/checkin/history");
-        const d = await r.json();
-        if (d.history) {
-          setHistory(d.history);
+        const res = await fetch("/api/checkin/history", { headers: getGuestHeaders() });
+        const data = await res.json();
+        const entries = (data.history ?? []) as CheckInRecord[];
+        setHistory(entries);
+
+        if (entries.length > 0) {
           setInsightLoading(true);
-          const ir = await fetch("/api/ai/checkin-insight", {
+          const insightRes = await fetch("/api/ai/checkin-insight", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ history: d.history.slice(0, 14) }),
+            body: JSON.stringify({ history: entries.slice(0, 14) }),
           });
-          const id = await ir.json();
-          if (id.insight) setAiInsight(id.insight);
+          const insightData = await insightRes.json();
+          if (insightData.insight) setAiInsight(insightData.insight);
         }
       } catch {}
+
       setHistLoading(false);
       setInsightLoading(false);
     })();
-  }, [tab]);
+  }, [tab, history.length]);
 
-  function spawnXP(xp: number, e: React.MouseEvent) {
-    const id = popId.current++;
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    setXpPops((p) => [
-      ...p,
+  function spawnXP(xp: number, event: MouseEvent<HTMLElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const id = popId;
+    setPopId((value) => value + 1);
+    setXpPops((items) => [
+      ...items,
       { id, xp, x: rect.left + rect.width / 2, y: rect.top },
     ]);
-    setTimeout(() => setXpPops((p) => p.filter((x) => x.id !== id)), 1500);
+    setTimeout(() => setXpPops((items) => items.filter((item) => item.id !== id)), 1500);
   }
 
-  async function fetchCoach(
-    stressLevel: number,
-    moodVal: string,
-    triggerVal: string,
-  ) {
+  async function fetchCoach(stressLevel: number, moodVal: string, triggerVal: string) {
     setAiLoading(true);
     try {
-      const r = await fetch("/api/ai/checkin-reaction", {
+      const res = await fetch("/api/ai/checkin-reaction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          stress: stressLevel,
-          mood: moodVal,
-          trigger: triggerVal,
-        }),
+        body: JSON.stringify({ stress: stressLevel, mood: moodVal, trigger: triggerVal }),
       });
-      const d = await r.json();
-      if (d.message) setAiText(d.message);
+      const data = await res.json();
+      setAiText(data.message || "Saved. Keep the next step small and specific.");
     } catch {
-      setAiText("You showed up today - that's the whole game. 💪");
+      setAiText("Saved. Keep the next step small and specific.");
     }
     setAiLoading(false);
   }
 
-  function selectMood(m: Mood) {
-    setMood(m.val);
-    // Show inline roar, auto-dismiss after 3s
-    setShowRoar(true);
-    if (roarTimer.current) clearTimeout(roarTimer.current);
-    roarTimer.current = setTimeout(() => setShowRoar(false), 3000);
-  }
-
   async function fetchMilestoneMsg(badgeType: string, streak: number) {
     try {
-      const r = await fetch("/api/ai/milestone-message", {
+      const res = await fetch("/api/ai/milestone-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ milestone: badgeType, streak }),
       });
-      const d = await r.json();
-      if (d.message) setMilestoneMsg(d.message);
+      const data = await res.json();
+      if (data.message) setMilestoneMsg(data.message);
     } catch {}
   }
 
-  async function submit(e: React.MouseEvent) {
-    if (!mood || !trigger) return;
+  async function submit(event: MouseEvent<HTMLElement>) {
+    if (!canSubmit) return;
+
     setLoading(true);
-    const xp = 20 + (stress >= 7 ? 10 : 0);
-    setEarnedXP(xp);
-    spawnXP(xp, e);
-    fetchCoach(stress, mood, trigger);
+    setAiText("");
+
     try {
-      const guestId =
-        typeof window !== "undefined"
-          ? (localStorage.getItem("loopless_guest_id") ?? undefined)
-          : undefined;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
+        ...getGuestHeaders(),
       };
-      if (guestId) headers["x-guest-id"] = guestId;
       const res = await fetch("/api/checkin", {
         method: "POST",
         headers,
@@ -973,1313 +1528,665 @@ export default function CheckInPage() {
           stressLevel: stress,
           mood,
           triggerType: trigger,
-          note,
+          sleepQuality,
+          energyLevel,
           timezoneOffset: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       });
+
       if (res.ok) {
         const data = await res.json();
+        const xpEarned = data.xpEarned ?? (alreadyDone ? 0 : estimatedXP);
         const streak: number = data.streak ?? 0;
 
-        // Streak milestone celebration (AC9.1.1)
+        setEarnedXP(xpEarned);
+        setAlreadyDone(true);
+        setSubmitted(true);
+        setTodayEntry({
+          id: data.id,
+          stressLevel: stress,
+          mood,
+          triggerType: trigger,
+          sleepQuality,
+          energyLevel,
+          checkedInAt: new Date().toISOString(),
+          timezoneOffset: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
+        setHistory([]);
+
+        if (xpEarned > 0) spawnXP(xpEarned, event);
+        fetchCoach(stress, mood, trigger);
+
         if (STREAK_MILESTONES[streak]) {
           setStreakCelebration(STREAK_MILESTONES[streak]);
         }
 
-        // Badge queue (AC9.1.4)
-        const earned: string[] = data.newBadges ?? [];
+        const earned = (data.newBadges ?? []) as string[];
         if (earned.length > 0) {
           setBadgeQueue(earned);
           setCurrentBadge(earned[0]);
           fetchMilestoneMsg(earned[0], streak);
         }
 
-        // Level-up detection (AC9.1.3): fetch profile to compare levels
-        if (!guestId) {
+        if (!getGuestHeaders()["x-guest-id"] && xpEarned > 0) {
           fetch("/api/profile")
-            .then((r) => r.json())
+            .then((profileRes) => profileRes.json())
             .then((profile) => {
               if (profile.level) {
-                const oldXP = (profile.xp ?? 0) - xp;
+                const oldXP = (profile.xp ?? 0) - xpEarned;
                 const oldLevel = Math.max(1, Math.floor(oldXP / 500) + 1);
-                if (profile.level > oldLevel) {
-                  setLevelUp(profile.level);
-                }
+                if (profile.level > oldLevel) setLevelUp(profile.level);
               }
             })
             .catch(() => {});
         }
       }
     } catch {}
+
     setLoading(false);
-    setSubmitted(true);
   }
-
-  const selectedMood = MOODS.find((m) => m.val === mood);
-
-  // History analytics
-  const avgStress = history.length
-    ? +(
-        history.reduce((s, h) => s + h.stressLevel, 0) / history.length
-      ).toFixed(1)
-    : 0;
-  const totalDays = history.length;
-  const highDays = history.filter((h) => h.stressLevel >= 7).length;
-  const topTrigger = (() => {
-    const counts: Record<string, number> = {};
-    history.forEach((h) => {
-      if (h.triggerType)
-        counts[h.triggerType] = (counts[h.triggerType] || 0) + 1;
-    });
-    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
-    return top ? TRIGGERS.find((t) => t.val === top[0]) : null;
-  })();
-  const bestMood = (() => {
-    const counts: Record<string, number> = {};
-    history.forEach((h) => {
-      if (h.mood) counts[h.mood] = (counts[h.mood] || 0) + 1;
-    });
-    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
-    return top ? MOODS.find((m) => m.val === top[0]) : null;
-  })();
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Nunito',sans-serif;background:#fef9f0;color:#1a1208;}
-        h1,h2,h3{font-family:'Fredoka',sans-serif;}
-        a{color:inherit;text-decoration:none;}
-        @keyframes confettiFall{0%{transform:translateY(-10px) rotate(0);opacity:1;}100%{transform:translateY(100px) rotate(360deg);opacity:0;}}
+      <Styles />
 
-        .page{max-width:580px;margin:0 auto;padding:20px 18px 100px;}
-        @media(max-width:640px){.page{padding:14px 12px 100px;}}
-
-        .stress-slider{-webkit-appearance:none;appearance:none;width:100%;height:18px;border-radius:9px;outline:none;cursor:pointer;border:2.5px solid rgba(26,18,8,.12);box-shadow:inset 0 2px 4px rgba(0,0,0,.08),3px 3px 0 rgba(26,18,8,.07);}
-        .stress-slider::-webkit-slider-thumb{-webkit-appearance:none;width:38px;height:38px;border-radius:50%;background:white;border:3px solid #1a1208;box-shadow:0 4px 12px rgba(0,0,0,.2),3px 3px 0 rgba(26,18,8,.15);cursor:grab;transition:transform .1s;}
-        .stress-slider:active::-webkit-slider-thumb{transform:scale(1.2);cursor:grabbing;}
-        .stress-slider::-moz-range-thumb{width:38px;height:38px;border-radius:50%;background:white;border:3px solid #1a1208;cursor:grab;}
-
-        .mood-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 6px;border-radius:18px;border:2.5px solid rgba(26,18,8,.1);background:white;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s;box-shadow:3px 3px 0 rgba(26,18,8,.07);font-family:'Nunito',sans-serif;}
-        .mood-btn:hover{transform:translateY(-3px);box-shadow:3px 7px 0 rgba(26,18,8,.1);}
-        .mood-btn.sel{transform:translateY(-4px) scale(1.04);}
-
-        .trigger-btn{display:flex;align-items:center;gap:9px;padding:12px 14px;border-radius:14px;border:2px solid rgba(26,18,8,.1);background:white;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;box-shadow:3px 3px 0 rgba(26,18,8,.07);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#1a1208;width:100%;text-align:left;}
-        .trigger-btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(26,18,8,.1);}
-        .trigger-btn.sel{transform:translate(-1px,-2px);}
-
-        .submit-btn{width:100%;color:white;border:2.5px solid #1a1208;border-radius:16px;padding:16px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;box-shadow:5px 5px 0 rgba(26,18,8,.18);transition:transform .12s,box-shadow .12s;display:flex;align-items:center;justify-content:center;gap:10px;}
-        .submit-btn:hover{transform:translate(-1px,-2px);box-shadow:6px 7px 0 rgba(26,18,8,.18);}
-        .submit-btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 rgba(26,18,8,.08);}
-        .submit-btn:disabled{opacity:.45;pointer-events:none;}
-
-        .card{background:white;border:2px solid rgba(26,18,8,.1);border-radius:22px;padding:22px;box-shadow:5px 5px 0 rgba(26,18,8,.08);}
-        .tab-bar{display:flex;gap:6px;background:white;border:2px solid rgba(26,18,8,.1);border-radius:16px;padding:5px;box-shadow:3px 3px 0 rgba(26,18,8,.07);margin-bottom:18px;}
-        .tab{flex:1;padding:9px;border-radius:12px;border:none;background:transparent;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#6b5c3e;cursor:pointer;transition:all .15s;}
-        .tab.active{background:linear-gradient(135deg,#1a3d28,#2d5a3d);color:white;box-shadow:2px 2px 0 rgba(26,18,8,.2);}
-        .note-input{width:100%;background:#fef9f0;border:2px solid rgba(26,18,8,.1);border-radius:14px;padding:14px;font-size:14px;font-weight:600;font-family:'Nunito',sans-serif;outline:none;color:#1a1208;resize:vertical;min-height:72px;line-height:1.6;}
-        .note-input:focus{border-color:#5a8f6a;box-shadow:0 0 0 3px rgba(90,143,106,.15);}
-        .note-input::placeholder{color:#c8b89a;}
-      `}</style>
-
-      {/* XP pop effects */}
-      {xpPops.map((p) => (
-        <FloatingXP key={p.id} {...p} />
+      {xpPops.map((item) => (
+        <FloatingXP key={item.id} {...item} />
       ))}
 
-      {/* Streak milestone celebration */}
       <AnimatePresence>
-        {streakCelebration && !currentBadge && (
-          <motion.div
-            key="streak-cel"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 1900,
-              background: "rgba(0,0,0,0.55)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 20,
-            }}
-            onClick={() => setStreakCelebration(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.75, y: 30 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", bounce: 0.4 }}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                background: "var(--bg2)",
-                border: "3px solid #f5c842",
-                borderRadius: 28,
-                padding: "32px 28px",
-                maxWidth: 340,
-                width: "100%",
-                textAlign: "center",
-                boxShadow:
-                  "0 0 40px rgba(245,200,66,.4), 0 20px 60px rgba(0,0,0,.3)",
-              }}
-            >
-              <motion.div
-                animate={{ scale: [1, 1.25, 0.9, 1.1, 1] }}
-                transition={{ duration: 0.7 }}
-                style={{
-                  fontSize: 72,
-                  display: "inline-block",
-                  marginBottom: 12,
-                }}
-              >
-                {streakCelebration.emoji}
-              </motion.div>
-              <div
-                style={{
-                  fontFamily: "'Fredoka',sans-serif",
-                  fontSize: 26,
-                  fontWeight: 600,
-                  color: "#c9982a",
-                  marginBottom: 8,
-                }}
-              >
-                {streakCelebration.title}
-              </div>
-              <p
-                style={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: "var(--text2)",
-                  lineHeight: 1.6,
-                  marginBottom: 20,
-                }}
-              >
-                {streakCelebration.sub}
-              </p>
-              <button
-                onClick={() => setStreakCelebration(null)}
-                style={{
-                  background: "#f5c842",
-                  color: "#1a1208",
-                  border: "2.5px solid rgba(0,0,0,.12)",
-                  borderRadius: 14,
-                  padding: "12px 28px",
-                  fontSize: 15,
-                  fontWeight: 800,
-                  cursor: "pointer",
-                  fontFamily: "'Nunito',sans-serif",
-                }}
-              >
-                Keep going! 🔥
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
+        {streakCelebration && !currentBadge ? (
+          <MilestoneModal milestone={streakCelebration} onClose={() => setStreakCelebration(null)} />
+        ) : null}
       </AnimatePresence>
 
-      {/* Badge unlock modal queue */}
       <AnimatePresence>
-        {currentBadge && (
-          <BadgeUnlockModal
-            key={currentBadge}
+        {currentBadge ? (
+          <BadgeModal
             badgeType={currentBadge}
             milestoneMsg={milestoneMsg}
             onClose={() => {
               const remaining = badgeQueue.slice(1);
               setBadgeQueue(remaining);
               setCurrentBadge(remaining[0] ?? null);
-              if (remaining.length > 0) {
-                setMilestoneMsg("");
-                fetchMilestoneMsg(remaining[0], 0);
-              }
+              setMilestoneMsg("");
+              if (remaining[0]) fetchMilestoneMsg(remaining[0], 0);
             }}
           />
-        )}
+        ) : null}
       </AnimatePresence>
 
-      {/* Level-up modal */}
       <AnimatePresence>
-        {levelUp !== null && !currentBadge && (
-          <LevelUpModal
-            key="levelup"
-            newLevel={levelUp}
-            onClose={() => setLevelUp(null)}
-          />
-        )}
+        {levelUp !== null && !currentBadge ? (
+          <LevelUpModal newLevel={levelUp} onClose={() => setLevelUp(null)} />
+        ) : null}
       </AnimatePresence>
 
-      {/* Confetti on success */}
-      {submitted && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            pointerEvents: "none",
-            zIndex: 500,
-          }}
-        >
-          {Array.from({ length: 18 }).map((_, i) => (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                left: `${(i * 17 + 5) % 100}%`,
-                top: "-5%",
-                width: 10,
-                height: 10,
-                borderRadius: i % 3 === 0 ? "50%" : "2px",
-                background: [
-                  "#5a8f6a",
-                  "#f5c842",
-                  "#e07b5a",
-                  "#5bb8f5",
-                  "#7b6fa0",
-                ][i % 5],
-                border: "1.5px solid rgba(26,18,8,.2)",
-                animation: `confettiFall ${1.5 + (i % 5) * 0.2}s ease-in ${(i % 7) * 0.07}s forwards`,
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="page">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ marginBottom: 16 }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 6,
-            }}
-          >
-            <Link
-              href="/dashboard"
-              style={{ fontSize: 13, fontWeight: 700, color: "#6b5c3e" }}
-            >
-              ← Back
+      <main className="checkin-page">
+        <header className="checkin-top">
+          <div>
+            <Link className="checkin-back" href="/dashboard">
+              Back to dashboard
             </Link>
-            <span
-              style={{
-                background: "#e8f5ec",
-                border: "1.5px solid #5a8f6a",
-                borderRadius: 50,
-                padding: "4px 12px",
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#1a4a2a",
-              }}
-            >
-              ⚡ +20 XP
-            </span>
+            <div className="checkin-kicker">
+              <LockKeyhole size={14} />
+              Private daily signal
+            </div>
+            <h1 className="checkin-title">Check in without overthinking.</h1>
+            <p className="checkin-subtitle">
+              Capture today in under a minute. Stress, mood, and context become the signals that power your insights.
+            </p>
           </div>
-          <h1
-            style={{
-              fontFamily: "'Fredoka',sans-serif",
-              fontSize: 26,
-              fontWeight: 600,
-              color: "var(--text1)",
-              marginBottom: 3,
-            }}
-          >
-            {tab === "checkin" ? "Daily check-in ✏️" : "My check-in log 📊"}
-          </h1>
-          <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text3)" }}>
-            {tab === "checkin"
-              ? "60 seconds · Builds your loop pattern"
-              : "All your check-ins and trends"}
-          </p>
-        </motion.div>
 
-        {/* Tab bar */}
-        <div className="tab-bar">
+          <aside className="checkin-status-card">
+            <div className="checkin-status-row">
+              <div className="checkin-icon-box">
+                {alreadyDone ? <CheckCircle2 size={20} /> : <CalendarCheck2 size={20} />}
+              </div>
+              <div>
+                <strong>{alreadyDone ? "Today is saved" : `${estimatedXP} XP available`}</strong>
+                <span>{alreadyDone ? "Saving again updates today" : "More detail gives better insights"}</span>
+              </div>
+            </div>
+            {session?.user?.email ? (
+              <div className="checkin-status-row">
+                <div className="checkin-icon-box">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <strong>Account mode</strong>
+                  <span>{session.user.email}</span>
+                </div>
+              </div>
+            ) : null}
+          </aside>
+        </header>
+
+        <div className="checkin-tabs" role="tablist" aria-label="Check-in sections">
           <button
-            className={`tab${tab === "checkin" ? " active" : ""}`}
+            className={`checkin-tab${tab === "checkin" ? " is-active" : ""}`}
             onClick={() => setTab("checkin")}
+            role="tab"
+            aria-selected={tab === "checkin"}
           >
-            ✏️ Check-in {alreadyDone ? "✅" : ""}
+            Check-in
           </button>
           <button
-            className={`tab${tab === "history" ? " active" : ""}`}
+            className={`checkin-tab${tab === "history" ? " is-active" : ""}`}
             onClick={() => setTab("history")}
+            role="tab"
+            aria-selected={tab === "history"}
           >
-            📊 History & Trends
+            History
           </button>
         </div>
 
-        {/* ══════════ CHECK-IN TAB ══════════ */}
-        {tab === "checkin" && (
-          <AnimatePresence mode="wait">
-            {/* Already done today */}
-            {alreadyDone && !submitted && (
-              <motion.div
-                key="done"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", bounce: 0.3 }}
-              >
-                <div
-                  className="card"
-                  style={{ textAlign: "center", padding: "28px 24px" }}
-                >
-                  <div style={{ fontSize: 64, marginBottom: 12 }}>✅</div>
-                  <h2
-                    style={{
-                      fontFamily: "'Fredoka',sans-serif",
-                      fontSize: 24,
-                      fontWeight: 600,
-                      marginBottom: 8,
-                    }}
-                  >
-                    Already checked in today!
-                  </h2>
-                  {todayEntry && (
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 8,
-                        justifyContent: "center",
-                        flexWrap: "wrap",
-                        marginBottom: 16,
-                      }}
-                    >
-                      <span
-                        style={{
-                          background: `${stressColor(todayEntry.stressLevel)}15`,
-                          border: `1.5px solid ${stressColor(todayEntry.stressLevel)}`,
-                          borderRadius: 50,
-                          padding: "5px 14px",
-                          fontSize: 13,
-                          fontWeight: 800,
-                          color: stressColor(todayEntry.stressLevel),
-                        }}
-                      >
-                        {stressEmoji(todayEntry.stressLevel)}{" "}
-                        {todayEntry.stressLevel}/10
-                      </span>
-                      {MOODS.find((m) => m.val === todayEntry.mood) && (
-                        <span
-                          style={{
-                            background: MOODS.find(
-                              (m) => m.val === todayEntry.mood,
-                            )!.bg,
-                            border: `1.5px solid ${MOODS.find((m) => m.val === todayEntry.mood)!.color}`,
-                            borderRadius: 50,
-                            padding: "5px 14px",
-                            fontSize: 13,
-                            fontWeight: 800,
-                            color: MOODS.find((m) => m.val === todayEntry.mood)!
-                              .color,
-                          }}
-                        >
-                          {MOODS.find((m) => m.val === todayEntry.mood)!.emoji}{" "}
-                          {MOODS.find((m) => m.val === todayEntry.mood)!.label}
-                        </span>
-                      )}
+        {tab === "checkin" ? (
+          submitted ? (
+            <section className="checkin-grid">
+              <div className="success-card">
+                <div className="checkin-card success-hero">
+                  <div className="checkin-card-head">
+                    <div>
+                      <h2>{alreadyDone && earnedXP === 0 ? "Check-in updated" : "Check-in saved"}</h2>
+                      <p>
+                        {earnedXP > 0
+                          ? `${earnedXP} XP earned. Your pattern data is now fresher.`
+                          : "Today's entry was updated. XP is awarded once per day."}
+                      </p>
                     </div>
-                  )}
-                  <button
-                    onClick={() => setTab("history")}
-                    style={{
-                      background: "#5a8f6a",
-                      color: "white",
-                      border: "2.5px solid #1a1208",
-                      borderRadius: 14,
-                      padding: "12px 22px",
-                      fontSize: 14,
-                      fontWeight: 800,
-                      cursor: "pointer",
-                      fontFamily: "'Nunito',sans-serif",
-                      boxShadow: "3px 3px 0 rgba(26,18,8,.15)",
-                    }}
-                  >
-                    📊 View my trends
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Success state */}
-            {submitted && (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", bounce: 0.4 }}
-              >
-                <div
-                  className="card"
-                  style={{
-                    textAlign: "center",
-                    padding: "28px 22px",
-                    marginBottom: 14,
-                  }}
-                >
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    style={{
-                      fontSize: 72,
-                      marginBottom: 12,
-                      display: "inline-block",
-                    }}
-                  >
-                    🎉
-                  </motion.div>
-                  <h2
-                    style={{
-                      fontFamily: "'Fredoka',sans-serif",
-                      fontSize: 26,
-                      fontWeight: 600,
-                      marginBottom: 8,
-                    }}
-                  >
-                    Check-in logged!
-                  </h2>
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.4, type: "spring", bounce: 0.6 }}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 10,
-                      background: "linear-gradient(135deg,#1a3d28,#2d5a3d)",
-                      border: "2.5px solid #1a1208",
-                      borderRadius: 50,
-                      padding: "10px 24px",
-                      boxShadow: "4px 4px 0 rgba(26,18,8,.2)",
-                      marginBottom: 16,
-                    }}
-                  >
-                    <span style={{ fontSize: 22 }}>⚡</span>
-                    <span
-                      style={{
-                        fontFamily: "'Fredoka',sans-serif",
-                        fontSize: 20,
-                        fontWeight: 600,
-                        color: "#5ddba8",
-                      }}
-                    >
-                      +{earnedXP} XP earned!
-                    </span>
-                  </motion.div>
-                  <CoachBubble text={aiText} loading={aiLoading} />
-                </div>
-
-                {stress >= 7 ? (
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 800,
-                        color: "#e07b5a",
-                        marginBottom: 10,
-                        textTransform: "uppercase",
-                        letterSpacing: ".05em",
-                      }}
-                    >
-                      ⚠️ High stress - try a coping tool
-                    </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: 10,
-                        marginBottom: 14,
-                      }}
-                    >
-                      {[
-                        {
-                          emoji: "🌬️",
-                          label: "4-7-8 Breathing",
-                          sub: "2 min",
-                          href: "/coping/breathing",
-                          accent: "#5bb8f5",
-                          bg: "#dff0fd",
-                        },
-                        {
-                          emoji: "🆘",
-                          label: "Urge SOS",
-                          sub: "Instant",
-                          href: "/urge",
-                          accent: "#e07b5a",
-                          bg: "#fdf0ea",
-                        },
-                      ].map((t, i) => (
-                        <Link
-                          key={i}
-                          href={t.href}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                            background: t.bg,
-                            border: `2px solid ${t.accent}55`,
-                            borderRadius: 16,
-                            padding: "13px",
-                            boxShadow: `3px 3px 0 ${t.accent}44`,
-                          }}
-                        >
-                          <span style={{ fontSize: 26 }}>{t.emoji}</span>
-                          <div>
-                            <div
-                              style={{
-                                fontSize: 13,
-                                fontWeight: 800,
-                                color: "#1a1208",
-                              }}
-                            >
-                              {t.label}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: "#6b5c3e",
-                                fontWeight: 600,
-                              }}
-                            >
-                              {t.sub}
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
+                    <div className="checkin-icon-box">
+                      <CheckCircle2 size={22} />
                     </div>
                   </div>
-                ) : (
-                  <Link href="/dashboard">
-                    <button
-                      className="submit-btn"
-                      style={{ background: "#5a8f6a", marginBottom: 10 }}
-                    >
-                      🏠 Back to dashboard
+                  <div className="success-actions">
+                    <button className="primary-button" onClick={() => setSubmitted(false)}>
+                      Edit today
                     </button>
-                  </Link>
-                )}
-                <button
-                  onClick={() => setTab("history")}
-                  style={{
-                    width: "100%",
-                    background: "transparent",
-                    border: "2px solid rgba(26,18,8,.15)",
-                    borderRadius: 14,
-                    padding: "12px",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "#6b5c3e",
-                    cursor: "pointer",
-                    fontFamily: "'Nunito',sans-serif",
-                  }}
-                >
-                  📊 View my check-in history →
-                </button>
-              </motion.div>
-            )}
+                    {stress >= 7 ? (
+                      <Link className="secondary-button" href="/coping">
+                        Open toolkit
+                        <ArrowRight size={16} />
+                      </Link>
+                    ) : (
+                      <Link className="secondary-button" href="/insights">
+                        View insights
+                        <ArrowRight size={16} />
+                      </Link>
+                    )}
+                    <button className="secondary-button" onClick={() => setTab("history")}>
+                      View history
+                    </button>
+                  </div>
+                </div>
 
-            {/* Single-page check-in form */}
-            {!alreadyDone && !submitted && (
-              <motion.div
-                key="form"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
+                <div className="checkin-card">
+                  <div className="checkin-card-head">
+                    <div>
+                      <h3>Coach response</h3>
+                      <p>A short reflection based on what you logged.</p>
+                    </div>
+                    {aiLoading ? <Loader2 className="animate-spin" size={20} /> : <MessageCircle size={20} />}
+                  </div>
+                  <p style={{ color: "var(--text2)", fontSize: 14, fontWeight: 750, lineHeight: 1.65 }}>
+                    {aiLoading ? "Reading today's signal..." : aiText || selectedMood?.response || "Saved."}
+                  </p>
+                </div>
+              </div>
+
+              <LiveRecap
+                stress={stress}
+                selectedMood={selectedMood}
+                selectedTrigger={selectedTrigger}
+                sleepQuality={sleepQuality}
+                energyLevel={energyLevel}
+              />
+            </section>
+          ) : (
+            <section className="checkin-grid">
+              <div className="checkin-form">
                 <div
-                  style={{ display: "flex", flexDirection: "column", gap: 14 }}
+                  className="checkin-card"
+                  style={
+                    {
+                      "--stress-color": stressColor(stress),
+                      "--stress-speed": `${Math.max(0.75, 2.4 - stress * 0.15)}s`,
+                      "--stress-pos": `${((stress - 1) / 9) * 100}%`,
+                    } as React.CSSProperties
+                  }
                 >
-                  {/* Stress */}
-                  <div className="card">
-                    <div style={{ textAlign: "center", marginBottom: 18 }}>
+                  <div className="checkin-card-head">
+                    <div>
+                      <h2>Stress level</h2>
+                      <p>Drag once. Do not make it precise; make it honest.</p>
+                    </div>
+                    <div className="stress-display">
                       <motion.div
                         key={stress}
-                        initial={{ scale: 0.6, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: "spring", bounce: 0.5 }}
-                        style={{
-                          fontSize: 72,
-                          lineHeight: 1,
-                          display: "inline-block",
-                          marginBottom: 6,
-                        }}
+                        className="stress-number"
+                        initial={{ scale: 0.9, y: 5, opacity: 0.72 }}
+                        animate={{ scale: 1, y: 0, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 420, damping: 22 }}
                       >
-                        {stressEmoji(stress)}
+                        {stress}
                       </motion.div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 10,
-                          marginBottom: 4,
-                        }}
-                      >
-                        <motion.span
-                          key={stress}
-                          initial={{ scale: 1.4 }}
-                          animate={{ scale: 1 }}
-                          style={{
-                            fontFamily: "'Fredoka',sans-serif",
-                            fontSize: 34,
-                            fontWeight: 600,
-                            color: stressColor(stress),
-                          }}
-                        >
-                          {stress}
-                        </motion.span>
-                        <div>
-                          <div
-                            style={{
-                              fontFamily: "'Fredoka',sans-serif",
-                              fontSize: 18,
-                              fontWeight: 600,
-                              color: stressColor(stress),
-                            }}
-                          >
-                            {stressLabel(stress)}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 600,
-                              color: "#a8936a",
-                            }}
-                          >
-                            stress level
-                          </div>
+                      <div>
+                        <div className="stress-chip">
+                          <Gauge size={14} />
+                          {stressLabel(stress)}
                         </div>
                       </div>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: "#6b5c3e",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        {stressHint}
-                      </div>
                     </div>
+                  </div>
+                  <div className="stress-slider-zone">
+                    <motion.div
+                      className="stress-face-bubble"
+                      style={{ x: "-50%" }}
+                      animate={{
+                        y: stressDragging ? -7 : 0,
+                        scale: stressDragging ? 1.06 : 1,
+                      }}
+                      transition={{ type: "spring", stiffness: 420, damping: 24 }}
+                    >
+                      <StressFace stress={stress} dragging={stressDragging} />
+                    </motion.div>
+                    <AnimatePresence>
+                      {stressDragging ? (
+                        <motion.div
+                          key={stress}
+                          className="stress-track-burst"
+                          style={{ x: "-50%" }}
+                          initial={{ scale: 0.4, opacity: 0.8 }}
+                          animate={{ scale: 1.8, opacity: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.32 }}
+                        />
+                      ) : null}
+                    </AnimatePresence>
                     <input
+                      className="stress-slider"
                       type="range"
                       min={1}
                       max={10}
                       value={stress}
-                      onChange={(e) => setStress(+e.target.value)}
-                      className="stress-slider"
-                      style={{
-                        background: `linear-gradient(to right, ${stressColor(stress)} 0%, ${stressColor(stress)} ${((stress - 1) / 9) * 100}%, #fde8c8 ${((stress - 1) / 9) * 100}%, #fde8c8 100%)`,
-                      }}
+                      onChange={(event) => setStress(Number(event.target.value))}
+                      onPointerDown={() => setStressDragging(true)}
+                      onPointerUp={() => setStressDragging(false)}
+                      onPointerCancel={() => setStressDragging(false)}
+                      onBlur={() => setStressDragging(false)}
+                      aria-label="Stress level"
                     />
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginTop: 6,
-                      }}
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                        <div
-                          key={n}
-                          style={{
-                            fontSize: 9,
-                            fontWeight: 700,
-                            color: stress === n ? "#1a1208" : "#c8b89a",
-                          }}
+                  </div>
+                  <div className="scale-row">
+                    <span>Low</span>
+                    <span>{STRESS_HINTS[stress]}</span>
+                    <span>High</span>
+                  </div>
+                  <AnimatePresence mode="wait">
+                    {(() => {
+                      const reaction = stressReaction(stress);
+                      const ReactionIcon = reaction.Icon;
+
+                      return (
+                        <motion.div
+                          key={reaction.title}
+                          className="stress-reaction"
+                          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -8, scale: 0.99 }}
+                          transition={{ duration: 0.2 }}
                         >
-                          {n}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Mood */}
-                  <div className="card">
-                    <h3
-                      style={{
-                        fontFamily: "'Fredoka',sans-serif",
-                        fontSize: 18,
-                        fontWeight: 600,
-                        textAlign: "center",
-                        marginBottom: 4,
-                      }}
-                    >
-                      What's your vibe?
-                    </h3>
-                    <p
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 500,
-                        color: "#a8936a",
-                        textAlign: "center",
-                        marginBottom: 14,
-                      }}
-                    >
-                      Pick what feels true right now
-                    </p>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(4,1fr)",
-                        gap: 8,
-                      }}
-                    >
-                      {MOODS.map((m) => {
-                        const sel = mood === m.val;
-                        return (
-                          <motion.button
-                            key={m.val}
-                            className={`mood-btn${sel ? " sel" : ""}`}
-                            onClick={() => selectMood(m)}
-                            whileTap={{ scale: 0.88 }}
-                            style={{
-                              background: sel ? m.bg : "white",
-                              borderColor: sel ? m.color : "rgba(26,18,8,.1)",
-                              boxShadow: sel
-                                ? `3px 3px 0 ${m.color}55`
-                                : "3px 3px 0 rgba(26,18,8,.07)",
+                          <motion.div
+                            className="stress-orb"
+                            animate={{
+                              rotate: stress >= 7 ? [0, -4, 4, 0] : 0,
+                              scale: stress >= 7 ? [1, 1.04, 1] : [1, 1.02, 1],
+                            }}
+                            transition={{
+                              duration: stress >= 7 ? 0.75 : 1.8,
+                              repeat: Infinity,
+                              ease: "easeInOut",
                             }}
                           >
-                            <span
-                              style={{
-                                fontSize: 28,
-                                lineHeight: 1,
-                                display: "block",
-                              }}
-                            >
-                              {m.emoji}
-                            </span>
-                            <span
-                              style={{
-                                fontSize: 9.5,
-                                fontWeight: 700,
-                                color: sel ? m.color : "#6b5c3e",
-                                lineHeight: 1.2,
-                                textAlign: "center",
-                              }}
-                            >
-                              {m.label}
-                            </span>
-                          </motion.button>
-                        );
-                      })}
-                    </div>
-                    {/* Inline roar card */}
-                    <AnimatePresence>
-                      {showRoar && selectedMood && (
-                        <MoodRoarCard key="roar" mood={selectedMood} />
-                      )}
-                    </AnimatePresence>
-                  </div>
+                            <ReactionIcon size={22} />
+                          </motion.div>
+                          <div>
+                            <strong>{reaction.title}</strong>
+                            <p>{reaction.text}</p>
+                          </div>
+                        </motion.div>
+                      );
+                    })()}
+                  </AnimatePresence>
+                </div>
 
-                  {/* Triggers */}
-                  <div className="card">
-                    <h3
-                      style={{
-                        fontFamily: "'Fredoka',sans-serif",
-                        fontSize: 18,
-                        fontWeight: 600,
-                        textAlign: "center",
-                        marginBottom: 4,
-                      }}
-                    >
-                      Any urge today?
-                    </h3>
-                    <p
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 500,
-                        color: "#a8936a",
-                        textAlign: "center",
-                        marginBottom: 14,
-                      }}
-                    >
-                      No judgment - just tracking patterns
-                    </p>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: 8,
-                      }}
-                    >
-                      {TRIGGERS.map((t) => {
-                        const sel = trigger === t.val;
-                        return (
-                          <motion.button
-                            key={t.val}
-                            className={`trigger-btn${sel ? " sel" : ""}`}
-                            onClick={() => setTrigger(t.val)}
-                            whileTap={{ scale: 0.93 }}
-                            style={{
-                              background: sel ? "#e8f5ec" : "white",
-                              borderColor: sel ? "#5a8f6a" : "rgba(26,18,8,.1)",
-                              boxShadow: sel
-                                ? "3px 3px 0 rgba(61,107,79,.25)"
-                                : "3px 3px 0 rgba(26,18,8,.07)",
-                            }}
-                          >
-                            <motion.span
-                              animate={
-                                sel
-                                  ? {
-                                      scale: [1, 1.4, 0.85, 1.15, 1],
-                                      rotate: [0, -14, 14, -6, 0],
-                                    }
-                                  : { scale: 1, rotate: 0 }
-                              }
-                              transition={{ duration: 0.4, ease: "easeOut" }}
-                              style={{
-                                flexShrink: 0,
-                                display: "flex",
-                                alignItems: "center",
-                                color: sel ? "#5a8f6a" : "#6b5c3e",
-                              }}
-                            >
-                              <TriggerIcon
-                                val={t.val}
-                                color={sel ? "#5a8f6a" : "#6b5c3e"}
-                              />
-                            </motion.span>
-                            <span
-                              style={{
-                                fontSize: 12.5,
-                                fontWeight: 700,
-                                flex: 1,
-                              }}
-                            >
-                              {t.label}
-                            </span>
-                            {sel && (
-                              <span style={{ color: "#5a8f6a", fontSize: 14 }}>
-                                ✓
-                              </span>
-                            )}
-                          </motion.button>
-                        );
-                      })}
+                <div className="checkin-card">
+                  <div className="checkin-card-head">
+                    <div>
+                      <h2>Mood</h2>
+                      <p>Pick the closest state. You can update it later.</p>
                     </div>
                   </div>
-
-                  {/* Note */}
-                  <div className="card">
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: "#6b5c3e",
-                        marginBottom: 8,
-                      }}
-                    >
-                      Anything else?{" "}
-                      <span style={{ fontWeight: 500, color: "#a8936a" }}>
-                        (optional)
-                      </span>
-                    </div>
-                    <textarea
-                      className="note-input"
-                      placeholder="Today I noticed…"
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      maxLength={300}
-                    />
-                    <div
-                      style={{
-                        textAlign: "right",
-                        fontSize: 11,
-                        color: "#c8b89a",
-                        marginTop: 4,
-                      }}
-                    >
-                      {note.length}/300
-                    </div>
+                  <div className="mood-grid">
+                    {MOODS.map((item) => {
+                      const Icon = item.Icon;
+                      const active = mood === item.val;
+                      return (
+                        <button
+                          key={item.val}
+                          type="button"
+                          className={`choice-button${active ? " is-active" : ""}`}
+                          style={{ "--choice-tone": item.tone } as React.CSSProperties}
+                          onClick={() => setMood(item.val)}
+                          aria-pressed={active}
+                        >
+                          <div className="choice-icon">
+                            <Icon size={18} />
+                          </div>
+                          <strong>{item.label}</strong>
+                          <span>{item.sub}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-
-                  {/* Recap + high stress warning */}
                   <AnimatePresence>
-                    {mood && trigger && (
+                    {selectedMood ? (
                       <motion.div
-                        key="recap"
+                        className="coach-card"
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        style={{ marginTop: 12 }}
                       >
-                        <div
-                          className="card"
-                          style={{ background: "#f8f4ee", marginBottom: 0 }}
-                        >
-                          <div
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 800,
-                              color: "#a8936a",
-                              textTransform: "uppercase",
-                              letterSpacing: ".06em",
-                              marginBottom: 8,
-                            }}
-                          >
-                            Today's summary
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: 6,
-                              flexWrap: "wrap",
-                            }}
-                          >
-                            <span
-                              style={{
-                                background: `${stressColor(stress)}15`,
-                                border: `1.5px solid ${stressColor(stress)}`,
-                                borderRadius: 50,
-                                padding: "5px 14px",
-                                fontSize: 13,
-                                fontWeight: 800,
-                                color: stressColor(stress),
-                              }}
-                            >
-                              {stressEmoji(stress)} {stress}/10
-                            </span>
-                            {selectedMood && (
-                              <span
-                                style={{
-                                  background: selectedMood.bg,
-                                  border: `1.5px solid ${selectedMood.color}`,
-                                  borderRadius: 50,
-                                  padding: "5px 14px",
-                                  fontSize: 13,
-                                  fontWeight: 800,
-                                  color: selectedMood.color,
-                                }}
-                              >
-                                {selectedMood.emoji} {selectedMood.label}
-                              </span>
-                            )}
-                            <span
-                              style={{
-                                background: "#e8f5ec",
-                                border: "1.5px solid #5a8f6a",
-                                borderRadius: 50,
-                                padding: "5px 14px",
-                                fontSize: 13,
-                                fontWeight: 800,
-                                color: "#1a4a2a",
-                              }}
-                            >
-                              {TRIGGERS.find((t) => t.val === trigger)?.label}
-                            </span>
-                          </div>
-                        </div>
-                        {stress >= 7 && (
-                          <div
-                            style={{
-                              background: "#fdf0ea",
-                              border: "2px solid #e07b5a",
-                              borderRadius: 14,
-                              padding: "11px 16px",
-                              marginTop: 10,
-                              display: "flex",
-                              gap: 10,
-                              alignItems: "center",
-                            }}
-                          >
-                            <span style={{ fontSize: 20 }}>⚠️</span>
-                            <div
-                              style={{
-                                fontSize: 12.5,
-                                fontWeight: 600,
-                                color: "#6b5c3e",
-                              }}
-                            >
-                              High stress - coping tools will appear after you
-                              log.
-                            </div>
-                          </div>
-                        )}
+                        <div className="recap-label">Selected mood</div>
+                        <p>{selectedMood.response}</p>
                       </motion.div>
-                    )}
+                    ) : null}
                   </AnimatePresence>
+                </div>
 
-                  {/* Submit */}
-                  <button
-                    className="submit-btn"
-                    onClick={submit}
-                    disabled={!mood || !trigger || loading}
-                    style={{
-                      background:
-                        !mood || !trigger ? "#d4c8b0" : stressColor(stress),
-                      border: `2.5px solid ${!mood || !trigger ? "rgba(26,18,8,.1)" : "#1a1208"}`,
-                    }}
-                  >
-                    {loading
-                      ? "⏳ Logging…"
-                      : mood && trigger
-                        ? `✅ Log check-in (+${20 + (stress >= 7 ? 10 : 0)} XP)`
-                        : "Pick mood & trigger to log"}
+                <div className="checkin-card">
+                  <div className="checkin-card-head">
+                    <div>
+                      <h2>Urge context</h2>
+                      <p>What was most connected to the urge today?</p>
+                    </div>
+                  </div>
+                  <div className="trigger-grid">
+                    {TRIGGERS.map((item) => {
+                      const Icon = item.Icon;
+                      const active = trigger === item.val;
+                      return (
+                        <button
+                          key={item.val}
+                          type="button"
+                          className={`trigger-button${active ? " is-active" : ""}`}
+                          onClick={() => setTrigger(item.val)}
+                          aria-pressed={active}
+                        >
+                          <Icon size={16} />
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="checkin-card">
+                  <div className="checkin-card-head">
+                    <div>
+                      <h2>Optional detail</h2>
+                      <p>These two signals sharpen sleep and energy insights.</p>
+                    </div>
+                    <span className="stress-chip" style={{ "--stress-color": "var(--mint2)" } as React.CSSProperties}>
+                      +10 XP each
+                    </span>
+                  </div>
+                  <div className="optional-grid">
+                    <MiniScale title="Sleep quality" Icon={Bed} value={sleepQuality} onChange={setSleepQuality} />
+                    <MiniScale title="Energy level" Icon={Battery} value={energyLevel} onChange={setEnergyLevel} />
+                  </div>
+                </div>
+
+                <div className="submit-row">
+                  <p>
+                    {canSubmit
+                      ? alreadyDone
+                        ? "Ready to update today's check-in."
+                        : `Ready to save. Estimated reward: ${estimatedXP} XP.`
+                      : "Choose a mood and urge context to unlock save."}
+                  </p>
+                  <button className="primary-button" onClick={submit} disabled={!canSubmit}>
+                    {loading ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Saving
+                      </>
+                    ) : (
+                      <>
+                        {alreadyDone ? "Update check-in" : "Save check-in"}
+                        <ChevronRight size={16} />
+                      </>
+                    )}
                   </button>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        )}
-
-        {/* ══════════ HISTORY TAB ══════════ */}
-        {tab === "history" && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {histLoading ? (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "32px",
-                  color: "#a8936a",
-                  fontSize: 14,
-                  fontWeight: 600,
-                }}
-              >
-                <motion.span
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  style={{ display: "inline-block", marginRight: 8 }}
-                >
-                  ⚙️
-                </motion.span>
-                Loading your check-in history…
               </div>
-            ) : history.length === 0 ? (
-              <div
-                className="card"
-                style={{ textAlign: "center", padding: "28px" }}
-              >
-                <div style={{ fontSize: 48, marginBottom: 12 }}>📋</div>
-                <h3
-                  style={{
-                    fontFamily: "'Fredoka',sans-serif",
-                    fontSize: 20,
-                    fontWeight: 600,
-                    marginBottom: 8,
-                  }}
-                >
-                  No check-ins yet
-                </h3>
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: "#a8936a",
-                    fontWeight: 500,
-                    marginBottom: 16,
-                  }}
-                >
-                  Start checking in daily to see your patterns here.
-                </p>
-                <button
-                  onClick={() => setTab("checkin")}
-                  style={{
-                    background: "#5a8f6a",
-                    color: "white",
-                    border: "2.5px solid #1a1208",
-                    borderRadius: 14,
-                    padding: "11px 22px",
-                    fontSize: 14,
-                    fontWeight: 800,
-                    cursor: "pointer",
-                    fontFamily: "'Nunito',sans-serif",
-                    boxShadow: "3px 3px 0 rgba(26,18,8,.15)",
-                  }}
-                >
-                  Start first check-in →
-                </button>
-              </div>
-            ) : (
-              <>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2,1fr)",
-                    gap: 10,
-                    marginBottom: 14,
-                  }}
-                >
-                  <AnalyticsTile
-                    emoji="📋"
-                    label="Total check-ins"
-                    value={`${totalDays}`}
-                    sub="days logged"
-                    color="#5a8f6a"
-                    bg="#e8f5ec"
-                  />
-                  <AnalyticsTile
-                    emoji="📊"
-                    label="Avg stress"
-                    value={`${avgStress}/10`}
-                    sub="over all time"
-                    color={stressColor(avgStress)}
-                    bg={`${stressColor(avgStress)}15`}
-                  />
-                  <AnalyticsTile
-                    emoji="⚠️"
-                    label="High stress days"
-                    value={`${highDays}`}
-                    sub="stress ≥7"
-                    color="#e07b5a"
-                    bg="#fdf0ea"
-                  />
-                  <AnalyticsTile
-                    emoji={topTrigger ? "📍" : "🔍"}
-                    label="Top trigger"
-                    value={topTrigger?.label ?? "-"}
-                    sub="most common"
-                    color="#c9982a"
-                    bg="#fffbef"
-                  />
-                </div>
 
-                <div className="card" style={{ marginBottom: 14 }}>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 800,
-                      color: "#1a1208",
-                      marginBottom: 12,
-                    }}
-                  >
-                    📈 Stress last 7 check-ins
-                  </div>
-                  <MiniChart history={history} />
-                  <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
-                    {[
-                      { c: "#5a8f6a", l: "Low" },
-                      { c: "#c9982a", l: "Medium" },
-                      { c: "#e07b5a", l: "High" },
-                    ].map((x) => (
-                      <div
-                        key={x.l}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 5,
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: 3,
-                            background: x.c,
-                          }}
-                        />
-                        <span
-                          style={{
-                            fontSize: 10.5,
-                            fontWeight: 600,
-                            color: "#6b5c3e",
-                          }}
-                        >
-                          {x.l}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {(insightLoading || aiInsight) && (
-                  <div style={{ marginBottom: 14 }}>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 800,
-                        color: "#a8936a",
-                        textTransform: "uppercase",
-                        letterSpacing: ".06em",
-                        marginBottom: 8,
-                      }}
-                    >
-                      Your patterns
-                    </div>
-                    <CoachBubble text={aiInsight} loading={insightLoading} />
-                  </div>
-                )}
-
-                {bestMood && (
-                  <div
-                    className="card"
-                    style={{
-                      marginBottom: 14,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 14,
-                      background: bestMood.bg,
-                      borderColor: `${bestMood.color}55`,
-                    }}
-                  >
-                    <span style={{ fontSize: 40 }}>{bestMood.emoji}</span>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 800,
-                          color: "#a8936a",
-                          textTransform: "uppercase",
-                          letterSpacing: ".06em",
-                          marginBottom: 2,
-                        }}
-                      >
-                        Most common mood
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: "'Fredoka',sans-serif",
-                          fontSize: 20,
-                          fontWeight: 600,
-                          color: bestMood.color,
-                        }}
-                      >
-                        {bestMood.label}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 500,
-                          color: "#6b5c3e",
-                          marginTop: 2,
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        {bestMood.roar}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 800,
-                    color: "#1a1208",
-                    marginBottom: 10,
-                    textTransform: "uppercase",
-                    letterSpacing: ".05em",
-                  }}
-                >
-                  📅 All check-ins
-                </div>
-                {history.map((entry, i) => (
-                  <HistoryCard key={entry.id} entry={entry} index={i} />
-                ))}
-              </>
-            )}
-          </motion.div>
+              <LiveRecap
+                stress={stress}
+                selectedMood={selectedMood}
+                selectedTrigger={selectedTrigger}
+                sleepQuality={sleepQuality}
+                energyLevel={energyLevel}
+                todayEntry={todayEntry}
+              />
+            </section>
+          )
+        ) : (
+          <HistoryView
+            history={history}
+            histLoading={histLoading}
+            aiInsight={aiInsight}
+            insightLoading={insightLoading}
+            avgStress={avgStress}
+            highDays={highDays}
+            topTrigger={topTrigger}
+            onStart={() => setTab("checkin")}
+          />
         )}
-      </div>
+      </main>
     </>
+  );
+}
+
+function LiveRecap({
+  stress,
+  selectedMood,
+  selectedTrigger,
+  sleepQuality,
+  energyLevel,
+  todayEntry,
+}: {
+  stress: number;
+  selectedMood: Mood | null;
+  selectedTrigger: Trigger | null;
+  sleepQuality: number | null;
+  energyLevel: number | null;
+  todayEntry?: CheckInRecord | null;
+}) {
+  const MoodIcon = selectedMood?.Icon ?? Smile;
+  const TriggerIcon = selectedTrigger?.Icon ?? ShieldCheck;
+
+  return (
+    <aside className="checkin-recap">
+      <div>
+        <div className="recap-label">Live recap</div>
+        <div className="recap-value">
+          <Gauge size={17} color={stressColor(stress)} />
+          Stress {stress}/10, {stressLabel(stress).toLowerCase()}
+        </div>
+      </div>
+
+      <div className="recap-block">
+        <div className="recap-label">Mood</div>
+        <div className="recap-value">
+          <MoodIcon size={17} color={selectedMood?.tone ?? "var(--text3)"} />
+          {selectedMood?.label ?? "Not selected"}
+        </div>
+      </div>
+
+      <div className="recap-block">
+        <div className="recap-label">Urge context</div>
+        <div className="recap-value">
+          <TriggerIcon size={17} color={selectedTrigger ? "var(--mint2)" : "var(--text3)"} />
+          {selectedTrigger?.label ?? "Not selected"}
+        </div>
+      </div>
+
+      <div className="recap-block">
+        <div className="recap-label">Extra signals</div>
+        <div className="recap-value">
+          <Bed size={17} />
+          Sleep {sleepQuality ?? "-"} / 5
+        </div>
+        <div className="recap-value">
+          <Battery size={17} />
+          Energy {energyLevel ?? "-"} / 5
+        </div>
+      </div>
+
+      {stress >= 7 ? (
+        <div className="coach-card">
+          <div className="recap-label">Next best action</div>
+          <p>High stress logged. After saving, open the toolkit and use one short exercise.</p>
+        </div>
+      ) : (
+        <div className="coach-card">
+          <div className="recap-label">Why it matters</div>
+          <p>Each check-in helps the app separate random hard days from repeatable patterns.</p>
+        </div>
+      )}
+
+      {todayEntry ? (
+        <div className="recap-block">
+          <div className="recap-label">Today</div>
+          <div className="recap-value">
+            <CheckCircle2 size={17} color="var(--mint2)" />
+            Saved {formatDate(todayEntry.checkedInAt)}
+          </div>
+        </div>
+      ) : null}
+    </aside>
+  );
+}
+
+function HistoryView({
+  history,
+  histLoading,
+  aiInsight,
+  insightLoading,
+  avgStress,
+  highDays,
+  topTrigger,
+  onStart,
+}: {
+  history: CheckInRecord[];
+  histLoading: boolean;
+  aiInsight: string;
+  insightLoading: boolean;
+  avgStress: number;
+  highDays: number;
+  topTrigger: Trigger | null | undefined;
+  onStart: () => void;
+}) {
+  return (
+    <section className="history-grid">
+      <aside className="checkin-card">
+        <div className="checkin-card-head">
+          <div>
+            <h2>Pattern summary</h2>
+            <p>Your latest 30 check-ins, simplified.</p>
+          </div>
+          <History size={20} />
+        </div>
+
+        {histLoading ? (
+          <div className="coach-card">
+            <div className="recap-value">
+              <Loader2 className="animate-spin" size={17} />
+              Loading history
+            </div>
+          </div>
+        ) : history.length === 0 ? (
+          <div className="coach-card">
+            <div className="recap-label">No data yet</div>
+            <p>Start with one check-in. Your history will appear here.</p>
+            <button className="primary-button" onClick={onStart} style={{ marginTop: 12 }}>
+              Start check-in
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="history-stats">
+              <div className="stat-card">
+                <span>Total check-ins</span>
+                <strong>{history.length}</strong>
+              </div>
+              <div className="stat-card">
+                <span>Average stress</span>
+                <strong>{avgStress}/10</strong>
+              </div>
+              <div className="stat-card">
+                <span>High stress days</span>
+                <strong>{highDays}</strong>
+              </div>
+              <div className="stat-card">
+                <span>Top trigger</span>
+                <strong style={{ fontSize: 22 }}>{topTrigger?.label ?? "-"}</strong>
+              </div>
+            </div>
+
+            <div className="stat-card" style={{ marginTop: 12 }}>
+              <span>Last 7 check-ins</span>
+              <MiniChart history={history} />
+            </div>
+
+            {(insightLoading || aiInsight) ? (
+              <div className="coach-card" style={{ marginTop: 12 }}>
+                <div className="recap-label">AI pattern note</div>
+                <p>{insightLoading ? "Reading your recent check-ins..." : aiInsight}</p>
+              </div>
+            ) : null}
+          </>
+        )}
+      </aside>
+
+      <div className="history-list">
+        {history.map((entry) => {
+          const mood = MOODS.find((item) => item.val === entry.mood);
+          const trigger = TRIGGERS.find((item) => item.val === entry.triggerType);
+          const MoodIcon = mood?.Icon ?? Smile;
+          return (
+            <article
+              className="history-item"
+              key={entry.id}
+              style={{ "--entry-color": stressColor(entry.stressLevel) } as React.CSSProperties}
+            >
+              <div className="history-stress">{entry.stressLevel}</div>
+              <div>
+                <strong>{mood?.label ?? "Mood logged"}</strong>
+                <p>
+                  {formatDate(entry.checkedInAt)}
+                  {trigger ? ` · ${trigger.label}` : ""}
+                  {entry.sleepQuality ? ` · Sleep ${entry.sleepQuality}/5` : ""}
+                  {entry.energyLevel ? ` · Energy ${entry.energyLevel}/5` : ""}
+                </p>
+              </div>
+              <MoodIcon size={20} color={mood?.tone ?? "var(--text3)"} />
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }

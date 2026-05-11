@@ -2,7 +2,23 @@
 
 import { useState, useEffect } from "react";
 
-export default function TypewriterText({ text, speed = 25 }: { text: string; speed?: number }) {
+interface TypewriterTextProps {
+  text: string;
+  speed?: number;
+  label?: string;
+  showLabel?: boolean;
+  accent?: string;
+  compact?: boolean;
+}
+
+export default function TypewriterText({
+  text,
+  speed = 25,
+  label = "Data Analysis",
+  showLabel = true,
+  accent = "var(--mint)",
+  compact = false,
+}: TypewriterTextProps) {
   const [displayedText, setDisplayedText] = useState("");
 
   useEffect(() => {
@@ -23,36 +39,38 @@ export default function TypewriterText({ text, speed = 25 }: { text: string; spe
     <div
       style={{
         fontSize: 14.5,
-        fontWeight: 500,
+        fontWeight: 700,
         color: "var(--text2)",
         lineHeight: 1.65,
-        marginTop: 20,
-        padding: "16px 20px",
-        background: "var(--bg1)",
-        borderLeft: "3px solid var(--mint)",
-        borderRadius: "0 12px 12px 0",
+        marginTop: compact ? 0 : 20,
+        padding: compact ? 0 : "16px 20px",
+        background: compact ? "transparent" : "var(--bg1)",
+        borderLeft: compact ? "none" : `3px solid ${accent}`,
+        borderRadius: compact ? 0 : "0 12px 12px 0",
         fontFamily: "var(--font-sans)",
         position: "relative"
       }}
     >
-      <span
-        style={{
-          fontWeight: 800,
-          color: "var(--text1)",
-          display: "block",
-          marginBottom: 8,
-          fontSize: 11.5,
-          textTransform: "uppercase",
-          letterSpacing: "0.06em",
-        }}
-      >
-        Data Analysis
-      </span>
+      {showLabel ? (
+        <span
+          style={{
+            fontWeight: 800,
+            color: "var(--text1)",
+            display: "block",
+            marginBottom: 8,
+            fontSize: 11.5,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
+        >
+          {label}
+        </span>
+      ) : null}
       {displayedText}
       <span
         className="cursor-blink"
         style={{
-          borderRight: "2px solid var(--mint)",
+          borderRight: `2px solid ${accent}`,
           animation: "blink 1s step-end infinite",
           marginLeft: 2,
         }}

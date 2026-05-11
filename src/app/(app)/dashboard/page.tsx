@@ -18,7 +18,7 @@ async function getDashboardData(userId: string) {
         dailyInsights,
         mlInsights,
       } = await import("@/lib/db/schema");
-      const { eq, and, gte, desc, ne } = await import("drizzle-orm");
+      const { eq, and, gte, desc, ne, or, isNull } = await import("drizzle-orm");
 
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -41,16 +41,16 @@ async function getDashboardData(userId: string) {
         relapseMlRows,
       ] = await Promise.all([
           db.select().from(checkins)
-            .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, sevenDaysAgo)))
+            .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, sevenDaysAgo), or(isNull(checkins.timezoneOffset), ne(checkins.timezoneOffset, "__seed__"))))
             .orderBy(desc(checkins.checkedInAt)).limit(7),
           db.select().from(checkins)
-            .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, thirtyDaysAgo)))
+            .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, thirtyDaysAgo), or(isNull(checkins.timezoneOffset), ne(checkins.timezoneOffset, "__seed__"))))
             .orderBy(desc(checkins.checkedInAt)).limit(30),
           db.select().from(streaks).where(eq(streaks.userId, userId)),
           db.select().from(badges).where(eq(badges.userId, userId)).orderBy(desc(badges.earnedAt)),
           db.select().from(stressTriggers).where(eq(stressTriggers.userId, userId)),
           db.select().from(urgeEvents)
-            .where(and(eq(urgeEvents.userId, userId), gte(urgeEvents.occurredAt, sevenDaysAgo)))
+            .where(and(eq(urgeEvents.userId, userId), gte(urgeEvents.occurredAt, sevenDaysAgo), or(isNull(urgeEvents.socialContext), ne(urgeEvents.socialContext, "__seed__"))))
             .orderBy(desc(urgeEvents.occurredAt)).limit(10),
           db.select().from(copingSessions)
             .where(and(eq(copingSessions.userId, userId), gte(copingSessions.completedAt, sevenDaysAgo)))
@@ -69,7 +69,7 @@ async function getDashboardData(userId: string) {
           db
             .select()
             .from(dailyInsights)
-            .where(eq(dailyInsights.userId, userId))
+            .where(and(eq(dailyInsights.userId, userId), or(isNull(dailyInsights.source), ne(dailyInsights.source, "seed"))))
             .orderBy(desc(dailyInsights.insightDate))
             .limit(1),
           db
@@ -78,6 +78,7 @@ async function getDashboardData(userId: string) {
             .where(
               and(
                 eq(mlInsights.userId, userId),
+                or(isNull(mlInsights.source), ne(mlInsights.source, "seed")),
                 ne(mlInsights.patternType, "relapse_trigger"),
               ),
             )
@@ -89,6 +90,7 @@ async function getDashboardData(userId: string) {
             .where(
               and(
                 eq(mlInsights.userId, userId),
+                or(isNull(mlInsights.source), ne(mlInsights.source, "seed")),
                 eq(mlInsights.patternType, "relapse_trigger"),
               ),
             )

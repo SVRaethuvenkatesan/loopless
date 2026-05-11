@@ -2,143 +2,48 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
+import {
+  Activity,
+  BarChart3,
+  CheckCircle2,
+  Clock3,
+  Database,
+  LockKeyhole,
+  MousePointer2,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Timer,
+  Zap,
+} from "lucide-react";
 import type {
   CorrelationInsightData,
-  TriggerRank,
   TimeOfDayRisk,
 } from "@/lib/insights-engine";
 
-// ── SVG icons ────────────────────────────────────────────────────────────────
-
-const IcoCorrelation = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M3 20l4-8 4 4 4-6 4 2" />
-    <circle cx="7" cy="12" r="1.5" fill="currentColor" stroke="none" />
-    <circle cx="11" cy="16" r="1.5" fill="currentColor" stroke="none" />
-    <circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none" />
-    <circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const IcoTrigger = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-  </svg>
-);
-
-const IcoClock = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-
-const IcoLock = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>
-);
-
-const IcoAlert = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-    <line x1="12" y1="9" x2="12" y2="13" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-
-const IcoRefresh = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="23 4 23 10 17 10" />
-    <polyline points="1 20 1 14 7 14" />
-    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-  </svg>
-);
-
-const IcoCheck = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
+type SignalKey = "stress" | "triggers" | "time";
+type TimeKey = keyof TimeOfDayRisk;
 
 const TRIGGER_LABELS: Record<string, string> = {
   stress: "Stress",
   boredom: "Boredom",
-  social: "Social Pressure",
+  social: "Social pressure",
   anxiety: "Anxiety",
-  routine: "Daily Routine",
+  routine: "Daily routine",
   alcohol: "Alcohol",
-  break: "Work Break",
-  emotions: "Strong Emotions",
+  break: "Work break",
+  emotions: "Strong emotions",
 };
-function labelTrigger(t: string): string {
-  return TRIGGER_LABELS[t] ?? t.charAt(0).toUpperCase() + t.slice(1);
+
+const TIME_BUCKETS: { key: TimeKey; label: string; hours: string }[] = [
+  { key: "morning", label: "Morning", hours: "6-11 AM" },
+  { key: "afternoon", label: "Afternoon", hours: "12-5 PM" },
+  { key: "evening", label: "Evening", hours: "6-10 PM" },
+  { key: "night", label: "Night", hours: "11 PM-5 AM" },
+];
+
+function labelTrigger(trigger: string) {
+  return TRIGGER_LABELS[trigger] ?? trigger.charAt(0).toUpperCase() + trigger.slice(1);
 }
 
 function timeAgo(iso: string): string {
@@ -151,704 +56,335 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-function strengthLabel(rho: number): { label: string; colour: string } {
+function strengthLabel(rho: number | null) {
+  if (rho === null) return { label: "Waiting", tone: "muted" as const };
   const abs = Math.abs(rho);
-  const dir = rho > 0 ? "positive" : "negative";
-  if (abs > 0.7)
-    return { label: `Strong ${dir}`, colour: rho > 0 ? "#e07b5a" : "#5bb8f5" };
-  if (abs > 0.4)
-    return {
-      label: `Moderate ${dir}`,
-      colour: rho > 0 ? "#c9982a" : "#5bb8f5",
-    };
-  return { label: `Weak ${dir}`, colour: "#a8936a" };
+  const direction = rho >= 0 ? "positive" : "inverse";
+  if (abs >= 0.7) return { label: `Strong ${direction}`, tone: "hot" as const };
+  if (abs >= 0.4) return { label: `Moderate ${direction}`, tone: "warm" as const };
+  return { label: `Weak ${direction}`, tone: "muted" as const };
 }
 
-// ── Shared card chrome ────────────────────────────────────────────────────────
-
-function card(p: object = {}) {
-  return {
-    background: "var(--bg2)",
-    border: "1.5px solid var(--border2)",
-    borderRadius: 22,
-    padding: 18,
-    boxShadow: "var(--shadow-card)",
-    ...p,
-  };
+function progressPct(current: number, target: number) {
+  return Math.min(100, Math.round((current / target) * 100));
 }
 
-function SectionHeader({
+function SignalButton({
+  active,
   icon,
   title,
-  tag,
-  tagBg,
-  tagColor,
+  value,
+  status,
+  onClick,
 }: {
+  active: boolean;
   icon: React.ReactNode;
   title: string;
-  tag?: string;
-  tagBg?: string;
-  tagColor?: string;
+  value: string;
+  status: string;
+  onClick: () => void;
 }) {
   return (
-    <div
-      style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}
+    <button
+      type="button"
+      className={`corr-signal-btn ${active ? "active" : ""}`}
+      onClick={onClick}
     >
-      <span style={{ color: "var(--mint)" }}>{icon}</span>
-      <span
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: 19,
-          fontWeight: 600,
-          color: "var(--text1)",
-        }}
-      >
-        {title}
+      <span className="corr-signal-icon">{icon}</span>
+      <span className="corr-signal-copy">
+        <strong>{title}</strong>
+        <small>{status}</small>
       </span>
-      {tag && (
-        <span
-          style={{
-            marginLeft: "auto",
-            background: tagBg ?? "var(--bg1)",
-            border: `1.5px solid ${tagColor ?? "var(--mint)"}44`,
-            borderRadius: 50,
-            padding: "2px 10px",
-            fontSize: 10,
-            fontWeight: 800,
-            color: tagColor ?? "var(--mint)",
-          }}
-        >
-          {tag}
-        </span>
-      )}
-    </div>
+      <span className="corr-signal-value">{value}</span>
+    </button>
   );
 }
 
-// ── Progress / locked state ───────────────────────────────────────────────────
-
-function LockedCard({
+function ProgressLock({
   current,
   target,
-  unit,
-  next,
+  label,
 }: {
   current: number;
   target: number;
-  unit: string;
-  next: string;
+  label: string;
 }) {
-  const pct = Math.min((current / target) * 100, 100);
-  const remaining = target - current;
+  const pct = progressPct(current, target);
+  const remaining = Math.max(0, target - current);
   return (
-    <div style={{ padding: "6px 0" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 6,
-        }}
-      >
-        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text2)" }}>
-          {current} of {target} {unit}
+    <div className="corr-lock">
+      <div className="corr-lock-top">
+        <span>
+          <LockKeyhole size={16} strokeWidth={2.5} />
+          Locked
         </span>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            background: "var(--bg1)",
-            border: "1.5px solid var(--border2)",
-            borderRadius: 50,
-            padding: "2px 8px",
-          }}
-        >
-          <IcoLock />
-          <span style={{ fontSize: 10, fontWeight: 800, color: "var(--text3)" }}>
-            Locked
-          </span>
-        </div>
+        <strong>{pct}%</strong>
       </div>
-      <div
-        style={{
-          height: 10,
-          background: "var(--bg1)",
-          borderRadius: 6,
-          overflow: "hidden",
-          marginBottom: 8,
-        }}
-      >
-        <motion.div
+      <div className="corr-progress">
+        <motion.span
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
-          style={{
-            height: "100%",
-            borderRadius: 6,
-            background: "linear-gradient(90deg,var(--amber),var(--coral))",
-          }}
+          transition={{ duration: 0.65, ease: "easeOut" }}
         />
       </div>
-      <p
-        style={{
-          fontSize: 12,
-          color: "var(--text2)",
-          fontWeight: 500,
-          lineHeight: 1.5,
-        }}
-      >
-        <strong>
-          {remaining} more {unit}
-        </strong>{" "}
-        to unlock {next}.
+      <p>
+        {remaining === 0 ? "Ready to unlock soon." : `${remaining} more ${label} to unlock this view.`}
       </p>
     </div>
   );
 }
 
-// ── Card 1: Stress ↔ Urge Correlation ────────────────────────────────────────
-
-function CorrelationCard({ data }: { data: CorrelationInsightData }) {
-  const { checkinDays, spearmanCoef, pValue, stressUrgeSentence } = data;
-  const isLocked = checkinDays < 14;
-  const isInsignificant = !isLocked && (pValue === null || pValue > 0.05);
-  const isUnlocked = !isLocked && !isInsignificant && spearmanCoef !== null;
-
-  const rho = spearmanCoef ?? 0;
-  const { label: strLabel, colour: strColour } = strengthLabel(rho);
-  // Map rho (-1..1) to a position (0..100%) on the bar
-  const rhoPct = ((rho + 1) / 2) * 100;
+function StressDetail({ data }: { data: CorrelationInsightData }) {
+  const isLocked = data.checkinDays < 14;
+  const isUseful =
+    !isLocked &&
+    data.spearmanCoef !== null &&
+    data.pValue !== null &&
+    data.pValue <= 0.05;
+  const rho = data.spearmanCoef ?? 0;
+  const markerPct = ((rho + 1) / 2) * 100;
+  const highStressPct = data.highStressUrgePct ?? 0;
+  const strength = strengthLabel(data.spearmanCoef);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.08 }}
-      style={card()}
-    >
-      <SectionHeader
-        icon={<IcoCorrelation />}
-        title="Stress ↔ Urge Link"
-        tag={isUnlocked ? "Unlocked" : "14 days"}
-        tagBg={isUnlocked ? "var(--bg1)" : "var(--bg1)"}
-        tagColor={isUnlocked ? "var(--mint)" : "var(--amber)"}
-      />
-      <p
-        style={{
-          fontSize: 11,
-          color: "var(--text3)",
-          fontWeight: 500,
-          marginBottom: 14,
-        }}
-      >
-        Spearman correlation between your daily stress scores and urge
-        frequency.
-      </p>
-
-      {isLocked && (
-        <LockedCard
-          current={checkinDays}
-          target={14}
-          unit="check-in days"
-          next="your stress-urge correlation"
-        />
-      )}
-
-      {isInsignificant && (
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            alignItems: "flex-start",
-            padding: "12px 14px",
-            background: "var(--bg1)",
-            border: "1.5px solid var(--border2)",
-            borderRadius: 14,
-          }}
-        >
-          <span style={{ color: "var(--amber)", flexShrink: 0, marginTop: 1 }}>
-            <IcoAlert />
-          </span>
+    <div className="corr-detail-grid">
+      <div className="corr-detail-main">
+        <div className="corr-panel-title">
+          <Zap size={19} strokeWidth={2.5} />
           <div>
-            <p
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: "var(--text1)",
-                marginBottom: 2,
-              }}
-            >
-              Not enough variation in your data yet for a reliable pattern.
-            </p>
-            <p style={{ fontSize: 11, color: "var(--text3)", fontWeight: 500 }}>
-              Keep logging check-ins with varied stress levels - the engine
-              needs contrast to find a signal.
-            </p>
+            <h3>Stress link</h3>
+            <p>Checks whether high-stress days line up with urge frequency.</p>
           </div>
         </div>
-      )}
 
-      {isUnlocked && (
-        <div>
-          {/* Main insight sentence */}
-          <div
-            style={{
-              padding: "14px 16px",
-              background: "var(--bg1)",
-              border: "1.5px solid var(--border2)",
-              borderRadius: 16,
-              marginBottom: 14,
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 16,
-                fontWeight: 600,
-                color: "var(--coral)",
-                lineHeight: 1.45,
-              }}
-            >
-              {stressUrgeSentence}
-            </p>
-          </div>
-
-          {/* Rho spectrum bar */}
-          <div style={{ marginBottom: 8 }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 4,
-              }}
-            >
-              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)" }}>
-                −1.0 Inverse
-              </span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)" }}>
-                No link 0
-              </span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text3)" }}>
-                Positive +1.0
-              </span>
-            </div>
-            <div
-              style={{
-                position: "relative",
-                height: 14,
-                background: "linear-gradient(90deg,#5bb8f5,#f0edf8,#e07b5a)",
-                borderRadius: 8,
-                overflow: "visible",
-              }}
-            >
-              <motion.div
-                initial={{ left: "50%" }}
-                animate={{ left: `${rhoPct}%` }}
-                transition={{ duration: 1.4, ease: "easeOut", delay: 0.5 }}
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  transform: "translate(-50%,-50%)",
-                  width: 20,
-                  height: 20,
-                  background: "var(--bg2)",
-                  border: `3px solid ${strColour}`,
-                  borderRadius: "50%",
-                  boxShadow: `0 0 0 3px ${strColour}44`,
-                  zIndex: 2,
-                }}
-              />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: 6,
-                alignItems: "center",
-              }}
-            >
-              <span style={{ fontSize: 11, fontWeight: 700, color: strColour }}>
-                ρ = {rho.toFixed(2)} · {strLabel}
-              </span>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                  background: "var(--bg1)",
-                  border: "1.5px solid var(--border2)",
-                  borderRadius: 50,
-                  padding: "2px 8px",
-                }}
-              >
-                <IcoCheck />
-                <span
-                  style={{ fontSize: 10, fontWeight: 800, color: "var(--mint)" }}
-                >
-                  p = {pValue!.toFixed(3)}
-                </span>
+        {isLocked ? (
+          <ProgressLock
+            current={data.checkinDays}
+            target={14}
+            label="check-in days"
+          />
+        ) : (
+          <>
+            <div className="corr-meter">
+              <div className="corr-meter-labels">
+                <span>Inverse</span>
+                <span>No clear link</span>
+                <span>Positive</span>
+              </div>
+              <div className="corr-meter-track">
+                <motion.span
+                  className="corr-meter-dot"
+                  initial={{ left: "50%" }}
+                  animate={{ left: `${markerPct}%` }}
+                  transition={{ duration: 0.7, ease: "easeOut" }}
+                />
+              </div>
+              <div className="corr-meter-readout">
+                <strong>rho {data.spearmanCoef?.toFixed(2) ?? "0.00"}</strong>
+                <span>{strength.label}</span>
               </div>
             </div>
-          </div>
+
+            <div className={`corr-insight-note ${isUseful ? "good" : "quiet"}`}>
+              {isUseful ? (
+                <>
+                  <Sparkles size={17} strokeWidth={2.5} />
+                  <p>
+                    {data.stressUrgeSentence ??
+                      "Your stress and urge logs show a statistically useful pattern."}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck size={17} strokeWidth={2.5} />
+                  <p>
+                    There is not enough variation yet for a statistically reliable stress-urge signal.
+                  </p>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="corr-side-panel">
+        <div
+          className="corr-ring"
+          style={{ "--pct": `${highStressPct}%` } as React.CSSProperties}
+        >
+          <strong>{data.highStressUrgePct ?? "--"}%</strong>
+          <span>high-stress match</span>
         </div>
-      )}
-    </motion.div>
+        <div className="corr-mini-list">
+          <span>
+            <strong>{data.checkinDays}</strong>
+            check-in days
+          </span>
+          <span>
+            <strong>{data.pValue !== null ? data.pValue.toFixed(3) : "--"}</strong>
+            p-value
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 
-// ── Card 2: Trigger Probability ───────────────────────────────────────────────
-
-function TriggerCard({ data }: { data: CorrelationInsightData }) {
-  const { urgeEventCount, triggerRanking, topTriggerSentence } = data;
-  const isLocked = urgeEventCount < 10;
-  const maxPct = triggerRanking.length > 0 ? triggerRanking[0].pct : 1;
-
-  const TRIGGER_COLORS = [
-    "#e07b5a",
-    "#c9982a",
-    "#5bb8f5",
-    "#7b6fa0",
-    "#5a8f6a",
-    "#a78bfa",
-  ];
+function TriggerDetail({ data }: { data: CorrelationInsightData }) {
+  const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
+  const entries = data.triggerRanking;
+  const selected =
+    entries.find((item) => item.trigger === selectedTrigger) ?? entries[0] ?? null;
+  const maxPct = Math.max(...entries.map((item) => item.pct), 1);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.16 }}
-      style={card()}
-    >
-      <SectionHeader
-        icon={<IcoTrigger />}
-        title="Trigger Probability"
-        tag={isLocked ? "10 urges" : "Unlocked"}
-        tagBg={isLocked ? "var(--bg1)" : "var(--bg1)"}
-        tagColor={isLocked ? "var(--amber)" : "var(--mint)"}
-      />
-      <p
-        style={{
-          fontSize: 11,
-          color: "var(--text3)",
-          fontWeight: 500,
-          marginBottom: 14,
-        }}
-      >
-        Which triggers appear most often before your urges - from your own
-        history.
-      </p>
+    <div className="corr-detail-grid">
+      <div className="corr-detail-main">
+        <div className="corr-panel-title">
+          <BarChart3 size={19} strokeWidth={2.5} />
+          <div>
+            <h3>Trigger mix</h3>
+            <p>Tap a trigger to inspect how often it appears in urge logs.</p>
+          </div>
+        </div>
 
-      {isLocked ? (
-        <LockedCard
-          current={urgeEventCount}
-          target={10}
-          unit="urge logs"
-          next="your trigger probability analysis"
-        />
-      ) : (
-        <div>
-          {topTriggerSentence && (
-            <div
-              style={{
-                padding: "12px 14px",
-                background: "var(--bg1)",
-                border: "1.5px solid var(--border2)",
-                borderRadius: 14,
-                marginBottom: 14,
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: "var(--text1)",
-                  lineHeight: 1.4,
-                }}
-              >
-                {topTriggerSentence}
-              </p>
-            </div>
-          )}
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {triggerRanking.map((item: TriggerRank, i: number) => (
-              <motion.div
-                key={item.trigger}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.24 + i * 0.06 }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 4,
-                  }}
+        {data.urgeEventCount < 10 ? (
+          <ProgressLock
+            current={data.urgeEventCount}
+            target={10}
+            label="urge logs"
+          />
+        ) : (
+          <div className="corr-trigger-list">
+            {entries.map((item, index) => {
+              const active = selected?.trigger === item.trigger;
+              return (
+                <button
+                  type="button"
+                  key={item.trigger}
+                  className={`corr-trigger-row ${active ? "active" : ""}`}
+                  onClick={() => setSelectedTrigger(item.trigger)}
                 >
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "var(--text2)",
-                      minWidth: 110,
-                    }}
-                  >
+                  <span className="corr-trigger-name">
+                    <span>{index + 1}</span>
                     {labelTrigger(item.trigger)}
                   </span>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 800,
-                      color: TRIGGER_COLORS[i % TRIGGER_COLORS.length],
-                      marginLeft: "auto",
-                    }}
-                  >
-                    {item.pct}%
+                  <span className="corr-trigger-bar">
+                    <motion.span
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(item.pct / maxPct) * 100}%` }}
+                      transition={{ duration: 0.55, ease: "easeOut" }}
+                    />
                   </span>
-                </div>
-                <div
-                  style={{
-                    height: 8,
-                    background: "var(--bg1)",
-                    borderRadius: 5,
-                    overflow: "hidden",
-                  }}
-                >
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(item.pct / maxPct) * 100}%` }}
-                    transition={{
-                      duration: 0.9,
-                      ease: "easeOut",
-                      delay: 0.28 + i * 0.06,
-                    }}
-                    style={{
-                      height: "100%",
-                      borderRadius: 5,
-                      background: TRIGGER_COLORS[i % TRIGGER_COLORS.length],
-                    }}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <p
-            style={{
-              fontSize: 10,
-              color: "var(--text3)",
-              fontWeight: 600,
-              marginTop: 12,
-            }}
-          >
-            Based on {urgeEventCount} urge events · percentages show how often
-            each trigger was present
-          </p>
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-// ── Card 3: Time-of-Day Risk ──────────────────────────────────────────────────
-
-const TIME_BUCKETS: {
-  key: keyof TimeOfDayRisk;
-  label: string;
-  hours: string;
-}[] = [
-  { key: "morning", label: "Morning", hours: "6–11 AM" },
-  { key: "afternoon", label: "Afternoon", hours: "12–5 PM" },
-  { key: "evening", label: "Evening", hours: "6–10 PM" },
-  { key: "night", label: "Night", hours: "11 PM–5 AM" },
-];
-
-function TimeCard({ data }: { data: CorrelationInsightData }) {
-  const { checkinDays, urgeEventCount, timeOfDayRisk, topTimeSentence } = data;
-  const tooFewCheckins = checkinDays < 14;
-  const tooFewUrges = urgeEventCount < 10;
-  const isLocked = tooFewCheckins || tooFewUrges;
-
-  const total = timeOfDayRisk
-    ? Object.values(timeOfDayRisk).reduce((s, v) => s + v, 0)
-    : 0;
-
-  let maxKey: keyof TimeOfDayRisk = "evening";
-  if (timeOfDayRisk) {
-    maxKey = (Object.keys(timeOfDayRisk) as (keyof TimeOfDayRisk)[]).reduce(
-      (a, b) => (timeOfDayRisk[a] > timeOfDayRisk[b] ? a : b),
-    );
-  }
-
-  const BUCKET_COLORS: Record<keyof TimeOfDayRisk, string> = {
-    morning: "#f5a623",
-    afternoon: "#5bb8f5",
-    evening: "#7b6fa0",
-    night: "#3d2a4a",
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.24 }}
-      style={card()}
-    >
-      <SectionHeader
-        icon={<IcoClock />}
-        title="Time-of-Day Risk Profile"
-        tag={isLocked ? "14 days + 10 urges" : "Unlocked"}
-        tagBg={isLocked ? "var(--bg1)" : "var(--bg1)"}
-        tagColor={isLocked ? "var(--amber)" : "var(--mint)"}
-      />
-      <p
-        style={{
-          fontSize: 11,
-          color: "var(--text3)",
-          fontWeight: 500,
-          marginBottom: 14,
-        }}
-      >
-        When your urges are most likely to strike, by time of day.
-      </p>
-
-      {isLocked ? (
-        <LockedCard
-          current={tooFewCheckins ? checkinDays : urgeEventCount}
-          target={tooFewCheckins ? 14 : 10}
-          unit={tooFewCheckins ? "check-in days" : "urge logs"}
-          next="your time-of-day risk profile"
-        />
-      ) : (
-        <div>
-          {topTimeSentence && (
-            <div
-              style={{
-                padding: "12px 14px",
-                background: "var(--bg1)",
-                border: "1.5px solid var(--border2)",
-                borderRadius: 14,
-                marginBottom: 16,
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: "var(--text1)",
-                  lineHeight: 1.4,
-                }}
-              >
-                {topTimeSentence}
-              </p>
-            </div>
-          )}
-
-          {/* 4-bucket bar chart */}
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              alignItems: "flex-end",
-              height: 80,
-            }}
-          >
-            {TIME_BUCKETS.map(({ key, label, hours }) => {
-              const count = timeOfDayRisk?.[key] ?? 0;
-              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-              const maxCount = timeOfDayRisk
-                ? Math.max(...Object.values(timeOfDayRisk))
-                : 1;
-              const barH = Math.max(
-                (count / Math.max(maxCount, 1)) * 56,
-                count > 0 ? 6 : 2,
-              );
-              const isTop = key === maxKey;
-
-              return (
-                <div
-                  key={key}
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 9,
-                      fontWeight: 800,
-                      color: isTop ? BUCKET_COLORS[key] : "var(--text3)",
-                      visibility: count > 0 ? "visible" : "hidden",
-                    }}
-                  >
-                    {pct}%
-                  </span>
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: barH }}
-                    transition={{
-                      duration: 0.8,
-                      ease: "easeOut",
-                      delay:
-                        0.3 +
-                        TIME_BUCKETS.findIndex((b) => b.key === key) * 0.08,
-                    }}
-                    style={{
-                      width: "85%",
-                      borderRadius: "6px 6px 3px 3px",
-                      background: isTop
-                        ? `linear-gradient(180deg,${BUCKET_COLORS[key]}aa,${BUCKET_COLORS[key]})`
-                        : `${BUCKET_COLORS[key]}55`,
-                      border: isTop
-                        ? `2px solid ${BUCKET_COLORS[key]}`
-                        : `1.5px solid ${BUCKET_COLORS[key]}44`,
-                    }}
-                  />
-                  <div style={{ textAlign: "center" }}>
-                    <div
-                      style={{
-                        fontSize: 9,
-                        fontWeight: 800,
-                        color: isTop ? BUCKET_COLORS[key] : "var(--text2)",
-                      }}
-                    >
-                      {label}
-                    </div>
-                    <div
-                      style={{ fontSize: 8, fontWeight: 500, color: "var(--text3)" }}
-                    >
-                      {hours}
-                    </div>
-                  </div>
-                </div>
+                  <strong>{item.pct}%</strong>
+                </button>
               );
             })}
           </div>
+        )}
+      </div>
 
-          <p
-            style={{
-              fontSize: 10,
-              color: "var(--text3)",
-              fontWeight: 600,
-              marginTop: 12,
-            }}
-          >
-            Based on {urgeEventCount} urge events · local time buckets
+      <div className="corr-side-panel">
+        <div className="corr-selected-card">
+          <small>Selected trigger</small>
+          <h3>{selected ? labelTrigger(selected.trigger) : "Waiting"}</h3>
+          <p>
+            {selected
+              ? `${selected.count} of ${data.urgeEventCount} urge logs included this trigger.`
+              : "Log more urges to reveal your top trigger."}
           </p>
+          <strong>{selected ? `${selected.pct}%` : "--"}</strong>
         </div>
-      )}
-    </motion.div>
+        <div className="corr-insight-note quiet">
+          <MousePointer2 size={17} strokeWidth={2.5} />
+          <p>{data.topTriggerSentence ?? "Trigger percentages update as you log more urges."}</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
+function TimeDetail({ data }: { data: CorrelationInsightData }) {
+  const [selectedTime, setSelectedTime] = useState<TimeKey>("evening");
+  const buckets = data.timeOfDayRisk;
+  const total = buckets ? Object.values(buckets).reduce((sum, value) => sum + value, 0) : 0;
+  const maxCount = buckets ? Math.max(...Object.values(buckets), 1) : 1;
+  const topBucket = buckets
+    ? TIME_BUCKETS.reduce((best, bucket) =>
+        buckets[bucket.key] > buckets[best.key] ? bucket : best,
+      )
+    : TIME_BUCKETS[2];
+  const activeBucket = TIME_BUCKETS.find((bucket) => bucket.key === selectedTime) ?? topBucket;
+  const activeCount = buckets?.[activeBucket.key] ?? 0;
+  const activePct = total > 0 ? Math.round((activeCount / total) * 100) : 0;
+
+  return (
+    <div className="corr-detail-grid">
+      <div className="corr-detail-main">
+        <div className="corr-panel-title">
+          <Clock3 size={19} strokeWidth={2.5} />
+          <div>
+            <h3>Time windows</h3>
+            <p>Tap a time block to see where urges cluster during the day.</p>
+          </div>
+        </div>
+
+        {data.checkinDays < 14 || data.urgeEventCount < 10 || !buckets ? (
+          <ProgressLock
+            current={data.checkinDays < 14 ? data.checkinDays : data.urgeEventCount}
+            target={data.checkinDays < 14 ? 14 : 10}
+            label={data.checkinDays < 14 ? "check-in days" : "urge logs"}
+          />
+        ) : (
+          <div className="corr-time-grid">
+            {TIME_BUCKETS.map((bucket) => {
+              const count = buckets[bucket.key];
+              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+              const height = Math.max(12, Math.round((count / maxCount) * 100));
+              const active = activeBucket.key === bucket.key;
+              return (
+                <button
+                  type="button"
+                  key={bucket.key}
+                  className={`corr-time-block ${active ? "active" : ""}`}
+                  onClick={() => setSelectedTime(bucket.key)}
+                >
+                  <span className="corr-time-bars">
+                    <motion.span
+                      initial={{ height: 0 }}
+                      animate={{ height: `${height}%` }}
+                      transition={{ duration: 0.55, ease: "easeOut" }}
+                    />
+                  </span>
+                  <strong>{bucket.label}</strong>
+                  <small>{bucket.hours}</small>
+                  <em>{pct}%</em>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <div className="corr-side-panel">
+        <div className="corr-selected-card">
+          <small>Selected window</small>
+          <h3>{activeBucket.label}</h3>
+          <p>
+            {total > 0
+              ? `${activeCount} urge logs landed in this window.`
+              : "Time windows appear after enough urge logs."}
+          </p>
+          <strong>{total > 0 ? `${activePct}%` : "--"}</strong>
+        </div>
+        <div className="corr-insight-note quiet">
+          <Timer size={17} strokeWidth={2.5} />
+          <p>{data.topTimeSentence ?? "Timing patterns unlock after 14 check-in days and 10 urge logs."}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function InsightsClient({
   data: initialData,
@@ -859,8 +395,17 @@ export default function InsightsClient({
 }) {
   const [data, setData] = useState<CorrelationInsightData>(initialData);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeSignal, setActiveSignal] = useState<SignalKey>("stress");
 
-  const { checkinDays, urgeEventCount, computedAt } = data;
+  const stressUnlocked =
+    data.checkinDays >= 14 &&
+    data.spearmanCoef !== null &&
+    data.pValue !== null &&
+    data.pValue <= 0.05;
+  const triggerUnlocked = data.urgeEventCount >= 10;
+  const timeUnlocked = data.checkinDays >= 14 && data.urgeEventCount >= 10;
+  const unlockedCount = [stressUnlocked, triggerUnlocked, timeUnlocked].filter(Boolean).length;
+  const strength = strengthLabel(data.spearmanCoef);
 
   async function handleRefresh() {
     if (refreshing) return;
@@ -871,208 +416,686 @@ export default function InsightsClient({
         const json = await res.json();
         if (json.data) setData(json.data);
       }
-    } catch {}
-    setRefreshing(false);
+    } catch {
+      // Keep the current cached view if refresh fails.
+    } finally {
+      setRefreshing(false);
+    }
   }
 
-  const totalUnlocked = [
-    checkinDays >= 14 && data.pValue !== null && data.pValue <= 0.05,
-    urgeEventCount >= 10,
-    checkinDays >= 14 && urgeEventCount >= 10,
-  ].filter(Boolean).length;
-
   return (
-    <div style={{ paddingBottom: 24 }}>
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "24px 16px 0" }}>
-        {/* Page header */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          style={{ marginBottom: 20 }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 8,
-            }}
-          >
-            <div>
-              <h1
-                style={{
-                  fontFamily: "'Fredoka',sans-serif",
-                  fontSize: 26,
-                  fontWeight: 700,
-                  color: "var(--text1)",
-                  margin: 0,
-                  lineHeight: 1.2,
-                }}
-              >
-                Correlation Engine
-              </h1>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "var(--text2)",
-                  fontWeight: 500,
-                  marginTop: 3,
-                }}
-              >
-                Personal patterns computed from your own data - no averages, no
-                benchmarks.
-              </p>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                gap: 4,
-              }}
-            >
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 5,
-                  background: "var(--bg2)",
-                  border: "1.5px solid var(--border2)",
-                  borderRadius: 50,
-                  padding: "4px 10px",
-                  boxShadow: "var(--shadow-card)",
-                  cursor: refreshing ? "default" : "pointer",
-                  opacity: refreshing ? 0.6 : 1,
-                  transition: "opacity 0.2s",
-                }}
-              >
-                <span
-                  style={{
-                    animation: refreshing ? "spin 1s linear infinite" : "none",
-                    display: "flex",
-                  }}
-                >
-                  <IcoRefresh />
-                </span>
-                <span
-                  style={{ fontSize: 10, fontWeight: 700, color: "var(--text2)" }}
-                >
-                  {refreshing
-                    ? "Refreshing..."
-                    : `Updated ${timeAgo(computedAt)}`}
-                </span>
-              </button>
-              <div style={{ display: "flex", gap: 6 }}>
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 800,
-                    color: "#5a8f6a",
-                    background: "#e8f5ec",
-                    border: "1.5px solid #5a8f6a44",
-                    borderRadius: 50,
-                    padding: "2px 8px",
-                  }}
-                >
-                  {checkinDays} days
-                </span>
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 800,
-                    color: "#c9982a",
-                    background: "#fff8e6",
-                    border: "1.5px solid #c9982a44",
-                    borderRadius: 50,
-                    padding: "2px 8px",
-                  }}
-                >
-                  {urgeEventCount} urges
-                </span>
-              </div>
-            </div>
+    <div className="corr-page">
+      <CorrelationStyles />
+
+      <div className="corr-toolbar">
+        <div>
+          <p className="corr-kicker">Correlation engine</p>
+          <h2>How your patterns connect</h2>
+          <p>
+            Switch between the three signals to see what is unlocked, what is
+            still learning, and what the data says.
+          </p>
+        </div>
+        <button type="button" onClick={handleRefresh} disabled={refreshing}>
+          <RefreshCw
+            size={16}
+            strokeWidth={2.5}
+            className={refreshing ? "corr-spin" : ""}
+          />
+          {refreshing ? "Refreshing" : `Updated ${timeAgo(data.computedAt)}`}
+        </button>
+      </div>
+
+      <div className="corr-summary-grid">
+        <div className="corr-summary-card">
+          <CheckCircle2 size={18} strokeWidth={2.5} />
+          <span>
+            <strong>{unlockedCount}/3</strong>
+            signals unlocked
+          </span>
+        </div>
+        <div className="corr-summary-card">
+          <Database size={18} strokeWidth={2.5} />
+          <span>
+            <strong>{data.checkinDays}</strong>
+            check-in days
+          </span>
+        </div>
+        <div className="corr-summary-card">
+          <Activity size={18} strokeWidth={2.5} />
+          <span>
+            <strong>{data.urgeEventCount}</strong>
+            urge logs
+          </span>
+        </div>
+      </div>
+
+      <div className="corr-workspace">
+        <aside className="corr-map">
+          <div className="corr-map-head">
+            <span>{isDemoMode ? "Demo pattern map" : "Your pattern map"}</span>
+            <strong>{Math.round((unlockedCount / 3) * 100)}%</strong>
+          </div>
+          <div className="corr-progress">
+            <motion.span
+              initial={{ width: 0 }}
+              animate={{ width: `${(unlockedCount / 3) * 100}%` }}
+              transition={{ duration: 0.65, ease: "easeOut" }}
+            />
           </div>
 
-          {/* Progress band */}
-          {totalUnlocked < 3 && (
-            <div
-              style={{
-                marginTop: 14,
-                padding: "10px 14px",
-                background: "var(--bg2)",
-                border: "2px solid var(--border2)",
-                borderRadius: 14,
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <div
-                style={{
-                  flex: 1,
-                  height: 6,
-                  background: "rgba(26,18,8,.06)",
-                  borderRadius: 4,
-                  overflow: "hidden",
-                }}
-              >
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(totalUnlocked / 3) * 100}%` }}
-                  transition={{ duration: 1, delay: 0.4 }}
-                  style={{
-                    height: "100%",
-                    background: "linear-gradient(90deg,#5a8f6a,#3bc98e)",
-                    borderRadius: 4,
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: "#5a8f6a",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {totalUnlocked}/3 insights unlocked
-              </span>
-            </div>
-          )}
-        </motion.div>
+          <div className="corr-signal-list">
+            <SignalButton
+              active={activeSignal === "stress"}
+              icon={<Zap size={17} strokeWidth={2.5} />}
+              title="Stress link"
+              value={data.spearmanCoef !== null ? data.spearmanCoef.toFixed(2) : "--"}
+              status={stressUnlocked ? strength.label : `${data.checkinDays}/14 days`}
+              onClick={() => setActiveSignal("stress")}
+            />
+            <SignalButton
+              active={activeSignal === "triggers"}
+              icon={<BarChart3 size={17} strokeWidth={2.5} />}
+              title="Trigger mix"
+              value={triggerUnlocked ? `${data.triggerRanking.length}` : "--"}
+              status={triggerUnlocked ? "Tap to inspect" : `${data.urgeEventCount}/10 urges`}
+              onClick={() => setActiveSignal("triggers")}
+            />
+            <SignalButton
+              active={activeSignal === "time"}
+              icon={<Clock3 size={17} strokeWidth={2.5} />}
+              title="Time windows"
+              value={timeUnlocked ? "4" : "--"}
+              status={timeUnlocked ? "Daypart view ready" : "14 days + 10 urges"}
+              onClick={() => setActiveSignal("time")}
+            />
+          </div>
+        </aside>
 
-        {/* Cards */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <CorrelationCard data={data} />
-          <TriggerCard data={data} />
-          <TimeCard data={data} />
-        </div>
-
-        {/* Footer note */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          style={{
-            fontSize: 10,
-            color: "var(--text3)",
-            fontWeight: 500,
-            textAlign: "center",
-            marginTop: 24,
-            lineHeight: 1.6,
-          }}
+        <motion.section
+          key={activeSignal}
+          className="corr-detail-shell"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
         >
-          Cache auto-invalidates after each check-in or urge log. Use Refresh to
-          recompute manually.{"\n"}
-          Statistical significance threshold: p ≤ 0.05 (Spearman rank
-          correlation).
-        </motion.p>
+          {activeSignal === "stress" && <StressDetail data={data} />}
+          {activeSignal === "triggers" && <TriggerDetail data={data} />}
+          {activeSignal === "time" && <TimeDetail data={data} />}
+        </motion.section>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      <p className="corr-footnote">
+        Refresh recomputes the engine from your latest check-ins and urge logs.
+        Stress correlation uses Spearman rank correlation with p-value {"<= "}
+        0.05.
+      </p>
     </div>
+  );
+}
+
+function CorrelationStyles() {
+  return (
+    <style>{`
+      .corr-page {
+        display: grid;
+        gap: 16px;
+        width: 100%;
+        padding-top: 4px;
+      }
+      .corr-toolbar {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+      }
+      .corr-kicker {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .corr-toolbar h2 {
+        margin: 3px 0 6px;
+        font-family: var(--font-display);
+        font-size: 28px;
+        line-height: 1.08;
+      }
+      .corr-toolbar p:not(.corr-kicker) {
+        max-width: 650px;
+        color: var(--text2);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .corr-toolbar button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        border: 1px solid var(--border2);
+        border-radius: 12px;
+        background: var(--bg2);
+        color: var(--text2);
+        padding: 0 14px;
+        font-size: 13px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .corr-toolbar button:disabled {
+        cursor: default;
+        opacity: 0.65;
+      }
+      .corr-spin {
+        animation: corr-spin 0.8s linear infinite;
+      }
+      .corr-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .corr-summary-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 72px;
+        border: 1px solid var(--border2);
+        border-radius: 16px;
+        background: var(--bg2);
+        padding: 14px;
+      }
+      .corr-summary-card svg {
+        color: var(--mint2);
+      }
+      .corr-summary-card span,
+      .corr-summary-card strong {
+        display: block;
+      }
+      .corr-summary-card span {
+        color: var(--text3);
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .corr-summary-card strong {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 26px;
+        line-height: 1;
+      }
+      .corr-workspace {
+        display: grid;
+        grid-template-columns: minmax(260px, 0.33fr) minmax(0, 1fr);
+        gap: 14px;
+        align-items: stretch;
+      }
+      .corr-map,
+      .corr-detail-shell {
+        border: 1px solid var(--border2);
+        border-radius: 18px;
+        background: var(--bg2);
+        box-shadow: 0 12px 38px rgba(21, 31, 26, 0.06);
+      }
+      .corr-map {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 16px;
+      }
+      .corr-map-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--text3);
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .corr-map-head strong {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 24px;
+        line-height: 1;
+      }
+      .corr-progress {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--bg1);
+        overflow: hidden;
+      }
+      .corr-progress span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--mint2);
+      }
+      .corr-signal-list {
+        display: grid;
+        gap: 9px;
+      }
+      .corr-signal-btn {
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        min-height: 72px;
+        border: 1px solid var(--border2);
+        border-radius: 14px;
+        background: var(--bg0);
+        color: var(--text1);
+        padding: 10px;
+        text-align: left;
+      }
+      .corr-signal-btn.active {
+        border-color: var(--text1);
+        background: linear-gradient(135deg, rgba(59, 201, 142, 0.1), var(--bg2));
+      }
+      .corr-signal-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        background: var(--bg2);
+        color: var(--text2);
+      }
+      .corr-signal-copy strong,
+      .corr-signal-copy small {
+        display: block;
+      }
+      .corr-signal-copy strong {
+        color: var(--text1);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .corr-signal-copy small {
+        margin-top: 2px;
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .corr-signal-value {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .corr-detail-shell {
+        min-height: 430px;
+        padding: 18px;
+      }
+      .corr-detail-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(240px, 0.36fr);
+        gap: 14px;
+        height: 100%;
+      }
+      .corr-detail-main,
+      .corr-side-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .corr-detail-main {
+        min-width: 0;
+      }
+      .corr-panel-title {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .corr-panel-title svg {
+        margin-top: 3px;
+        color: var(--mint2);
+      }
+      .corr-panel-title h3 {
+        margin: 0 0 3px;
+        font-family: var(--font-display);
+        font-size: 22px;
+      }
+      .corr-panel-title p {
+        color: var(--text2);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .corr-lock {
+        display: grid;
+        gap: 10px;
+        margin-top: auto;
+        margin-bottom: auto;
+        border: 1px dashed var(--border3);
+        border-radius: 16px;
+        background: var(--bg0);
+        padding: 18px;
+      }
+      .corr-lock-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--text2);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .corr-lock-top span {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .corr-lock-top strong {
+        color: var(--text1);
+      }
+      .corr-lock p {
+        color: var(--text2);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .corr-meter {
+        display: grid;
+        gap: 10px;
+        margin-top: 22px;
+      }
+      .corr-meter-labels,
+      .corr-meter-readout {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .corr-meter-labels span {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .corr-meter-track {
+        position: relative;
+        height: 18px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #5bb8f5, var(--bg1), #e07b5a);
+      }
+      .corr-meter-dot {
+        position: absolute;
+        top: 50%;
+        width: 28px;
+        height: 28px;
+        border: 5px solid var(--bg2);
+        border-radius: 999px;
+        background: var(--text1);
+        box-shadow: 0 8px 22px rgba(21, 31, 26, 0.16);
+        transform: translate(-50%, -50%);
+      }
+      .corr-meter-readout strong {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 24px;
+      }
+      .corr-meter-readout span {
+        color: var(--text2);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .corr-insight-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        border-radius: 14px;
+        padding: 13px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.55;
+      }
+      .corr-insight-note.good {
+        border: 1px solid rgba(59, 201, 142, 0.25);
+        background: rgba(59, 201, 142, 0.1);
+        color: var(--text1);
+      }
+      .corr-insight-note.quiet {
+        border: 1px solid var(--border2);
+        background: var(--bg0);
+        color: var(--text2);
+      }
+      .corr-insight-note svg {
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+      .corr-side-panel {
+        min-width: 0;
+      }
+      .corr-ring {
+        --pct: 0%;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        min-height: 210px;
+        border-radius: 18px;
+        background:
+          radial-gradient(var(--bg2) 58%, transparent 59%),
+          conic-gradient(var(--mint2) var(--pct), var(--bg1) 0);
+      }
+      .corr-ring strong {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 42px;
+        line-height: 1;
+      }
+      .corr-ring span {
+        max-width: 120px;
+        color: var(--text3);
+        text-align: center;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.25;
+        text-transform: uppercase;
+      }
+      .corr-mini-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .corr-mini-list span {
+        display: grid;
+        gap: 3px;
+        border: 1px solid var(--border2);
+        border-radius: 14px;
+        background: var(--bg0);
+        color: var(--text3);
+        padding: 12px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .corr-mini-list strong {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 22px;
+      }
+      .corr-trigger-list {
+        display: grid;
+        gap: 9px;
+        margin-top: 4px;
+      }
+      .corr-trigger-row {
+        display: grid;
+        grid-template-columns: minmax(150px, 0.34fr) minmax(0, 1fr) 54px;
+        align-items: center;
+        gap: 12px;
+        min-height: 48px;
+        border: 1px solid var(--border2);
+        border-radius: 13px;
+        background: var(--bg0);
+        padding: 9px 10px;
+        text-align: left;
+      }
+      .corr-trigger-row.active {
+        border-color: var(--text1);
+        background: var(--bg2);
+      }
+      .corr-trigger-name {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--text1);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .corr-trigger-name span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+        background: var(--bg2);
+        color: var(--text3);
+        font-size: 11px;
+      }
+      .corr-trigger-bar {
+        height: 9px;
+        border-radius: 999px;
+        background: var(--bg1);
+        overflow: hidden;
+      }
+      .corr-trigger-bar span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--coral);
+      }
+      .corr-trigger-row strong {
+        color: var(--text1);
+        font-family: var(--font-display);
+        text-align: right;
+      }
+      .corr-selected-card {
+        display: grid;
+        gap: 8px;
+        min-height: 178px;
+        border: 1px solid var(--border2);
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(91, 184, 245, 0.1), var(--bg0));
+        padding: 18px;
+      }
+      .corr-selected-card small {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .corr-selected-card h3 {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 24px;
+      }
+      .corr-selected-card p {
+        color: var(--text2);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.5;
+      }
+      .corr-selected-card strong {
+        align-self: end;
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 40px;
+        line-height: 1;
+      }
+      .corr-time-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        min-height: 280px;
+      }
+      .corr-time-block {
+        display: grid;
+        grid-template-rows: minmax(130px, 1fr) auto auto auto;
+        gap: 6px;
+        border: 1px solid var(--border2);
+        border-radius: 16px;
+        background: var(--bg0);
+        padding: 12px;
+        text-align: center;
+      }
+      .corr-time-block.active {
+        border-color: var(--text1);
+        background: var(--bg2);
+      }
+      .corr-time-bars {
+        display: flex;
+        align-items: end;
+        justify-content: center;
+        border-radius: 12px;
+        background: var(--bg2);
+        overflow: hidden;
+      }
+      .corr-time-bars span {
+        width: min(46px, 60%);
+        min-height: 10px;
+        border-radius: 999px 999px 0 0;
+        background: var(--mint2);
+      }
+      .corr-time-block strong {
+        color: var(--text1);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .corr-time-block small {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .corr-time-block em {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 700;
+      }
+      .corr-footnote {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.55;
+      }
+      .dark .corr-map,
+      .dark .corr-detail-shell,
+      .dark .corr-summary-card,
+      .dark .corr-toolbar button {
+        background: var(--bg2);
+      }
+      @media (max-width: 980px) {
+        .corr-toolbar {
+          align-items: stretch;
+          flex-direction: column;
+        }
+        .corr-toolbar button {
+          align-self: flex-start;
+        }
+        .corr-workspace,
+        .corr-detail-grid {
+          grid-template-columns: 1fr;
+        }
+        .corr-map {
+          order: -1;
+        }
+      }
+      @media (max-width: 720px) {
+        .corr-summary-grid,
+        .corr-time-grid,
+        .corr-mini-list {
+          grid-template-columns: 1fr;
+        }
+        .corr-trigger-row {
+          grid-template-columns: 1fr;
+        }
+        .corr-trigger-row strong {
+          text-align: left;
+        }
+      }
+      @keyframes corr-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    `}</style>
   );
 }

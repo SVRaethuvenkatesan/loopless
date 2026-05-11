@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, useAnimationControls } from "framer-motion";
-import { SparklesIcon } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 interface DataWheelProps {
   items: { id: string; title: string; color: string; icon: React.ReactNode }[];
@@ -16,61 +16,60 @@ export default function DataWheel({ items, onSpinEnd }: DataWheelProps) {
 
   const numItems = items.length;
   const sliceAngle = 360 / numItems;
+  const point = (angle: number) => ({
+    x: Number((50 + 50 * Math.cos((Math.PI * angle) / 180)).toFixed(4)),
+    y: Number((50 + 50 * Math.sin((Math.PI * angle) / 180)).toFixed(4)),
+  });
 
   const handleSpin = async () => {
-    if (isSpinning) return;
+    if (isSpinning || numItems === 0) return;
     setIsSpinning(true);
 
     const winningIndex = spinCount % numItems;
     setSpinCount((prev) => prev + 1);
 
     const centerOfWinningSegment = winningIndex * sliceAngle + sliceAngle / 2;
-    const extraSpins = 360 * 5;
+    const extraSpins = 360 * 4;
     const targetRotation = extraSpins + (360 - centerOfWinningSegment);
 
     await controls.start({
       rotate: targetRotation,
-      transition: { duration: 3.5, ease: "circOut" },
+      transition: { duration: 2.8, ease: "circOut" },
     });
 
     setIsSpinning(false);
     onSpinEnd(items[winningIndex].id);
-
     controls.set({ rotate: targetRotation % 360 });
   };
 
   return (
-    <div className="relative w-full max-w-[280px] aspect-square mx-auto flex items-center justify-center">
-      {/* Pointer triangle */}
+    <div className="relative mx-auto flex aspect-square w-full max-w-[230px] items-center justify-center">
       <div
-        className="absolute top-[-10px] left-1/2 -translate-x-1/2 z-20 w-0 h-0"
+        className="absolute left-1/2 top-[-7px] z-20 h-0 w-0 -translate-x-1/2"
         style={{
-          borderLeft: "12px solid transparent",
-          borderRight: "12px solid transparent",
-          borderTop: "20px solid #1a1208",
-          filter: "drop-shadow(0 4px 0 rgba(0,0,0,0.3))",
+          borderLeft: "9px solid transparent",
+          borderRight: "9px solid transparent",
+          borderTop: "16px solid var(--text1)",
+          filter: "drop-shadow(0 3px 5px rgba(0,0,0,0.16))",
         }}
       />
 
-      {/* Wheel */}
       <motion.div
-        className="w-full h-full rounded-full overflow-hidden relative"
+        className="relative h-full w-full overflow-hidden rounded-full"
         style={{
-          border: "4px solid #1a1208",
-          boxShadow: "8px 8px 0px 0px rgba(26,18,8,0.25)",
-          background: "#fef9f0",
+          border: "1px solid var(--border3)",
+          boxShadow: "0 18px 44px rgba(21,31,26,.1)",
+          background: "var(--bg0)",
         }}
         animate={controls}
         initial={{ rotate: 0 }}
       >
-        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+        <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 transform">
           {items.map((item, index) => {
             const startAngle = index * sliceAngle;
             const endAngle = startAngle + sliceAngle;
-            const x1 = 50 + 50 * Math.cos((Math.PI * startAngle) / 180);
-            const y1 = 50 + 50 * Math.sin((Math.PI * startAngle) / 180);
-            const x2 = 50 + 50 * Math.cos((Math.PI * endAngle) / 180);
-            const y2 = 50 + 50 * Math.sin((Math.PI * endAngle) / 180);
+            const { x: x1, y: y1 } = point(startAngle);
+            const { x: x2, y: y2 } = point(endAngle);
             const pathData = `M 50 50 L ${x1} ${y1} A 50 50 0 0 1 ${x2} ${y2} Z`;
             const centerAngle = startAngle + sliceAngle / 2;
             const iconRadius = 35;
@@ -78,12 +77,7 @@ export default function DataWheel({ items, onSpinEnd }: DataWheelProps) {
 
             return (
               <g key={item.id}>
-                <path
-                  d={pathData}
-                  fill={item.color}
-                  stroke="#1a1208"
-                  strokeWidth="0.5"
-                />
+                <path d={pathData} fill={item.color} stroke="var(--bg2)" strokeWidth="0.9" />
                 <foreignObject
                   x={50 + iconRadius - 10}
                   y={40}
@@ -92,8 +86,8 @@ export default function DataWheel({ items, onSpinEnd }: DataWheelProps) {
                   transform={transformRotate}
                 >
                   <div
-                    className="w-full h-full flex items-center justify-center transform rotate-90"
-                    style={{ color: "#1a1208", opacity: 0.85 }}
+                    className="flex h-full w-full rotate-90 transform items-center justify-center"
+                    style={{ color: "var(--text1)", opacity: 0.86 }}
                   >
                     {item.icon}
                   </div>
@@ -104,38 +98,51 @@ export default function DataWheel({ items, onSpinEnd }: DataWheelProps) {
         </svg>
       </motion.div>
 
-      {/* Center spin button */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+      <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
         <motion.button
           onClick={handleSpin}
           disabled={isSpinning}
-          whileHover={!isSpinning ? { scale: 1.08, y: -2 } : {}}
-          whileTap={!isSpinning ? { scale: 0.93 } : {}}
+          whileHover={!isSpinning ? { scale: 1.04 } : {}}
+          whileTap={!isSpinning ? { scale: 0.96 } : {}}
           style={{
-            width: 66,
-            height: 66,
+            width: 64,
+            height: 64,
             borderRadius: "50%",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             fontFamily: "var(--font-sans)",
-            fontWeight: 900,
-            fontSize: 11,
-            letterSpacing: "0.04em",
-            background: isSpinning ? "#a8936a" : "var(--mint)",
-            color: isSpinning ? "rgba(255,255,255,0.7)" : "#0a3d2a",
-            border: "3px solid #1a1208",
-            boxShadow: isSpinning ? "2px 2px 0 rgba(26,18,8,.1)" : "4px 4px 0 #1a7a52",
+            fontWeight: 950,
+            fontSize: 10,
+            letterSpacing: "0.08em",
+            background: isSpinning ? "var(--bg3)" : "var(--text1)",
+            color: isSpinning ? "var(--text3)" : "var(--bg0)",
+            border: "1px solid var(--border3)",
+            boxShadow: "0 10px 24px rgba(21,31,26,.18)",
             cursor: isSpinning ? "not-allowed" : "pointer",
             opacity: isSpinning ? 0.75 : 1,
-            transition: "background 0.2s, box-shadow 0.15s, opacity 0.15s",
+            transition: "background 0.2s, color 0.2s, opacity 0.15s",
           }}
+          aria-label="Spin to choose an evidence source"
         >
-          <SparklesIcon style={{ width: 18, height: 18, marginBottom: 2 }} />
-          {isSpinning ? "…" : "SPIN"}
+          <RefreshCw
+            style={{
+              width: 17,
+              height: 17,
+              marginBottom: 3,
+              animation: isSpinning ? "awareness-wheel-spin 1s linear infinite" : "none",
+            }}
+          />
+          {isSpinning ? "WAIT" : "SPIN"}
         </motion.button>
       </div>
+
+      <style>{`
+        @keyframes awareness-wheel-spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

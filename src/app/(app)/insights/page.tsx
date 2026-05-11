@@ -15,7 +15,8 @@ import { getOrComputeDailyInsight } from "@/lib/daily-insight-engine";
 import { getOrComputeRiskPrediction } from "@/lib/risk-predictor";
 import { checkRelapsePatterns } from "@/lib/relapse-detector";
 import InsightsDashboard from "./insights-dashboard";
-import DevDataToolbar from "@/components/insights/DevDataToolbar";
+import Link from "next/link";
+import { Activity, CalendarCheck2, Plus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -24,18 +25,7 @@ export default async function InsightsPage() {
   const userId = session?.user?.id;
   if (!userId) redirect("/dashboard");
 
-  // Detect if seed/demo data exists for this user
-  const seedCheck = await db
-    .select({ id: checkins.id })
-    .from(checkins)
-    .where(
-      and(
-        eq(checkins.userId, userId!),
-        eq(checkins.timezoneOffset, "__seed__"),
-      ),
-    )
-    .limit(1);
-  const isDemoMode = seedCheck.length > 0;
+  const isDemoMode = false;
 
   // Run all engines in parallel (engine is scoped to seed or real data, not both)
   const [correlationData] = await Promise.all([
@@ -108,14 +98,14 @@ export default async function InsightsPage() {
     db
       .select()
       .from(mlInsights)
-      .where(eq(mlInsights.userId, userId))
+      .where(and(eq(mlInsights.userId, userId), or(isNull(mlInsights.source), ne(mlInsights.source, "seed"))))
       .orderBy(desc(mlInsights.generatedAt))
       .limit(5),
 
     db
       .select()
       .from(dailyInsights)
-      .where(eq(dailyInsights.userId, userId))
+      .where(and(eq(dailyInsights.userId, userId), or(isNull(dailyInsights.source), ne(dailyInsights.source, "seed"))))
       .orderBy(desc(dailyInsights.insightDate))
       .limit(1),
 
@@ -148,6 +138,7 @@ export default async function InsightsPage() {
       .where(
         and(
           eq(mlInsights.userId, userId),
+          or(isNull(mlInsights.source), ne(mlInsights.source, "seed")),
           eq(mlInsights.patternType, "relapse_trigger"),
         ),
       )
@@ -281,91 +272,49 @@ export default async function InsightsPage() {
   }));
 
   return (
-    <div className="relative min-h-[100dvh] pb-28 max-[1024px]:pb-32 overflow-hidden w-full max-w-full box-border">
-      {/* Animated background blobs */}
-      <div className="absolute top-10 left-10 w-64 h-64 bg-[var(--mint-glow)] rounded-full blur-3xl animate-blob opacity-50 pointer-events-none" />
-      <div className="absolute top-60 right-10 w-72 h-72 bg-[var(--coral-glow)] rounded-full blur-3xl animate-blob anim-d2 opacity-40 pointer-events-none" />
-      <div className="absolute bottom-40 left-1/3 w-80 h-80 bg-[var(--amber-glow)] rounded-full blur-3xl animate-blob anim-d4 opacity-40 pointer-events-none" />
+    <div className="insights-page">
+      <InsightsCriticalStyles />
+      <header className="insights-hero">
+        <div className="insights-hero-copy">
+          <p className="insights-kicker">Personal patterns</p>
+          <h1>Your patterns</h1>
+          <p>
+            Start with one useful signal. Open the deeper views only when you
+            want the evidence behind it.
+          </p>
+        </div>
 
-      {/* Page header */}
-      <div className="page-header relative z-10">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="relative">
-                <svg
-                  viewBox="0 0 40 40"
-                  width={36}
-                  height={36}
-                  style={{
-                    filter: "drop-shadow(0 2px 4px rgba(59,201,142,0.3))",
-                  }}
-                >
-                  <circle
-                    cx="20"
-                    cy="20"
-                    r="18"
-                    fill="#edfff7"
-                    stroke="#3bc98e"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M13 14c0-2.8 2.2-4 4-4 1.2 0 2.2.5 3 1.5.8-1 1.8-1.5 3-1.5 1.8 0 4 1.2 4 4 0 1.5-.7 2.8-1.8 3.7.9 1 1.8 2.4 1.8 4.3 0 3.3-2.7 5-5 5-1.2 0-2.2-.4-3-1.1-.8.7-1.8 1.1-3 1.1-2.3 0-5-1.7-5-5 0-1.9.9-3.3 1.8-4.3C13.7 16.8 13 15.5 13 14z"
-                    fill="#3bc98e"
-                    opacity=".3"
-                  />
-                  <path
-                    d="M17 18c-1-.8-1.5-1.8-1.5-3M23 18c1-.8 1.5-1.8 1.5-3M20 16v10M17 22h6"
-                    stroke="#0a3d2a"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#3bc98e] rounded-full animate-pulse" />
-              </div>
-              <div>
-                <h1 className="page-title !mb-1">Your Patterns</h1>
-                <p className="page-sub !mb-0 max-w-xl">
-                  One clear story first - swipe the tabs below when you want the
-                  full picture.
-                </p>
-              </div>
-            </div>
+        <div className="insights-hero-side">
+          <div className="insights-stat-row" aria-label="Insight data status">
+            <span className="insights-stat-chip">
+              <CalendarCheck2 size={16} strokeWidth={2.4} />
+              <span>
+                <strong>{correlationData.checkinDays}</strong>
+                days
+              </span>
+            </span>
+            <span className="insights-stat-chip">
+              <Activity size={16} strokeWidth={2.4} />
+              <span>
+                <strong>{latestInsight.length}</strong>
+                patterns
+              </span>
+            </span>
           </div>
-
-          <div className="insights-metric-row flex flex-wrap gap-2 sm:gap-3 shrink-0">
-            <span className="insights-metric-pill">
-              <span className="text-lg" aria-hidden>
-                📅
-              </span>
-              <div>
-                <div className="metric-label !mb-0 text-[10px] text-[var(--text3)]">
-                  Days tracked
-                </div>
-                <div className="font-display font-bold text-xl text-[var(--mint2)]">
-                  {correlationData.checkinDays}
-                </div>
-              </div>
-            </span>
-            <span className="insights-metric-pill">
-              <span className="text-lg" aria-hidden>
-                ✨
-              </span>
-              <div>
-                <div className="metric-label !mb-0 text-[10px] text-[var(--text3)]">
-                  Patterns found
-                </div>
-                <div className="font-display font-bold text-xl text-[var(--coral2)]">
-                  {latestInsight.length}
-                </div>
-              </div>
-            </span>
+          <div className="insights-action-row">
+            <Link className="insights-ghost-action" href="/urge">
+              <Plus size={16} strokeWidth={2.5} />
+              Log urge
+            </Link>
+            <Link className="insights-primary-action" href="/checkin">
+              <CalendarCheck2 size={16} strokeWidth={2.5} />
+              Check in
+            </Link>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Dashboard with tabs */}
-      <div className="page-content relative z-10">
+      <div className="insights-content">
         <InsightsDashboard
           correlationData={correlationData}
           hasEnoughData={hasEnoughData}
@@ -385,8 +334,306 @@ export default async function InsightsPage() {
           isDemoMode={isDemoMode}
         />
       </div>
-
-      <DevDataToolbar />
     </div>
+  );
+}
+
+function InsightsCriticalStyles() {
+  return (
+    <style>{`
+      .insights-page {
+        width: min(1120px, calc(100vw - 40px));
+        margin: 0 auto;
+        padding: 28px 0 90px;
+      }
+      .insights-hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 28px;
+        padding: 24px 0 22px;
+        border-bottom: 1px solid var(--border);
+      }
+      .insights-hero-copy {
+        max-width: 620px;
+      }
+      .insights-kicker,
+      .insights-focus-label,
+      .insights-section-heading p {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .insights-hero h1 {
+        margin: 0 0 8px;
+        font-family: var(--font-display);
+        font-size: clamp(34px, 5vw, 58px);
+        font-weight: 700;
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+      .insights-hero-copy > p:not(.insights-kicker) {
+        max-width: 560px;
+        color: var(--text2);
+        font-size: 15px;
+        line-height: 1.65;
+      }
+      .insights-hero-side,
+      .insights-action-row,
+      .insights-stat-row {
+        display: flex;
+      }
+      .insights-hero-side {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+      }
+      .insights-stat-row,
+      .insights-action-row {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .insights-stat-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 38px;
+        padding: 0 12px;
+        border: 1px solid var(--border2);
+        border-radius: 999px;
+        background: var(--bg2);
+        color: var(--text2);
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .insights-stat-chip svg,
+      .insights-primary-action svg,
+      .insights-ghost-action svg,
+      .insights-focus-primary svg,
+      .insights-focus-secondary svg,
+      .insights-tab svg {
+        display: block;
+        flex-shrink: 0;
+      }
+      .insights-stat-chip strong {
+        margin-right: 4px;
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 18px;
+        line-height: 1;
+      }
+      .insights-primary-action,
+      .insights-ghost-action,
+      .insights-focus-primary,
+      .insights-focus-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        border-radius: 12px;
+        padding: 0 15px;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+      }
+      .insights-primary-action,
+      .insights-focus-primary {
+        border: 1px solid var(--text1);
+        background: var(--text1);
+        color: var(--bg0);
+      }
+      .insights-ghost-action,
+      .insights-focus-secondary {
+        border: 1px solid var(--border2);
+        background: var(--bg2);
+        color: var(--text2);
+      }
+      .insights-primary-action:hover,
+      .insights-ghost-action:hover,
+      .insights-focus-primary:hover,
+      .insights-focus-secondary:hover {
+        transform: translateY(-1px);
+        border-color: var(--border3);
+      }
+      .insights-content,
+      .insights-dashboard-shell,
+      .insights-tab-shell,
+      .insights-today-layout,
+      .insights-secondary-stack,
+      .insights-secondary-section {
+        display: grid;
+      }
+      .insights-content {
+        padding-top: 18px;
+      }
+      .insights-dashboard-shell {
+        gap: 18px;
+      }
+      .insights-demo-note {
+        border: 1px solid rgba(201, 152, 42, 0.35);
+        border-radius: 12px;
+        background: rgba(201, 152, 42, 0.1);
+        color: var(--text2);
+        padding: 11px 14px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .insights-tab-shell {
+        gap: 10px;
+      }
+      .insights-tabs {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+      }
+      .insights-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .insights-tab {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 40px;
+        border: 1px solid var(--border2);
+        border-radius: 999px;
+        background: var(--bg2);
+        color: var(--text2);
+        padding: 0 14px;
+        font-size: 13px;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .insights-tab > span {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+      }
+      .insights-tab.active {
+        color: var(--bg0);
+        border-color: transparent;
+      }
+      .insights-tab-indicator {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        border-radius: inherit;
+        background: var(--text1);
+      }
+      .insights-tab-hint {
+        max-width: 560px;
+        color: var(--text2);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      .insights-today-layout,
+      .insights-secondary-stack {
+        gap: 14px;
+      }
+      .insights-focus-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: center;
+        min-height: 168px;
+        border: 1px solid var(--border2);
+        border-radius: 18px;
+        background:
+          linear-gradient(135deg, rgba(91, 184, 245, 0.09), transparent 52%),
+          var(--bg2);
+        box-shadow: 0 18px 54px rgba(21, 31, 26, 0.07);
+        padding: 26px;
+      }
+      .insights-focus-card.risk {
+        background:
+          linear-gradient(135deg, rgba(224, 123, 90, 0.14), transparent 52%),
+          var(--bg2);
+        border-color: rgba(224, 123, 90, 0.34);
+      }
+      .insights-focus-card.pattern {
+        background:
+          linear-gradient(135deg, rgba(201, 152, 42, 0.13), transparent 52%),
+          var(--bg2);
+      }
+      .insights-focus-copy p {
+        max-width: 690px;
+        margin-top: 8px;
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: clamp(21px, 3vw, 32px);
+        font-weight: 600;
+        line-height: 1.18;
+      }
+      .insights-focus-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 180px;
+      }
+      .insights-secondary-section {
+        gap: 12px;
+        margin-top: 4px;
+      }
+      .insights-section-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .insights-section-heading h2 {
+        font-family: var(--font-display);
+        font-size: 20px;
+      }
+      .insights-secondary-stack > * {
+        margin-bottom: 0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 34px rgba(21, 31, 26, 0.06) !important;
+      }
+      .insights-muted-center {
+        color: var(--text3);
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        padding: 18px 0;
+      }
+      @media (max-width: 860px) {
+        .insights-page {
+          width: min(100% - 24px, 1120px);
+          padding-top: 14px;
+          padding-bottom: 130px;
+        }
+        .insights-hero,
+        .insights-focus-card,
+        .insights-section-heading {
+          align-items: stretch;
+          grid-template-columns: 1fr;
+          flex-direction: column;
+        }
+        .insights-hero-side {
+          align-items: stretch;
+        }
+        .insights-stat-row,
+        .insights-action-row {
+          justify-content: stretch;
+        }
+        .insights-stat-chip,
+        .insights-primary-action,
+        .insights-ghost-action {
+          flex: 1 1 0;
+        }
+        .insights-focus-actions {
+          min-width: 0;
+        }
+      }
+    `}</style>
   );
 }

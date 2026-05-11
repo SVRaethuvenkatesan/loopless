@@ -1,6 +1,7 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import { JSX, useId, useState } from "react";
+import { GameRankBadge } from "@/components/game-rank-badge";
 import {
   IcoBadge, IcoLung, IcoFire, IcoShield, IcoLeaf,
   IcoZap, IcoTrophy, IcoLock, IcoX, IcoClock, IcoStar, IcoBrain, IcoWind,
@@ -165,8 +166,6 @@ function BadgeTileIcon({ badgeKey, earned, size }: { badgeKey: string; earned: b
 }
 
 function RecoveryBadgeTile({ badgeKey, earned, meta, onSelect }: { badgeKey: string; earned: boolean; meta: typeof BADGE_META[string]; onSelect: () => void }) {
-  const baseId = useId().replace(/:/g, "");
-  const gid = `${baseId}-${badgeKey}`;
   return (
     <motion.button type="button" whileHover={{ y: -6, scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={onSelect}
       style={{
@@ -181,11 +180,8 @@ function RecoveryBadgeTile({ badgeKey, earned, meta, onSelect }: { badgeKey: str
         padding: "10px 8px",
       }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-        <div style={{ position: "relative", width: 72, height: 88 }}>
-          <GameBadgeShield gid={`${gid}-sh`} earned={earned} accent={meta.color} size="sm"/>
-          <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-54%)" }}>
-            <BadgeTileIcon badgeKey={badgeKey} earned={earned} size="sm"/>
-          </div>
+        <div style={{ position: "relative", width: 74, height: 92, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <GameRankBadge badgeType={badgeKey} earned={earned} size="sm" title={meta.label} />
         </div>
         <div style={{ fontSize: 9.5, fontWeight: 800, color: earned ? "var(--text1)" : "var(--text3)", textAlign: "center", lineHeight: 1.2, fontFamily: "'Fredoka',sans-serif" }}>
           {meta.label}
@@ -209,7 +205,6 @@ function RecoveryBadgeTile({ badgeKey, earned, meta, onSelect }: { badgeKey: str
 
 function BadgeModal({ badge, onClose }: { badge: typeof BADGE_META[string] & { earned: boolean; earnedAt?: string; badgeType: string }; onClose: () => void }) {
   const next = badge.nextBadge ? BADGE_META[badge.nextBadge] : null;
-  const uid = useId().replace(/:/g, "");
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
@@ -219,11 +214,8 @@ function BadgeModal({ badge, onClose }: { badge: typeof BADGE_META[string] & { e
         onClick={e => e.stopPropagation()}
         style={{ background: "var(--bg2)", border: `2.5px solid ${badge.earned ? badge.color + "88" : "var(--border3)"}`, borderRadius: 24, padding: 28, maxWidth: 340, width: "100%", boxShadow: badge.earned ? `0 0 40px ${badge.color}44, var(--shadow-card-lg)` : "var(--shadow-card-lg)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-          <div style={{ position: "relative", width: 112, height: 132, flexShrink: 0 }}>
-            <GameBadgeShield gid={`${uid}-m`} earned={badge.earned} accent={badge.color} size="lg"/>
-            <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-54%)" }}>
-              <BadgeTileIcon badgeKey={badge.badgeType} earned={badge.earned} size="lg"/>
-            </div>
+          <div style={{ position: "relative", width: 132, height: 164, flexShrink: 0 }}>
+            <GameRankBadge badgeType={badge.badgeType} earned={badge.earned} size="lg" title={badge.label} />
           </div>
           <button type="button" onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#a8936a" }}><IcoX/></button>
         </div>
@@ -279,7 +271,6 @@ export function BadgesSection({ earnedBadges }: { earnedBadges: Badge[] }) {
   function CenterBadge({ btKey }: { btKey: string }) {
     const meta = BADGE_META[btKey];
     const earned = earnedMap.has(btKey);
-    const uid = useId().replace(/:/g, "");
     return (
       <motion.button type="button" whileTap={{ scale: 0.96 }} onClick={() => setSelected(btKey)}
         style={{
@@ -302,11 +293,8 @@ export function BadgesSection({ earnedBadges }: { earnedBadges: Badge[] }) {
             transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
             style={{ position: "absolute", inset: "-20%", background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%)", pointerEvents: "none", zIndex: 0 }}/>
         )}
-        <div style={{ position: "relative", width: 112, height: 132, zIndex: 1 }}>
-          <GameBadgeShield gid={`${uid}-c`} earned={earned} accent={meta.color} size="lg"/>
-          <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-54%)" }}>
-            <BadgeTileIcon badgeKey={btKey} earned={earned} size="lg"/>
-          </div>
+        <div style={{ position: "relative", width: 132, height: 164, zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <GameRankBadge badgeType={btKey} earned={earned} size="lg" title={meta.label} />
         </div>
         <div style={{ fontSize: 13, fontWeight: 800, color: earned ? "var(--text1)" : "var(--text3)", textAlign: "center", lineHeight: 1.2, fontFamily: "'Fredoka',sans-serif", zIndex: 1 }}>
           {meta.label}
@@ -331,7 +319,6 @@ export function BadgesSection({ earnedBadges }: { earnedBadges: Badge[] }) {
   function SideBadge({ btKey, onClick }: { btKey: string; onClick: () => void }) {
     const meta = BADGE_META[btKey];
     const earned = earnedMap.has(btKey);
-    const uid = useId().replace(/:/g, "");
     return (
       <motion.button type="button" whileTap={{ scale: 0.95 }} onClick={onClick}
         style={{
@@ -343,11 +330,8 @@ export function BadgesSection({ earnedBadges }: { earnedBadges: Badge[] }) {
           display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
           opacity: 0.65,
         }}>
-        <div style={{ position: "relative", width: 72, height: 88 }}>
-          <GameBadgeShield gid={`${uid}-s`} earned={earned} accent={meta.color} size="sm"/>
-          <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-54%)" }}>
-            <BadgeTileIcon badgeKey={btKey} earned={earned} size="sm"/>
-          </div>
+        <div style={{ position: "relative", width: 74, height: 92, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <GameRankBadge badgeType={btKey} earned={earned} size="sm" title={meta.label} />
         </div>
         <div style={{ fontSize: 9, fontWeight: 800, color: earned ? "var(--text2)" : "var(--text3)", textAlign: "center", lineHeight: 1.2, fontFamily: "'Fredoka',sans-serif" }}>{meta.label}</div>
         {!earned && (
