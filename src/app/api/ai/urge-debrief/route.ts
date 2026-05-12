@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
     const fallback = `You just proved that you're stronger than this urge. You used ${toolNames || "coping tools"} against a level ${stress}/10 craving triggered by ${trigger || "stress"} - and you won. Each battle like this literally rewires your brain's reward loop. Keep going. 💪`;
 
-    if (!apiKey) return NextResponse.json({ message: fallback });
+    if (!apiKey) return NextResponse.json({ message: fallback, source: "preset" });
 
     const prompt = `You are a warm, evidence-based AI wellness coach for Loopless, a quit-vaping app for Australians aged 18-24.
 The user just won a "battle" against a vaping urge using coping tools. Write a personalised debrief (max 55 words).
@@ -45,15 +45,16 @@ Be specific to their data. Warm, energetic, shame-free. Reference the science br
         }),
       },
     );
-    if (res.status === 429) return NextResponse.json({ message: fallback });
+    if (res.status === 429) return NextResponse.json({ message: fallback, source: "preset" });
     if (!res.ok) throw new Error(`Gemini ${res.status}`);
     const data = await res.json();
     const message = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-    return NextResponse.json({ message: message || fallback });
+    return NextResponse.json({ message: message || fallback, source: message ? "ai" : "preset" });
   } catch (err) {
     console.error("Urge debrief AI:", err);
     return NextResponse.json({
       message: "You fought back and won. Every victory weakens the loop. 💪",
+      source: "preset",
     });
   }
 }
