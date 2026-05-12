@@ -306,9 +306,9 @@ export default function LandingPage() {
           className="lp-scroll-cue"
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.8, repeat: Infinity }}
+          aria-label="Scroll down"
         >
           <span />
-          See the system
         </motion.div>
       </section>
 
@@ -525,14 +525,20 @@ function LandingStyles() {
         padding:8px 10px 8px 14px;
         border:1px solid rgba(16,23,19,.1);
         border-radius:22px;
-        background:rgba(247,252,249,.82);
-        backdrop-filter:blur(22px) saturate(160%);
-        box-shadow:0 2px 0 rgba(255,255,255,.9) inset,0 20px 56px rgba(16,23,19,.09);
+        background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.34));
+        backdrop-filter:blur(26px) saturate(190%);
+        -webkit-backdrop-filter:blur(26px) saturate(190%);
+        box-shadow:0 2px 0 rgba(255,255,255,.82) inset,0 -1px 0 rgba(255,255,255,.28) inset,0 20px 56px rgba(16,23,19,.11);
       }
       .dark .lp-nav{
-        background:rgba(7,17,13,.78);
+        background:linear-gradient(135deg,rgba(18,38,28,.76),rgba(7,17,13,.42));
         border-color:rgba(255,255,255,.1);
-        box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 20px 56px rgba(0,0,0,.36);
+        box-shadow:0 1px 0 rgba(255,255,255,.14) inset,0 -1px 0 rgba(255,255,255,.05) inset,0 20px 56px rgba(0,0,0,.38);
+      }
+      .lp-nav:before{
+        content:"";position:absolute;left:18px;right:18px;top:0;height:1px;
+        background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);
+        pointer-events:none;
       }
 
       /* brand / logo */
@@ -606,7 +612,7 @@ function LandingStyles() {
       .lp-nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(16,32,24,.3),0 1px 0 rgba(255,255,255,.08) inset!important;}
       .dark .lp-nav-cta{background:linear-gradient(135deg,#2d6245,#3bc98e)!important;color:#071a0f!important;border-color:rgba(59,201,142,.35)!important;}
 
-      .lp-hero{position:relative;height:min(820px,100svh);padding:64px 0 6px;background:transparent;overflow:hidden;display:flex;align-items:center;}
+      .lp-hero{position:relative;min-height:100svh;padding:30px 0 20px;background:transparent;overflow:hidden;display:flex;align-items:flex-start;box-sizing:border-box;}
       .lp-hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(16,32,24,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(16,32,24,.055) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(180deg,#000,transparent 82%);pointer-events:none;}
       .lp-hero:after{content:"";position:absolute;left:-12%;top:18%;width:52%;height:58%;border-radius:50%;background:rgba(255,255,255,.42);filter:blur(60px);pointer-events:none;}
       .dark .lp-hero:before{background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);}
@@ -681,8 +687,9 @@ function LandingStyles() {
       .lp-mini-boss:before{content:"";position:absolute;inset:34px 24px 12px;border-radius:48%;background:radial-gradient(circle,rgba(245,200,66,.26),rgba(224,123,90,.12) 45%,transparent 70%);filter:blur(10px);}
       .lp-mini-monster{position:absolute;inset:6px 6px 0;z-index:2;transform:scale(1.16);}
 
-      .lp-scroll-cue{position:absolute;left:50%;bottom:4px;z-index:4;display:flex;align-items:center;gap:9px;transform:translateX(-50%);color:#54625a;font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.08em;}
-      .lp-scroll-cue span{width:9px;height:18px;border:2px solid currentColor;border-radius:999px;}
+      .lp-scroll-cue{position:absolute;left:50%;bottom:86px;z-index:4;display:grid;place-items:center;width:34px;height:34px;transform:translateX(-50%);color:#54625a;border:1px solid rgba(84,98,90,.24);border-radius:999px;background:rgba(255,255,255,.52);backdrop-filter:blur(12px);}
+      .dark .lp-scroll-cue{color:rgba(244,255,249,.82);border-color:rgba(255,255,255,.14);background:rgba(7,17,13,.58);}
+      .lp-scroll-cue span{width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-4px;}
 
       .lp-section{position:relative;width:min(1180px,calc(100vw - 32px));margin:0 auto;padding:92px 0;}
       .lp-section-head{max-width:760px;margin-bottom:28px;}
@@ -815,7 +822,7 @@ function LandingStyles() {
       @media(max-width:980px){
         .lp-nav-links{display:none}
         .lp-hero-grid,.lp-demo-grid,.lp-demo-stage,.lp-showcase{grid-template-columns:1fr}
-        .lp-hero{height:auto;min-height:100svh;padding-top:104px;padding-bottom:42px}
+        .lp-hero{height:auto;min-height:100svh;padding-top:30px;padding-bottom:34px}
         .lp-stress-visual{height:430px;min-height:0}
         .lp-device{max-width:520px;margin:0 auto}
         .lp-proof,.lp-flow-track,.lp-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -825,7 +832,7 @@ function LandingStyles() {
         .lp-nav{top:8px;width:calc(100vw - 16px);border-radius:16px;padding:7px 8px 7px 10px;}
         .lp-brand-badge,.lp-nav-login{display:none!important;}
         .lp-brand strong{font-size:16px;}
-        .lp-hero{padding-top:88px;min-height:100svh}
+        .lp-hero{padding-top:30px;min-height:100svh}
         .lp-hero h1{font-size:48px}
         .lp-stress-visual{height:340px;border-radius:0}
         .lp-float-card{display:none}

@@ -2,7 +2,6 @@
 
 import type { FormEvent } from "react";
 import { Suspense, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Check, Eye, EyeOff, KeyRound, Loader2, LockKeyhole, ShieldCheck, Sparkles, X } from "lucide-react";
@@ -48,6 +47,18 @@ function CursorLight() {
   );
 }
 
+function LooplessLogoMark() {
+  return (
+    <svg viewBox="0 0 140 140" fill="none" width={28} height={28} aria-hidden>
+      <circle cx="70" cy="70" r="70" fill="#3bc98e" opacity="0.08" />
+      <circle cx="70" cy="70" r="55" stroke="#3bc98e" strokeWidth="11" strokeDasharray="259 87" strokeLinecap="round" />
+      <circle cx="109" cy="31" r="6" fill="#e07b5a" />
+      <rect x="48" y="38" width="13" height="60" rx="4" fill="white" />
+      <rect x="48" y="84" width="44" height="13" rx="4" fill="white" />
+    </svg>
+  );
+}
+
 function AccessForm() {
   const params = useSearchParams();
   const from = params.get("from") || "/";
@@ -79,11 +90,11 @@ function AccessForm() {
         setSuccess(true);
         setTimeout(() => {
           window.location.href = from;
-        }, 950);
+        }, 1200);
       } else {
         setAttempts((value) => value + 1);
         setPassword("");
-        setError("That code did not unlock the preview.");
+        setError("That code did not unlock Loopless.");
         inputRef.current?.focus();
       }
     } catch {
@@ -101,14 +112,25 @@ function AccessForm() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(5,12,9,.9)", display: "grid", placeItems: "center", color: "#d9ffed" }}
+            style={{ position: "fixed", inset: 0, zIndex: 60, background: "radial-gradient(circle at 50% 42%,rgba(93,219,168,.2),transparent 34%),rgba(5,12,9,.92)", display: "grid", placeItems: "center", color: "#d9ffed", padding: 20 }}
           >
-            <motion.div initial={{ scale: 0.8, y: 18 }} animate={{ scale: 1, y: 0 }} transition={{ type: "spring", bounce: 0.35 }} style={{ textAlign: "center" }}>
-              <motion.div animate={{ rotate: [0, -8, 8, 0], scale: [1, 1.12, 1] }} transition={{ duration: 0.9 }}>
-                <ShieldCheck size={84} />
+            <motion.div
+              initial={{ scale: 0.86, y: 18 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ type: "spring", bounce: 0.32 }}
+              style={{ width: "min(100%, 390px)", textAlign: "center", border: "1px solid rgba(255,255,255,.12)", borderRadius: 28, background: "rgba(13,31,20,.72)", boxShadow: "0 28px 80px rgba(0,0,0,.34)", padding: "34px 26px", backdropFilter: "blur(18px)" }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 0.9 }}
+                style={{ width: 88, height: 88, margin: "0 auto", borderRadius: 28, display: "grid", placeItems: "center", background: "linear-gradient(135deg,#78e5b8,#3bc98e)", color: "#071a0f", boxShadow: "0 18px 48px rgba(59,201,142,.34)" }}
+              >
+                <ShieldCheck size={48} strokeWidth={2.5} />
               </motion.div>
-              <h2 style={{ marginTop: 18, fontSize: 36, fontWeight: 950 }}>Access granted</h2>
-              <p style={{ marginTop: 8, color: "rgba(217,255,237,.7)", fontWeight: 750 }}>Opening Loopless...</p>
+              <h2 style={{ margin: "22px 0 0", fontSize: 38, lineHeight: 1, fontWeight: 950 }}>You&apos;re in</h2>
+              <p style={{ margin: "10px auto 0", maxWidth: 280, color: "rgba(217,255,237,.72)", fontSize: 15, lineHeight: 1.55, fontWeight: 750 }}>
+                Access confirmed. Opening Loopless now.
+              </p>
             </motion.div>
           </motion.div>
         ) : null}
@@ -139,9 +161,8 @@ function AccessForm() {
           >
             {success ? <Check size={28} /> : <LockKeyhole size={28} />}
           </motion.div>
-          <div style={{ minWidth: 0, textAlign: "right" }}>
-            <div style={{ fontSize: 11, fontWeight: 950, color: "var(--mint2)", textTransform: "uppercase", letterSpacing: ".08em" }}>Private preview</div>
-            <div style={{ marginTop: 4, fontSize: 12, fontWeight: 850, color: "var(--text3)" }}>{Math.max(0, 5 - attempts)} attempts available</div>
+          <div style={{ minWidth: 0, textAlign: "right", fontSize: 12, fontWeight: 850, color: "var(--text3)" }}>
+            {Math.max(0, 5 - attempts)} attempts available
           </div>
         </div>
 
@@ -219,7 +240,7 @@ function AccessForm() {
           }}
         >
           {loading ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
-          Unlock preview
+          Unlock Loopless
         </motion.button>
       </motion.form>
     </>
@@ -235,12 +256,11 @@ export default function AccessPage() {
         .access-orbit{position:absolute;border-radius:50%;filter:blur(2px);border:1px solid rgba(255,255,255,.12);animation:accessFloat 8s ease-in-out infinite;}
         .access-top{position:relative;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:22px 28px;}
         .access-brand{display:flex;align-items:center;gap:10px;}
-        .access-logo{width:42px;height:42px;border-radius:13px;overflow:hidden;border:1px solid var(--border2);background:var(--bg2);}
+        .access-logo{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;border:1px solid rgba(120,229,184,.26);background:linear-gradient(135deg,#0d1f14,#1e4330);box-shadow:0 12px 34px rgba(16,32,24,.18),0 1px 0 rgba(255,255,255,.08) inset;}
         .access-brand strong{display:block;font-family:var(--font-display);font-size:23px;line-height:1;color:var(--text1);}
         .access-brand strong span{color:var(--mint2);}
         .access-brand small{display:block;margin-top:3px;font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);}
         .access-main{position:relative;z-index:3;flex:1;display:flex;align-items:center;justify-content:center;padding:26px 20px 52px;}
-        .access-footer{position:relative;z-index:3;text-align:center;padding:0 20px 22px;color:var(--text3);font-size:12px;font-weight:750;}
         @keyframes accessFloat{0%,100%{transform:translate3d(0,0,0) scale(1);}50%{transform:translate3d(18px,-22px,0) scale(1.05);}}
         @media(max-width:560px){.access-top{padding:16px}.access-main{align-items:flex-start;padding-top:44px}.access-brand small{display:none;}}
       `}</style>
@@ -260,7 +280,7 @@ export default function AccessPage() {
         <header className="access-top">
           <div className="access-brand">
             <div className="access-logo">
-              <Image src="/icon" alt="Loopless" width={42} height={42} priority style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <LooplessLogoMark />
             </div>
             <div>
               <strong>Loop<span>less</span></strong>
@@ -276,7 +296,6 @@ export default function AccessPage() {
           </Suspense>
         </section>
 
-        <footer className="access-footer">Private preview access protects test data and project review builds.</footer>
       </main>
     </>
   );
