@@ -1,911 +1,342 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Bell,
+  Brain,
+  Briefcase,
+  Check,
+  ChevronLeft,
+  Coffee,
+  Heart,
+  Loader2,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  Wind,
+  X,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
+import { getStoredGuest, setStoredGuest } from "@/lib/guest-storage";
 
-/* ── Data ───────────────────────────── */
-const AGE_GROUPS = [
-  { val: "18-20", label: "18–20", emoji: "🙋", sub: "Early adult" },
-  { val: "21-22", label: "21–22", emoji: "💼", sub: "Starting out" },
-  { val: "23-24", label: "23–24", emoji: "🎓", sub: "Finding my feet" },
-  { val: "25+", label: "25+", emoji: "🌳", sub: "Established" },
+type Step = "age" | "triggers" | "coping" | "notifications" | "done";
+
+const STEPS: Step[] = ["age", "triggers", "coping", "notifications", "done"];
+
+const AGE_OPTIONS = [
+  { val: "18-20", label: "18-20", sub: "Early adult" },
+  { val: "21-22", label: "21-22", sub: "Starting out" },
+  { val: "23-24", label: "23-24", sub: "Finding rhythm" },
+  { val: "25+", label: "25+", sub: "Established" },
 ];
 
-const TRIGGERS = [
-  { val: "stress", label: "Work / study stress", emoji: "😤" },
-  { val: "boredom", label: "Boredom", emoji: "😴" },
-  { val: "social", label: "Social situations", emoji: "🎉" },
-  { val: "anxiety", label: "Anxiety", emoji: "😰" },
-  { val: "routine", label: "Daily routine", emoji: "⏰" },
-  { val: "alcohol", label: "Drinking", emoji: "🍺" },
-  { val: "break", label: "Work breaks", emoji: "☕" },
-  { val: "emotions", label: "Big feelings", emoji: "💔" },
+const TRIGGERS: { val: string; label: string; Icon: LucideIcon }[] = [
+  { val: "stress", label: "Work or study stress", Icon: Briefcase },
+  { val: "boredom", label: "Boredom", Icon: Coffee },
+  { val: "social", label: "Social situations", Icon: Users },
+  { val: "anxiety", label: "Anxiety", Icon: Brain },
+  { val: "routine", label: "Daily routine", Icon: RefreshCw },
+  { val: "alcohol", label: "Drinking", Icon: Coffee },
+  { val: "break", label: "Work breaks", Icon: Wind },
+  { val: "emotions", label: "Big feelings", Icon: Heart },
 ];
 
-const COPING_STYLES = [
-  {
-    val: "breathwork",
-    label: "Breathe through it",
-    emoji: "🌬️",
-    desc: "Calm the body first - 4-7-8 breathing.",
-  },
-  {
-    val: "active",
-    label: "Active distraction",
-    emoji: "🏃",
-    desc: "Walk, fidget, do something physical.",
-  },
-  {
-    val: "mindset",
-    label: "Reframe the thought",
-    emoji: "🧠",
-    desc: "Think your way through the craving.",
-  },
-  {
-    val: "social",
-    label: "Reach out",
-    emoji: "🤝",
-    desc: "Text a friend, talk it out.",
-  },
+const COPING: { val: string; label: string; desc: string; Icon: LucideIcon }[] = [
+  { val: "breathwork", label: "Breathe through it", desc: "Calm the body first.", Icon: Wind },
+  { val: "active", label: "Active distraction", desc: "Move, walk, fidget, reset.", Icon: Zap },
+  { val: "mindset", label: "Reframe the thought", desc: "Challenge the craving loop.", Icon: Brain },
+  { val: "social", label: "Reach out", desc: "Message someone before acting.", Icon: Users },
 ];
 
-const NOTIF_OPTIONS = [
-  {
-    val: "daily_checkin",
-    label: "Daily check-in reminder",
-    emoji: "📋",
-    desc: "Nudge to log your stress & mood.",
-  },
-  {
-    val: "urge_followup",
-    label: "Urge follow-up (30 min)",
-    emoji: "💬",
-    desc: "How did you go after an urge?",
-  },
-  {
-    val: "weekly_report",
-    label: "Weekly progress summary",
-    emoji: "📊",
-    desc: "Your wins from the past 7 days.",
-  },
-  {
-    val: "smart_nudges",
-    label: "Smart nudges",
-    emoji: "🎯",
-    desc: "Heads-up before your high-risk windows.",
-  },
+const NOTIFICATIONS = [
+  { val: "daily_checkin", label: "Daily check-in reminder", desc: "A light nudge to keep the streak alive." },
+  { val: "urge_followup", label: "Urge follow-up", desc: "Check back after a logged urge." },
+  { val: "weekly_report", label: "Weekly progress summary", desc: "A short progress recap." },
+  { val: "smart_nudges", label: "Smart nudges", desc: "Risk-aware reminders when patterns emerge." },
 ];
 
-const STEPS = [
-  {
-    id: 0,
-    title: "How old are you?",
-    sub: "Helps us personalise tools for your life stage.",
-    emoji: "🎂",
-    accent: "var(--mint)",
-    shadow: "var(--shadow-mint)",
-    bg: "var(--mint3)",
-    glow: "var(--mint-glow)",
-  },
-  {
-    id: 1,
-    title: "What triggers your urge?",
-    sub: "Pick all that apply - we'll build your toolkit around these.",
-    emoji: "😤",
-    accent: "var(--coral)",
-    shadow: "var(--shadow-coral)",
-    bg: "var(--coral3)",
-    glow: "var(--coral-glow)",
-  },
-  {
-    id: 2,
-    title: "How do you cope best?",
-    sub: "We'll prioritise these tools so they surface when you need them.",
-    emoji: "🧘",
-    accent: "var(--amber)",
-    shadow: "var(--shadow-amber)",
-    bg: "var(--amber3)",
-    glow: "var(--amber-glow)",
-  },
-  {
-    id: 3,
-    title: "Notification preferences",
-    sub: "Choose what feels comfortable - you can always change this later.",
-    emoji: "🔔",
-    accent: "var(--purple)",
-    shadow: "var(--shadow-purple)",
-    bg: "var(--lilac)",
-    glow: "var(--shadow-purple)",
-  },
-  {
-    id: 4,
-    title: "You're all set! 🎉",
-    sub: "Your personalised Loopless experience is ready.",
-    emoji: "🏆",
-    accent: "var(--mint)",
-    shadow: "var(--shadow-mint)",
-    bg: "var(--mint3)",
-    glow: "var(--mint-glow)",
-  },
-];
-
-const SMOKE = [
-  { x: "8%", s: 80, d: 5.5, dl: 0 },
-  { x: "28%", s: 55, d: 4.2, dl: 1.3 },
-  { x: "50%", s: 100, d: 6.8, dl: 0.7 },
-  { x: "72%", s: 65, d: 5.0, dl: 2.0 },
-  { x: "90%", s: 50, d: 4.5, dl: 1.1 },
-];
+function Styles() {
+  return (
+    <style>{`
+      .onboard{min-height:100vh;padding:28px 18px 38px;background:radial-gradient(circle at 18% 12%,color-mix(in srgb,var(--mint) 12%,transparent),transparent 34%),radial-gradient(circle at 84% 82%,color-mix(in srgb,var(--coral) 10%,transparent),transparent 32%),var(--bg0);display:flex;align-items:center;justify-content:center;color:var(--text1);}
+      .onboard-shell{width:min(980px,100%);display:grid;grid-template-columns:320px minmax(0,1fr);gap:18px;align-items:stretch;}
+      .onboard-side,.onboard-card{background:var(--bg2);border:1px solid var(--border2);border-radius:22px;box-shadow:0 18px 54px rgba(21,31,26,.08);}
+      .dark .onboard-side,.dark .onboard-card{box-shadow:none;}
+      .onboard-side{padding:22px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative;}
+      .onboard-side:after{content:"";position:absolute;width:180px;height:180px;right:-70px;bottom:-60px;border-radius:50%;background:color-mix(in srgb,var(--mint) 13%,transparent);}
+      .onboard-logo{font-family:var(--font-display);font-size:27px;font-weight:850;letter-spacing:0;color:var(--text1);}
+      .onboard-logo span{color:var(--mint2);}
+      .onboard-side h1{font-family:var(--font-display);font-size:34px;line-height:1.02;font-weight:750;letter-spacing:0;margin:38px 0 12px;color:var(--text1);}
+      .onboard-side p{font-size:14px;line-height:1.65;color:var(--text2);font-weight:750;}
+      .onboard-mini{display:grid;gap:10px;margin-top:26px;position:relative;z-index:1;}
+      .onboard-mini div{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:14px;background:var(--bg0);border:1px solid var(--border2);font-size:12px;font-weight:900;color:var(--text2);}
+      .onboard-card{padding:24px;min-height:600px;display:flex;flex-direction:column;}
+      .progress{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:22px;}
+      .progress span{height:7px;border-radius:999px;background:var(--bg0);border:1px solid var(--border2);overflow:hidden;}
+      .progress i{display:block;height:100%;border-radius:999px;background:var(--mint2);}
+      .step-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:22px;}
+      .step-head h2{font-size:25px;line-height:1.15;font-weight:950;color:var(--text1);}
+      .step-head p{margin-top:7px;font-size:13px;line-height:1.55;color:var(--text3);font-weight:800;}
+      .step-icon{width:48px;height:48px;border-radius:15px;background:color-mix(in srgb,var(--mint) 13%,transparent);color:var(--mint2);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+      .choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;}
+      .choice{min-height:78px;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--border2);border-radius:16px;background:var(--bg0);color:var(--text2);font-family:var(--font-sans);font-size:13px;font-weight:900;text-align:left;cursor:pointer;transition:transform .15s,border-color .15s,background .15s;}
+      .choice:hover{transform:translateY(-1px);}
+      .choice.is-on{background:color-mix(in srgb,var(--mint) 10%,var(--bg0));border-color:color-mix(in srgb,var(--mint) 38%,var(--border2));color:var(--text1);}
+      .choice strong{display:block;color:var(--text1);font-size:15px;font-weight:950;}
+      .choice small{display:block;margin-top:3px;color:var(--text3);font-size:12px;font-weight:750;line-height:1.35;}
+      .notify-list{display:grid;gap:10px;}
+      .notify{display:flex;align-items:center;gap:13px;padding:14px;border:1px solid var(--border2);border-radius:16px;background:var(--bg0);cursor:pointer;text-align:left;font-family:var(--font-sans);}
+      .toggle{width:42px;height:24px;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);position:relative;flex:0 0 auto;transition:background .2s;}
+      .toggle:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--bg1);border:1px solid var(--border2);transition:transform .2s;}
+      .notify.is-on .toggle{background:var(--mint2);}
+      .notify.is-on .toggle:after{transform:translateX(18px);}
+      .notify strong{display:block;font-size:14px;font-weight:950;color:var(--text1);}
+      .notify small{display:block;margin-top:3px;font-size:12px;font-weight:750;color:var(--text3);line-height:1.45;}
+      .done-box{text-align:center;padding:38px 10px;}
+      .done-mark{width:88px;height:88px;margin:0 auto 18px;border-radius:28px;background:color-mix(in srgb,var(--mint) 14%,transparent);color:var(--mint2);display:grid;place-items:center;}
+      .done-box h2{font-size:30px;font-weight:950;color:var(--text1);margin-bottom:8px;}
+      .done-box p{font-size:14px;font-weight:750;color:var(--text2);line-height:1.65;max-width:430px;margin:0 auto 22px;}
+      .summary{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;}
+      .summary span{min-height:32px;display:inline-flex;align-items:center;border-radius:999px;padding:0 11px;background:var(--bg0);border:1px solid var(--border2);font-size:12px;font-weight:900;color:var(--text2);}
+      .nav{margin-top:auto;padding-top:22px;display:flex;align-items:center;gap:10px;}
+      .nav button{min-height:46px;border-radius:13px;font-family:var(--font-sans);font-weight:950;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+      .back{padding:0 15px;border:1px solid var(--border2);background:var(--bg0);color:var(--text2);}
+      .next{flex:1;border:0;background:var(--text1);color:var(--bg0);}
+      .next:disabled{opacity:.45;cursor:not-allowed;}
+      .error{margin-top:12px;border:1px solid color-mix(in srgb,var(--coral) 32%,var(--border2));background:color-mix(in srgb,var(--coral) 9%,var(--bg2));color:var(--coral2);border-radius:13px;padding:10px 12px;font-size:12px;font-weight:850;}
+      @media(max-width:850px){.onboard{align-items:flex-start}.onboard-shell{grid-template-columns:1fr}.onboard-side{min-height:auto}.onboard-side h1{margin-top:22px}.onboard-card{min-height:560px}}
+      @media(max-width:560px){.onboard{padding:14px}.onboard-card,.onboard-side{padding:17px;border-radius:18px}.choice-grid{grid-template-columns:1fr}.step-head{flex-direction:column}.nav{flex-direction:column}.nav button{width:100%}}
+    `}</style>
+  );
+}
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { data: sess } = useSession();
-
+  const { data: session } = useSession();
   const [step, setStep] = useState(0);
-  const [startStep, setStartStep] = useState(0);
-  const [dir, setDir] = useState(1);
+  const [direction, setDirection] = useState(1);
   const [ageGroup, setAgeGroup] = useState("");
   const [triggers, setTriggers] = useState<string[]>([]);
-  const [coping, setCoping] = useState("");
-  const [notifs, setNotifs] = useState<string[]>(["daily_checkin"]);
+  const [copingStyle, setCopingStyle] = useState("");
+  const [notifPrefs, setNotifPrefs] = useState<string[]>(["daily_checkin"]);
+  const [guestId, setGuestId] = useState("");
+  const [guestName, setGuestName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [userName, setUserName] = useState("");
 
-  // Hydrate name from session or localStorage (guest)
   useEffect(() => {
-    const guestName = localStorage.getItem("loopless_guest_name");
-    setUserName(sess?.user?.name ?? guestName ?? "");
-  }, [sess]);
-
-  // Pre-fill from localStorage; skip age+triggers steps if guest already provided them
-  useEffect(() => {
-    const guestId = localStorage.getItem("loopless_guest_id");
-    const gt = localStorage.getItem("loopless_guest_triggers");
-    const ga = localStorage.getItem("loopless_guest_age");
-    if (ga) setAgeGroup(ga);
-    if (gt)
-      try {
-        setTriggers(JSON.parse(gt));
-      } catch {}
-    // Guest already answered age + triggers - start at coping step
-    if (guestId && ga) {
-      setStep(2);
-      setStartStep(2);
+    const guest = getStoredGuest();
+    if (guest) {
+      setGuestId(guest.id);
+      setGuestName(guest.name);
+      setAgeGroup(guest.age ?? "");
+      if (guest.triggers.length) setTriggers(guest.triggers);
     }
   }, []);
 
-  function toggleTrigger(v: string) {
-    setTriggers((t) => (t.includes(v) ? t.filter((x) => x !== v) : [...t, v]));
-  }
-  function toggleNotif(v: string) {
-    setNotifs((n) => (n.includes(v) ? n.filter((x) => x !== v) : [...n, v]));
+  const current = STEPS[step];
+  const name = (session?.user?.name ?? guestName ?? "there").split(" ")[0];
+  const selectedCoping = COPING.find((item) => item.val === copingStyle)?.label ?? "Not selected";
+  const canNext = useMemo(() => {
+    if (current === "age") return !!ageGroup;
+    if (current === "triggers") return triggers.length > 0;
+    if (current === "coping") return !!copingStyle;
+    return true;
+  }, [ageGroup, copingStyle, current, triggers.length]);
+
+  function toggleTrigger(value: string) {
+    setTriggers((items) => (items.includes(value) ? items.filter((item) => item !== value) : [...items, value]));
   }
 
-  const canNext = [
-    !!ageGroup,
-    triggers.length > 0,
-    !!coping,
-    true, // notifs optional
-    true,
-  ][step];
+  function toggleNotif(value: string) {
+    setNotifPrefs((items) => (items.includes(value) ? items.filter((item) => item !== value) : [...items, value]));
+  }
 
   async function finish() {
     setSaving(true);
     setError("");
-    const payload = {
-      ageGroup,
-      triggers,
-      copingStyle: coping,
-      notifPrefs: notifs,
-    };
-
     try {
-      // Save via API (works for both authed users and guests via guestId header)
-      const guestId = localStorage.getItem("loopless_guest_id");
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (guestId) headers["x-guest-id"] = guestId;
 
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers,
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ageGroup, triggers, copingStyle, notifPrefs }),
       });
-
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error ?? "Save failed");
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Could not save onboarding.");
       }
-
-      // Clear new-user flag from localStorage
-      localStorage.removeItem("loopless_guest_triggers");
-      localStorage.removeItem("loopless_guest_age");
-
+      if (guestId) setStoredGuest({ id: guestId, name: guestName || "Guest", age: ageGroup, triggers });
+      localStorage.setItem("loopless_onboarding_done", "1");
       router.push("/dashboard");
     } catch (err: any) {
-      setError(
-        err.message ?? "Something went wrong. Your progress is saved locally.",
-      );
-      // Still let them proceed even if API fails
-      setTimeout(() => router.push("/dashboard"), 2000);
+      setError(err?.message ?? "Could not save onboarding.");
     } finally {
       setSaving(false);
     }
   }
 
   function next() {
-    if (step < STEPS.length - 1) {
-      setDir(1);
-      setStep((s) => s + 1);
-    } else finish();
-  }
-  function back() {
-    setDir(-1);
-    setStep((s) => Math.max(s - 1, startStep));
+    if (!canNext || saving) return;
+    if (current === "done") {
+      finish();
+      return;
+    }
+    setDirection(1);
+    setStep((value) => Math.min(value + 1, STEPS.length - 1));
   }
 
-  const cur = STEPS[step];
+  function back() {
+    setDirection(-1);
+    setStep((value) => Math.max(value - 1, 0));
+  }
 
   const slide = {
-    enter: (d: number) => ({ opacity: 0, x: d > 0 ? 48 : -48 }),
+    enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 34 : -34 }),
     center: { opacity: 1, x: 0 },
-    exit: (d: number) => ({ opacity: 0, x: d < 0 ? 48 : -48 }),
+    exit: (dir: number) => ({ opacity: 0, x: dir > 0 ? -34 : 34 }),
   };
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        html{font-family:'Nunito',sans-serif;}
-        body{font-family:'Nunito',sans-serif;background:var(--bg0);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;}
-        h1,h2,h3{font-family:'Fredoka',sans-serif;}
-        a{color:inherit;text-decoration:none;}
-
-        @keyframes puff{0%{opacity:0;transform:translateY(0) scale(.6);}30%{opacity:.5;}100%{opacity:0;transform:translateY(-160px) scale(2) rotate(20deg);}}
-        @keyframes blob{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(20px,-25px) scale(1.04);}66%{transform:translate(-14px,15px) scale(.97);}}
-        @keyframes popIn{0%{transform:scale(.4) translateY(16px);opacity:0;}60%{transform:scale(1.08) translateY(-4px);opacity:1;}100%{transform:scale(1);opacity:1;}}
-        @keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
-
-        .choice{
-          display:flex;align-items:center;gap:12px;
-          padding:14px 16px;border-radius:16px;
-          border:2px solid var(--border3);background:var(--bg1);
-          cursor:pointer;font-family:'Nunito',sans-serif;
-          box-shadow:3px 3px 0 var(--border);
-          transition:transform .12s,box-shadow .12s,border-color .12s,background .12s;
-          width:100%;text-align:left;
-        }
-        .choice:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--border2);}
-        .choice.sel{transform:translate(-1px,-1px);}
-
-        .next-btn{
-          width:100%;border:2.5px solid var(--text1);border-radius:16px;
-          padding:15px;font-size:16px;font-weight:800;
-          font-family:'Nunito',sans-serif;cursor:pointer;
-          display:flex;align-items:center;justify-content:center;gap:10px;
-          transition:transform .12s,box-shadow .12s;
-        }
-        .next-btn:hover{transform:translate(-1px,-2px);}
-        .next-btn:active{transform:translate(3px,3px)!important;}
-        .next-btn:disabled{opacity:.45;pointer-events:none;}
-        .back-btn{
-          background:transparent;border:2px solid var(--border3);border-radius:12px;
-          padding:12px 20px;font-size:14px;font-weight:700;color:var(--text2);
-          cursor:pointer;font-family:'Nunito',sans-serif;transition:background .12s;
-        }
-        .back-btn:hover{background:var(--bg4);}
-
-        .notif-toggle{
-          display:flex;align-items:center;gap:14px;
-          padding:14px 16px;border-radius:16px;
-          border:2px solid var(--border2);background:var(--bg1);
-          cursor:pointer;box-shadow:3px 3px 0 var(--border);
-          transition:all .15s;width:100%;text-align:left;font-family:'Nunito',sans-serif;
-        }
-        .notif-toggle:hover{border-color:rgba(123,111,160,.4);}
-        .notif-toggle.on{background:#f0edf8;border-color:#7b6fa0;box-shadow:3px 3px 0 rgba(78,68,120,.3);}
-
-        .toggle-dot{
-          width:36px;height:20px;border-radius:10px;background:var(--bg3);
-          border:1.5px solid var(--border3);position:relative;
-          transition:background .2s;flex-shrink:0;
-        }
-        .toggle-dot::after{
-          content:'';position:absolute;width:14px;height:14px;
-          border-radius:50%;background:var(--bg1);top:2px;left:2px;
-          border:1.5px solid var(--border3);transition:transform .2s;
-        }
-        .toggle-dot.on{background:#7b6fa0;}
-        .toggle-dot.on::after{transform:translateX(16px);}
-      `}</style>
-
-      {/* BG blobs */}
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          pointerEvents: "none",
-          zIndex: 0,
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: "-10%",
-            right: "-5%",
-            width: 400,
-            height: 400,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${cur.glow} 0%, transparent 70%)`,
-            animation: "blob 10s ease-in-out infinite",
-            transition: "background .5s",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "5%",
-            left: "-6%",
-            width: 320,
-            height: 320,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${cur.glow} 0%, transparent 70%)`,
-            animation: "blob 13s ease-in-out 2s infinite",
-            transition: "background .5s",
-          }}
-        />
-        {SMOKE.map((p, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              bottom: "3%",
-              left: p.x,
-              width: p.s,
-              height: p.s,
-              borderRadius: "50%",
-              background: `radial-gradient(circle, ${cur.glow} 0%, transparent 75%)`,
-              animation: `puff ${p.d}s ease-in-out ${p.dl}s infinite`,
-              filter: "blur(8px)",
-            }}
-          />
-        ))}
-      </div>
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100%",
-          maxWidth: 560,
-        }}
-      >
-        {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ textAlign: "center", marginBottom: 24 }}
-        >
-          <div
-            style={{
-              fontFamily: "'Fredoka',sans-serif",
-              fontSize: 24,
-              fontWeight: 600,
-              color: "var(--text1)",
-            }}
-          >
-            Loop
-            <span style={{ color: cur.accent, transition: "color .4s" }}>
-              less
-            </span>
-          </div>
-          {userName && (
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: "var(--text3)",
-                marginTop: 2,
-              }}
-            >
-              Hey {userName}! Let's personalise your experience 👋
-            </div>
-          )}
-        </motion.div>
-
-        {/* Progress */}
-        <div style={{ display: "flex", gap: 5, marginBottom: 24 }}>
-          {STEPS.slice(startStep).map((_, i) => {
-            const absI = i + startStep;
-            return (
-              <div
-                key={absI}
-                style={{
-                  flex: 1,
-                  height: 6,
-                  borderRadius: 3,
-                  border: "1.5px solid var(--border2)",
-                  background:
-                    absI < step
-                      ? cur.accent
-                      : absI === step
-                        ? cur.accent
-                        : "var(--bg4)",
-                  opacity: absI < step ? 0.55 : absI === step ? 1 : 0.4,
-                  transition: "background .4s",
-                }}
-              />
-            );
-          })}
-        </div>
-
-        {/* Card */}
-        <div
-          style={{
-            background: "var(--bg1)",
-            border: "2.5px solid var(--border2)",
-            borderRadius: 28,
-            padding: "32px 28px",
-            boxShadow: "8px 8px 0 var(--border2)",
-            minHeight: 460,
-            overflow: "hidden",
-          }}
-        >
-          <AnimatePresence mode="wait" custom={dir}>
-            <motion.div
-              key={step}
-              custom={dir}
-              variants={slide}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.28, ease: "easeOut" }}
-            >
-              {/* Header */}
-              <div style={{ textAlign: "center", marginBottom: 26 }}>
-                <div
-                  style={{
-                    fontSize: 50,
-                    marginBottom: 10,
-                    display: "inline-block",
-                    animation: "popIn .5s cubic-bezier(.34,1.56,.64,1) both",
-                  }}
-                >
-                  {cur.emoji}
-                </div>
-                <h2
-                  style={{
-                    fontFamily: "'Fredoka',sans-serif",
-                    fontSize: 24,
-                    fontWeight: 600,
-                    color: "var(--text1)",
-                    marginBottom: 6,
-                    lineHeight: 1.25,
-                  }}
-                >
-                  {cur.title}
-                </h2>
-                <p
-                  style={{
-                    fontSize: 13.5,
-                    color: "var(--text2)",
-                    fontWeight: 500,
-                    lineHeight: 1.6,
-                  }}
-                >
-                  {cur.sub}
-                </p>
+      <Styles />
+      <main className="onboard">
+        <div className="onboard-shell">
+          <aside className="onboard-side">
+            <div>
+              <div className="onboard-logo">Loop<span>less</span></div>
+              <h1>Set the app around your real triggers.</h1>
+              <p>One clean setup powers check-ins, toolkit suggestions, insights, and reminders across the app.</p>
+              <div className="onboard-mini">
+                <div><ShieldCheck size={16} /> Same flow for Google and Guest</div>
+                <div><Sparkles size={16} /> Real data only, no fake progress</div>
+                <div><Bell size={16} /> Notifications stay adjustable</div>
               </div>
+            </div>
+            <p style={{ position: "relative", zIndex: 1, marginTop: 24 }}>Signed in as {name}.</p>
+          </aside>
 
-              {/* Step 0 - Age */}
-              {step === 0 && (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 12,
-                  }}
-                >
-                  {AGE_GROUPS.map((a) => {
-                    const sel = ageGroup === a.val;
-                    return (
-                      <button
-                        key={a.val}
-                        className={`choice${sel ? " sel" : ""}`}
-                        onClick={() => setAgeGroup(a.val)}
-                        style={{
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "18px 12px",
-                          background: sel ? cur.bg : "var(--bg1)",
-                          borderColor: sel ? cur.accent : "var(--border3)",
-                          boxShadow: sel
-                            ? `3px 3px 0 ${cur.shadow}`
-                            : "3px 3px 0 var(--border)",
-                        }}
-                      >
-                        <span style={{ fontSize: 30, marginBottom: 6 }}>
-                          {a.emoji}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 16,
-                            fontWeight: 800,
-                            color: "var(--text1)",
-                          }}
-                        >
-                          {a.label}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 600,
-                            color: "var(--text3)",
-                            marginTop: 2,
-                          }}
-                        >
-                          {a.sub}
-                        </span>
-                        {sel && (
-                          <span
-                            style={{
-                              fontSize: 12,
-                              color: cur.accent,
-                              fontWeight: 700,
-                              marginTop: 4,
-                            }}
-                          >
-                            ✓ Selected
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+          <section className="onboard-card">
+            <div className="progress">
+              {STEPS.map((item, index) => (
+                <span key={item}><i style={{ width: index <= step ? "100%" : "0%" }} /></span>
+              ))}
+            </div>
 
-              {/* Step 1 - Triggers */}
-              {step === 1 && (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 10,
-                  }}
-                >
-                  {TRIGGERS.map((t) => {
-                    const sel = triggers.includes(t.val);
-                    return (
-                      <button
-                        key={t.val}
-                        className={`choice${sel ? " sel" : ""}`}
-                        onClick={() => toggleTrigger(t.val)}
-                        style={{
-                          background: sel ? cur.bg : "var(--bg1)",
-                          borderColor: sel ? cur.accent : "var(--border3)",
-                          boxShadow: sel
-                            ? `3px 3px 0 ${cur.shadow}`
-                            : "3px 3px 0 var(--border)",
-                        }}
-                      >
-                        <span style={{ fontSize: 22, flexShrink: 0 }}>
-                          {t.emoji}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 700,
-                            color: "var(--text1)",
-                          }}
-                        >
-                          {t.label}
-                        </span>
-                        {sel && (
-                          <span
-                            style={{
-                              marginLeft: "auto",
-                              color: cur.accent,
-                              fontSize: 16,
-                            }}
-                          >
-                            ✓
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                  {triggers.length > 0 && (
-                    <div
-                      style={{
-                        gridColumn: "1/-1",
-                        textAlign: "center",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: cur.accent,
-                      }}
-                    >
-                      {triggers.length} trigger{triggers.length > 1 ? "s" : ""}{" "}
-                      selected
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div key={current} custom={direction} variants={slide} initial="enter" animate="center" exit="exit" transition={{ duration: 0.24 }}>
+                {current !== "done" ? (
+                  <div className="step-head">
+                    <div>
+                      <h2>
+                        {current === "age" ? "Choose your age range" : current === "triggers" ? "Pick your common triggers" : current === "coping" ? "Choose your first coping style" : "Set your reminder comfort"}
+                      </h2>
+                      <p>
+                        {current === "age" ? "This helps tailor language, examples, and pattern analysis." : current === "triggers" ? "Choose every trigger that genuinely shows up for you." : current === "coping" ? "This decides which tools appear first during stressful moments." : "Start light. You can adjust these anytime in Settings."}
+                      </p>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* Step 2 - Coping Style */}
-              {step === 2 && (
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 12 }}
-                >
-                  {COPING_STYLES.map((c) => {
-                    const sel = coping === c.val;
-                    return (
-                      <button
-                        key={c.val}
-                        className={`choice${sel ? " sel" : ""}`}
-                        onClick={() => setCoping(c.val)}
-                        style={{
-                          background: sel ? cur.bg : "var(--bg1)",
-                          borderColor: sel ? cur.accent : "var(--border3)",
-                          boxShadow: sel
-                            ? `3px 3px 0 ${cur.shadow}`
-                            : "3px 3px 0 var(--border)",
-                        }}
-                      >
-                        <span style={{ fontSize: 30, flexShrink: 0 }}>
-                          {c.emoji}
-                        </span>
-                        <div>
-                          <div
-                            style={{
-                              fontSize: 15,
-                              fontWeight: 800,
-                              color: "var(--text1)",
-                            }}
-                          >
-                            {c.label}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 500,
-                              color: "var(--text2)",
-                              marginTop: 2,
-                            }}
-                          >
-                            {c.desc}
-                          </div>
-                        </div>
-                        {sel && (
-                          <span
-                            style={{
-                              marginLeft: "auto",
-                              color: cur.accent,
-                              fontSize: 18,
-                            }}
-                          >
-                            ✓
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Step 3 - Notifications */}
-              {step === 3 && (
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 10 }}
-                >
-                  {NOTIF_OPTIONS.map((n) => {
-                    const on = notifs.includes(n.val);
-                    return (
-                      <button
-                        key={n.val}
-                        className={`notif-toggle${on ? " on" : ""}`}
-                        onClick={() => toggleNotif(n.val)}
-                      >
-                        <span style={{ fontSize: 22, flexShrink: 0 }}>
-                          {n.emoji}
-                        </span>
-                        <div style={{ flex: 1 }}>
-                          <div
-                            style={{
-                              fontSize: 14,
-                              fontWeight: 800,
-                              color: "var(--text1)",
-                            }}
-                          >
-                            {n.label}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 500,
-                              color: "var(--text2)",
-                              marginTop: 2,
-                            }}
-                          >
-                            {n.desc}
-                          </div>
-                        </div>
-                        <div className={`toggle-dot${on ? " on" : ""}`} />
-                      </button>
-                    );
-                  })}
-                  <div
-                    style={{
-                      fontSize: 11.5,
-                      fontWeight: 600,
-                      color: "var(--text3)",
-                      textAlign: "center",
-                      marginTop: 4,
-                    }}
-                  >
-                    You can change these anytime in Settings 🔔
+                    <div className="step-icon">{current === "notifications" ? <Bell size={23} /> : current === "coping" ? <Wind size={23} /> : current === "triggers" ? <Zap size={23} /> : <ShieldCheck size={23} />}</div>
                   </div>
-                </div>
-              )}
+                ) : null}
 
-              {/* Step 4 - Done */}
-              {step === 4 && (
-                <div style={{ textAlign: "center", padding: "10px 0" }}>
-                  <div
-                    style={{
-                      fontSize: 70,
-                      marginBottom: 18,
-                      display: "inline-block",
-                      animation: "popIn .6s cubic-bezier(.34,1.56,.64,1) both",
-                    }}
-                  >
-                    🎉
+                {current === "age" ? (
+                  <div className="choice-grid">
+                    {AGE_OPTIONS.map((item) => {
+                      const selected = ageGroup === item.val;
+                      return (
+                        <button key={item.val} className={`choice${selected ? " is-on" : ""}`} onClick={() => setAgeGroup(item.val)} type="button">
+                          <ShieldCheck size={20} />
+                          <span><strong>{item.label}</strong><small>{item.sub}</small></span>
+                          {selected ? <Check size={17} style={{ marginLeft: "auto" }} /> : null}
+                        </button>
+                      );
+                    })}
                   </div>
-                  <h3
-                    style={{
-                      fontFamily: "'Fredoka',sans-serif",
-                      fontSize: 26,
-                      fontWeight: 600,
-                      color: "var(--text1)",
-                      marginBottom: 10,
-                    }}
-                  >
-                    You're ready to play!
-                  </h3>
-                  <p
-                    style={{
-                      fontSize: 15,
-                      color: "var(--text2)",
-                      fontWeight: 500,
-                      lineHeight: 1.65,
-                      marginBottom: 24,
-                    }}
-                  >
-                    Your loop profile is set. Time to start breaking it - one
-                    day at a time.
-                  </p>
-                  {/* Summary chips */}
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 8,
-                      justifyContent: "center",
-                      flexWrap: "wrap",
-                      marginBottom: 20,
-                    }}
-                  >
-                    {[
-                      { emoji: "🎂", label: `Age: ${ageGroup}` },
-                      {
-                        emoji: "😤",
-                        label: `${triggers.length} trigger${triggers.length !== 1 ? "s" : ""}`,
-                      },
-                      {
-                        emoji: "🧘",
-                        label:
-                          COPING_STYLES.find((c) => c.val === coping)?.label ??
-                          coping,
-                      },
-                      {
-                        emoji: "🔔",
-                        label: `${notifs.length} notif${notifs.length !== 1 ? "s" : ""}`,
-                      },
-                    ].map((chip, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          background: cur.bg,
-                          border: `2px solid ${cur.accent}66`,
-                          borderRadius: 50,
-                          padding: "7px 14px",
-                          fontSize: 12,
-                          fontWeight: 800,
-                          color: "var(--text1)",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                        }}
-                      >
-                        <span>{chip.emoji}</span>
-                        <span>{chip.label}</span>
-                      </div>
-                    ))}
+                ) : null}
+
+                {current === "triggers" ? (
+                  <div className="choice-grid">
+                    {TRIGGERS.map((item) => {
+                      const selected = triggers.includes(item.val);
+                      const Icon = item.Icon;
+                      return (
+                        <button key={item.val} className={`choice${selected ? " is-on" : ""}`} onClick={() => toggleTrigger(item.val)} type="button">
+                          <Icon size={20} />
+                          <span><strong>{item.label}</strong></span>
+                          {selected ? <Check size={17} style={{ marginLeft: "auto" }} /> : null}
+                        </button>
+                      );
+                    })}
                   </div>
-                  {error && (
-                    <div
-                      style={{
-                        background: "#ffd4cf",
-                        border: "2px solid #e07b5a",
-                        borderRadius: 12,
-                        padding: "10px 14px",
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#7a1a0a",
-                        marginBottom: 12,
-                      }}
-                    >
-                      ⚠️ {error} - taking you to the dashboard now.
+                ) : null}
+
+                {current === "coping" ? (
+                  <div className="notify-list">
+                    {COPING.map((item) => {
+                      const selected = copingStyle === item.val;
+                      const Icon = item.Icon;
+                      return (
+                        <button key={item.val} className={`choice${selected ? " is-on" : ""}`} onClick={() => setCopingStyle(item.val)} type="button">
+                          <Icon size={21} />
+                          <span><strong>{item.label}</strong><small>{item.desc}</small></span>
+                          {selected ? <Check size={17} style={{ marginLeft: "auto" }} /> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+
+                {current === "notifications" ? (
+                  <div className="notify-list">
+                    {NOTIFICATIONS.map((item) => {
+                      const selected = notifPrefs.includes(item.val);
+                      return (
+                        <button key={item.val} className={`notify${selected ? " is-on" : ""}`} onClick={() => toggleNotif(item.val)} type="button">
+                          <div className={`toggle${selected ? " on" : ""}`} />
+                          <span><strong>{item.label}</strong><small>{item.desc}</small></span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+
+                {current === "done" ? (
+                  <div className="done-box">
+                    <motion.div className="done-mark" initial={{ scale: 0.82, rotate: -4 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", bounce: 0.35 }}>
+                      <Check size={42} />
+                    </motion.div>
+                    <h2>Ready to start</h2>
+                    <p>Your setup is consistent across Dashboard, Check-in, Toolkit, and Insights.</p>
+                    <div className="summary">
+                      <span>{ageGroup}</span>
+                      <span>{triggers.length} triggers</span>
+                      <span>{selectedCoping}</span>
+                      <span>{notifPrefs.length} reminders</span>
                     </div>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+                  </div>
+                ) : null}
+              </motion.div>
+            </AnimatePresence>
 
-        {/* Nav */}
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginTop: 16,
-            alignItems: "center",
-          }}
-        >
-          {step > startStep && (
-            <button className="back-btn" onClick={back}>
-              ← Back
-            </button>
-          )}
-          <button
-            className="next-btn"
-            disabled={!canNext || saving}
-            onClick={next}
-            style={{
-              flex: 1,
-              background: canNext ? cur.accent : "#d4c8b0",
-              color: canNext ? "var(--bg1)" : "var(--text3)",
-              boxShadow: canNext ? `4px 4px 0 ${cur.shadow}` : "none",
-            }}
-          >
-            {saving
-              ? "⏳ Saving…"
-              : step < STEPS.length - 1
-                ? "Continue →"
-                : "🚀 Go to dashboard"}
-          </button>
-        </div>
+            {error ? <div className="error"><X size={14} style={{ verticalAlign: "-2px", marginRight: 6 }} />{error}</div> : null}
 
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: 14,
-            fontSize: 12,
-            fontWeight: 600,
-            color: "var(--text3)",
-          }}
-        >
-          Step {step - startStep + 1} of {STEPS.length - startStep} · Your data
-          stays private 🔒
+            <div className="nav">
+              {step > 0 ? <button className="back" onClick={back} type="button"><ChevronLeft size={17} /> Back</button> : null}
+              <button className="next" onClick={next} disabled={!canNext || saving} type="button">
+                {saving ? <Loader2 className="animate-spin" size={17} /> : null}
+                {current === "done" ? "Go to dashboard" : "Continue"}
+              </button>
+            </div>
+          </section>
         </div>
-      </div>
+      </main>
     </>
   );
 }

@@ -1,5 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  AlertTriangle,
+  BarChart3,
+  ChevronRight,
+  FileText,
+  HelpCircle,
+  LifeBuoy,
+  Lock,
+  Mail,
+  Phone,
+  Settings,
+  ShieldCheck,
+  Wrench,
+} from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Help & Support | Loopless",
@@ -12,64 +26,75 @@ const CRISIS_LINES = [
     name: "Lifeline",
     tel: "13 11 14",
     telHref: "131114",
-    desc: "24/7 crisis support (Australia)",
-    emoji: "📞",
+    desc: "24/7 crisis support in Australia",
   },
   {
     name: "Beyond Blue",
     tel: "1300 22 4636",
     telHref: "1300224636",
-    desc: "Mental health support",
-    emoji: "💙",
+    desc: "Mental health support and advice",
   },
   {
     name: "headspace",
     tel: "1800 650 890",
     telHref: "1800650890",
-    desc: "Young people 12–25",
-    emoji: "🧠",
+    desc: "Support for young people aged 12-25",
   },
   {
     name: "Quitline",
     tel: "13 7848",
     telHref: "137848",
     desc: "Nicotine quit support",
-    emoji: "🌱",
   },
 ];
 
 const FAQ = [
   {
     q: "Is Loopless a substitute for counselling or medical care?",
-    a: "No. Loopless is a digital self-help companion for behavioural awareness and nicotine-related habits. It is not therapy, diagnosis, or emergency care. Always follow advice from qualified health professionals.",
+    a: "No. Loopless is a self-help companion for awareness and habit support. It is not therapy, diagnosis, or emergency care.",
   },
   {
     q: "How do check-ins and XP work?",
-    a: "When you complete a daily check-in, you log stress, mood, and context so patterns can emerge over time. XP and levels recognise consistency - they are motivational, not clinical scores. Values may match what you see on your profile dashboard.",
+    a: "Daily check-ins log stress, mood, and context so patterns can emerge over time. XP recognises consistency; it is motivational, not a clinical score.",
   },
   {
     q: "What are Insights and Pattern views?",
-    a: "After enough history (typically several days), the app surfaces correlations, charts, and short explanations from your check-ins and urge logs. You can review how each tile is calculated using the info buttons on Insights.",
-  },
-  {
-    q: "What is demo or seed data?",
-    a: "From Settings or developer tools you may load a 30‑day demonstration dataset so you can explore Insights without waiting for history. Toggle or restore real data when you’re done so your view matches your actual logs.",
+    a: "Insights use your check-ins and urge logs to surface correlations, charts, and short explanations after enough history is available.",
   },
   {
     q: "Who can see my data?",
-    a: "Your account data is scoped to your sign-in unless you’re using a disposable guest profile on this device. See the Privacy Policy for retention, deletion, and what may be processed by infrastructure or optional AI helpers for wording.",
+    a: "Your account data is scoped to your sign-in. Guest data is local to this device unless your deployment adds account linking.",
   },
   {
-    q: "How do I export, fix mistakes, or start over?",
-    a: "Use Settings for account-linked options where available. Guest users can wipe local guest data from the sidebar. For permanent account deletion timelines, rely on Privacy Policy disclosures and flows your deployment provides.",
+    q: "Push notifications are not appearing. Why?",
+    a: "Browsers block notifications until you allow them. Quiet hours and browser support can also prevent reminders from showing.",
+  },
+];
+
+const QUICK_LINKS = [
+  {
+    href: "/settings",
+    label: "Settings",
+    desc: "Notifications, privacy, account options",
+    Icon: Settings,
   },
   {
-    q: "Push notifications aren’t appearing - why?",
-    a: "Browsers block notifications until you allow them, and quiet hours apply if you configured them in Settings. If your environment doesn’t support web push, the app falls back gracefully.",
+    href: "/insights",
+    label: "Insights",
+    desc: "Pattern explanations and data views",
+    Icon: BarChart3,
   },
   {
-    q: "How do I send product feedback?",
-    a: "Open your email client with our pre-filled subject, or describe what you hoped to see plus your device/browser. Compose from Settings → About or tap “Compose feedback” below.",
+    href: "/coping",
+    label: "Toolkit",
+    desc: "Reset tools for urge moments",
+    Icon: Wrench,
+  },
+  {
+    href: "/privacy",
+    label: "Privacy",
+    desc: "How data is handled",
+    Icon: Lock,
   },
 ];
 
@@ -81,183 +106,460 @@ export default function SupportPage() {
     encodeURIComponent("What happened:\nWhat you expected:\nBrowser / OS:\n");
 
   return (
-    <>
-      <style>{`
-        .support-grid{display:grid;gap:14px;margin-top:16px;}
-        @media(min-width:900px){.support-grid.two{grid-template-columns:1fr 1fr;align-items:start;}}
-        .support-card{
-          background:var(--bg2);
-          border:2px solid var(--border2);
-          border-radius:20px;
-          padding:18px 20px;
-          box-shadow:var(--shadow-card);
-        }
-        .support-card h2{
-          font-family:var(--font-display);
-          font-size:17px;
-          font-weight:600;
-          color:var(--text1);
-          margin:0 0 10px;
-        }
-        .support-lede{font-size:14px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
-        .crisis-list{display:flex;flex-direction:column;gap:10px;}
-        .crisis-card{
-          display:flex;align-items:center;gap:12px;
-          background:linear-gradient(135deg,#5a1710,#872211);
-          color:#fff;
-          border:2px solid #1a1208;
-          border-radius:14px;
-          padding:12px 14px;
-          text-decoration:none;
-          box-shadow:3px 3px 0 rgba(26,18,8,.25);
-          transition:transform .12s ease, box-shadow .12s ease;
-        }
-        .crisis-card:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(26,18,8,.3);}
-        .crisis-card:active{transform:translate(1px,1px);box-shadow:2px 2px 0 rgba(26,18,8,.28);}
-        .crisis-num{font-family:var(--font-display);font-size:17px;font-weight:700;color:#fecaca;}
-        .crisis-meta{font-size:11px;color:rgba(255,255,255,.68);margin-top:2px;}
-        details.support-faq{
-          border:2px solid var(--border3);
-          border-radius:14px;padding:12px 14px;
-          background:var(--bg0);
-        }
-        details.support-faq + details.support-faq{margin-top:8px;}
-        details.support-faq summary{
-          cursor:pointer;
-          font-weight:800;font-size:13.5px;color:var(--text1);
-          list-style:none;display:flex;align-items:flex-start;gap:10px;padding:2px 0;
-        }
-        details.support-faq summary::-webkit-details-marker{display:none;}
-        details.support-faq summary::before{
-          content:"▸";flex-shrink:0;line-height:1.25;color:var(--mint2);
-          transition:transform .15s ease;
-        }
-        details.support-faq[open] summary::before{transform:rotate(90deg);}
-        details.support-faq p{
-          margin:10px 0 2px;font-size:13px;line-height:1.6;color:var(--text2);
-          padding-left:22px;border-left:2px solid var(--mint3);
-          margin-left:2px;
-        }
-        .link-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
-        .support-pill{
-          display:inline-flex;align-items:center;gap:6px;padding:9px 14px;
-          border-radius:999px;border:2px solid var(--border2);
-          background:var(--bg3);font-size:13px;font-weight:800;color:var(--text1);
-          text-decoration:none;transition:border-color .15s, background .15s;
-        }
-        .support-pill:hover{border-color:var(--mint2);background:var(--mint3);}
-      `}</style>
+    <div className="support-page">
+      <SupportStyles />
 
-      <div className="page-header">
-        <h1 className="page-title">Help & Support</h1>
-        <p className="page-sub max-w-xl">
-          Crisis lines (Australia), FAQs about Loopless, and pointers to Privacy
-          & Settings - so you never have to hunt for essentials.
-        </p>
-      </div>
+      <header className="support-hero">
+        <div>
+          <p className="support-kicker">Help and support</p>
+          <h1>Find the right help fast.</h1>
+          <p>
+            Start with emergency support when safety is involved. For product
+            questions, use the quick links and FAQ below.
+          </p>
+        </div>
+        <a className="support-emergency-card" href="tel:000">
+          <AlertTriangle size={24} strokeWidth={2.5} />
+          <span>Immediate danger</span>
+          <strong>Call 000</strong>
+        </a>
+      </header>
 
-      <div className="page-content">
-        <div className="support-grid two">
-          <section className="support-card" aria-labelledby="crisis-heading">
-            <h2 id="crisis-heading">If you&apos;re in immediate danger</h2>
-            <p className="support-lede">
-              Call <strong style={{ color: "var(--text1)" }}>000</strong> (AU)
-              for emergencies. Below are confidential national lines - you
-              don&apos;t need to be &quot;in crisis&quot; to call.
-            </p>
-            <div className="crisis-list">
-              {CRISIS_LINES.map((h) => (
-                <a
-                  key={h.name}
-                  className="crisis-card"
-                  href={`tel:${h.telHref}`}
-                >
-                  <span style={{ fontSize: 24 }} aria-hidden>
-                    {h.emoji}
+      <main className="support-layout">
+        <section className="support-crisis-panel" aria-labelledby="crisis-title">
+          <div className="support-section-head">
+            <div>
+              <p className="support-kicker">Australia crisis lines</p>
+              <h2 id="crisis-title">Talk to someone now</h2>
+            </div>
+            <Phone size={22} strokeWidth={2.5} />
+          </div>
+          <p className="support-lede">
+            You do not need to be at breaking point to call. These services are
+            confidential and built for moments that feel too heavy to hold alone.
+          </p>
+          <div className="support-crisis-list">
+            {CRISIS_LINES.map((line) => (
+              <a
+                key={line.name}
+                className="support-crisis-card"
+                href={`tel:${line.telHref}`}
+              >
+                <span className="support-phone-icon">
+                  <Phone size={18} strokeWidth={2.5} />
+                </span>
+                <span>
+                  <strong>{line.name}</strong>
+                  <small>{line.desc}</small>
+                </span>
+                <em>{line.tel}</em>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <aside className="support-action-panel">
+          <section className="support-card">
+            <div className="support-section-head compact">
+              <div>
+                <p className="support-kicker">App support</p>
+                <h2>Quick actions</h2>
+              </div>
+              <LifeBuoy size={22} strokeWidth={2.5} />
+            </div>
+            <div className="support-link-grid">
+              {QUICK_LINKS.map(({ href, label, desc, Icon }) => (
+                <Link key={href} className="support-link-card" href={href}>
+                  <Icon size={19} strokeWidth={2.5} />
+                  <span>
+                    <strong>{label}</strong>
+                    <small>{desc}</small>
                   </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800 }}>{h.name}</div>
-                    <div className="crisis-meta">{h.desc}</div>
-                  </div>
-                  <div className="crisis-num">{h.tel}</div>
-                </a>
+                  <ChevronRight size={16} strokeWidth={2.5} />
+                </Link>
               ))}
             </div>
           </section>
 
-          <div className="support-grid">
-            <section className="support-card" aria-labelledby="app-heading">
-              <h2 id="app-heading">Using Loopless</h2>
-              <p className="support-lede">
-                Most answers live right inside the product: Insights tiles have
-                &quot;how it works&quot; notes; Settings hosts reminders, demo
-                data, and legal links.
-              </p>
-              <div className="link-row">
-                <Link className="support-pill" href="/settings">
-                  ⚙️ Open Settings
-                </Link>
-                <Link className="support-pill" href="/insights">
-                  📊 Open Insights
-                </Link>
-                <Link className="support-pill" href="/coping">
-                  🛠 Toolkit
-                </Link>
+          <section className="support-card">
+            <div className="support-section-head compact">
+              <div>
+                <p className="support-kicker">Feedback</p>
+                <h2>Report friction</h2>
               </div>
-            </section>
+              <Mail size={22} strokeWidth={2.5} />
+            </div>
+            <p className="support-lede">
+              Include what happened, what you expected, and the device or
+              browser you used.
+            </p>
+            <a className="support-primary-action" href={feedbackHref}>
+              <Mail size={17} strokeWidth={2.5} />
+              Compose feedback
+            </a>
+          </section>
+        </aside>
+      </main>
 
-            <section className="support-card" aria-labelledby="legal-heading">
-              <h2 id="legal-heading">Policies & feedback</h2>
-              <p className="support-lede">
-                Read how we handle data, then send structured feedback when
-                something feels off - it helps prioritise fixes.
-              </p>
-              <div className="link-row">
-                <Link className="support-pill" href="/privacy">
-                  🔒 Privacy Policy
-                </Link>
-                <Link className="support-pill" href="/terms">
-                  📋 Terms of Service
-                </Link>
-                <a className="support-pill" href={feedbackHref}>
-                  ✉️ Compose feedback
-                </a>
-              </div>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "var(--text3)",
-                  marginTop: 12,
-                  lineHeight: 1.55,
-                }}
-              >
-                The feedback link opens your default mail app with a subject
-                line only - fill in <strong>To:</strong> with whoever operates
-                this deployment, or paste details into your usual support
-                channel.
-              </p>
-            </section>
+      <section className="support-faq-panel" aria-labelledby="faq-title">
+        <div className="support-section-head">
+          <div>
+            <p className="support-kicker">FAQ</p>
+            <h2 id="faq-title">Common questions</h2>
           </div>
+          <HelpCircle size={22} strokeWidth={2.5} />
         </div>
-
-        <section
-          className="support-card"
-          style={{ marginTop: 16 }}
-          aria-labelledby="faq-heading"
-        >
-          <h2 id="faq-heading">Frequently asked questions</h2>
-          <p className="support-lede">
-            Short answers grounded in how this build behaves; always defer to
-            your clinician for health decisions.
-          </p>
+        <div className="support-faq-grid">
           {FAQ.map((item) => (
             <details key={item.q} className="support-faq">
-              <summary>{item.q}</summary>
+              <summary>
+                <span>{item.q}</span>
+                <ChevronRight size={17} strokeWidth={2.5} />
+              </summary>
               <p>{item.a}</p>
             </details>
           ))}
-        </section>
-      </div>
-    </>
+        </div>
+      </section>
+
+      <section className="support-trust-strip">
+        <span>
+          <ShieldCheck size={18} strokeWidth={2.5} />
+          Loopless is not emergency care.
+        </span>
+        <Link href="/terms">
+          <FileText size={17} strokeWidth={2.5} />
+          Terms of Service
+        </Link>
+      </section>
+    </div>
+  );
+}
+
+function SupportStyles() {
+  return (
+    <style>{`
+      .support-page {
+        width: min(1120px, calc(100vw - 40px));
+        margin: 0 auto;
+        padding: 28px 0 120px;
+      }
+      .support-hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 24px 0 22px;
+        border-bottom: 1px solid var(--border);
+      }
+      .support-kicker {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .support-hero h1 {
+        max-width: 650px;
+        margin: 4px 0 10px;
+        font-family: var(--font-display);
+        font-size: clamp(34px, 5vw, 58px);
+        line-height: 0.98;
+      }
+      .support-hero p:not(.support-kicker) {
+        max-width: 620px;
+        color: var(--text2);
+        font-size: 15px;
+        line-height: 1.65;
+      }
+      .support-emergency-card {
+        display: grid;
+        gap: 6px;
+        min-width: 200px;
+        border: 1px solid rgba(224, 123, 90, 0.35);
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(224, 123, 90, 0.16), var(--bg2));
+        color: var(--text1);
+        padding: 18px;
+      }
+      .support-emergency-card svg {
+        color: var(--coral);
+      }
+      .support-emergency-card span {
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .support-emergency-card strong {
+        font-family: var(--font-display);
+        font-size: 28px;
+        line-height: 1;
+      }
+      .support-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 16px;
+        align-items: start;
+        padding-top: 18px;
+      }
+      .support-crisis-panel,
+      .support-card,
+      .support-faq-panel,
+      .support-trust-strip {
+        border: 1px solid var(--border2);
+        border-radius: 18px;
+        background: var(--bg2);
+        box-shadow: 0 12px 38px rgba(21, 31, 26, 0.06);
+      }
+      .support-crisis-panel,
+      .support-card,
+      .support-faq-panel {
+        padding: 18px;
+      }
+      .support-action-panel {
+        display: grid;
+        gap: 14px;
+      }
+      .support-section-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 12px;
+      }
+      .support-section-head.compact {
+        margin-bottom: 14px;
+      }
+      .support-section-head h2 {
+        margin-top: 3px;
+        font-family: var(--font-display);
+        font-size: 24px;
+        line-height: 1.08;
+      }
+      .support-section-head > svg {
+        color: var(--mint2);
+        margin-top: 4px;
+      }
+      .support-lede {
+        color: var(--text2);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.6;
+        margin-bottom: 14px;
+      }
+      .support-crisis-list {
+        display: grid;
+        gap: 10px;
+      }
+      .support-crisis-card {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        min-height: 78px;
+        border: 1px solid var(--border2);
+        border-radius: 16px;
+        background: var(--bg0);
+        color: var(--text1);
+        padding: 13px;
+      }
+      .support-crisis-card:hover {
+        border-color: rgba(224, 123, 90, 0.45);
+      }
+      .support-phone-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+        background: rgba(224, 123, 90, 0.12);
+        color: var(--coral);
+      }
+      .support-crisis-card strong,
+      .support-crisis-card small {
+        display: block;
+      }
+      .support-crisis-card strong {
+        font-size: 15px;
+        font-weight: 900;
+      }
+      .support-crisis-card small {
+        margin-top: 2px;
+        color: var(--text3);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.35;
+      }
+      .support-crisis-card em {
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-style: normal;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .support-link-grid {
+        display: grid;
+        gap: 8px;
+      }
+      .support-link-card {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) 18px;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--border2);
+        border-radius: 14px;
+        background: var(--bg0);
+        color: var(--text1);
+        padding: 11px;
+      }
+      .support-link-card > svg:first-child {
+        color: var(--mint2);
+      }
+      .support-link-card strong,
+      .support-link-card small {
+        display: block;
+      }
+      .support-link-card strong {
+        font-size: 13px;
+        font-weight: 900;
+      }
+      .support-link-card small {
+        overflow: hidden;
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.35;
+        text-overflow: ellipsis;
+      }
+      .support-primary-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 44px;
+        border-radius: 13px;
+        background: var(--text1);
+        color: var(--bg0);
+        padding: 0 16px;
+        font-size: 13px;
+        font-weight: 900;
+      }
+      .support-faq-panel {
+        margin-top: 16px;
+      }
+      .support-faq-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .support-faq {
+        border: 1px solid var(--border2);
+        border-radius: 15px;
+        background: var(--bg0);
+        padding: 0;
+        overflow: hidden;
+      }
+      .support-faq summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        cursor: pointer;
+        color: var(--text1);
+        padding: 14px;
+        font-size: 13px;
+        font-weight: 900;
+        line-height: 1.35;
+        list-style: none;
+      }
+      .support-faq summary::-webkit-details-marker {
+        display: none;
+      }
+      .support-faq summary svg {
+        color: var(--text3);
+        flex-shrink: 0;
+        transition: transform 0.16s ease;
+      }
+      .support-faq[open] summary svg {
+        transform: rotate(90deg);
+      }
+      .support-faq p {
+        border-top: 1px solid var(--border2);
+        color: var(--text2);
+        padding: 13px 14px 15px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+      .support-trust-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 16px;
+        color: var(--text2);
+        padding: 14px 16px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .support-trust-strip span,
+      .support-trust-strip a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .support-trust-strip svg {
+        color: var(--mint2);
+      }
+      .dark .support-crisis-panel,
+      .dark .support-card,
+      .dark .support-faq-panel,
+      .dark .support-trust-strip,
+      .dark .support-emergency-card {
+        background: var(--bg2);
+        box-shadow: 0 14px 48px rgba(0, 0, 0, 0.28);
+      }
+      @media (max-width: 1040px) {
+        .support-layout {
+          grid-template-columns: 1fr;
+        }
+        .support-action-panel {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 760px) {
+        .support-page {
+          width: min(100% - 24px, 1120px);
+          padding-top: 14px;
+          padding-bottom: 130px;
+        }
+        .support-hero {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .support-emergency-card {
+          min-width: 0;
+        }
+        .support-action-panel,
+        .support-faq-grid {
+          grid-template-columns: 1fr;
+        }
+        .support-crisis-card {
+          grid-template-columns: 42px minmax(0, 1fr);
+        }
+        .support-crisis-card em {
+          grid-column: 2;
+          font-size: 20px;
+        }
+        .support-trust-strip {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    `}</style>
   );
 }

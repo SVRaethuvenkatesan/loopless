@@ -1,32 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { Sprout, CheckCircle, DatabaseZap } from "lucide-react";
+import { Sprout, CheckCircle } from "lucide-react";
 
 export default function InsightsEmptyState({
   checkinCount,
 }: {
   checkinCount: number;
 }) {
-  const [seeding, setSeeding] = useState(false);
-  const [done, setDone] = useState(false);
-  const router = useRouter();
-
-  const seed = async () => {
-    setSeeding(true);
-    try {
-      const res = await fetch("/api/dev/seed-insights");
-      if (res.ok) {
-        setDone(true);
-        setTimeout(() => router.refresh(), 800);
-      }
-    } finally {
-      setSeeding(false);
-    }
-  };
-
   const daysNeeded = Math.max(0, 7 - checkinCount);
 
   return (
@@ -121,71 +102,6 @@ export default function InsightsEmptyState({
           <CheckCircle size={18} strokeWidth={2.5} />
           Check in now
         </motion.a>
-
-        {/* Dev-only seed button */}
-        {process.env.NODE_ENV !== "production" && !done && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={seed}
-            disabled={seeding}
-            style={{
-              padding: "12px 24px",
-              borderRadius: 14,
-              fontWeight: 700,
-              fontSize: 14,
-              background: "transparent",
-              color: "var(--text2)",
-              border: "1.5px solid var(--border2)",
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            {seeding ? (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 0.8,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  style={{
-                    width: 16,
-                    height: 16,
-                    border: "2px solid var(--text2)",
-                    borderTopColor: "transparent",
-                    borderRadius: "50%",
-                  }}
-                />
-                Seeding...
-              </>
-            ) : (
-              <>
-                <DatabaseZap size={18} strokeWidth={2.5} />
-                Load demo data
-              </>
-            )}
-          </motion.button>
-        )}
-
-        {done && (
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: 700,
-              color: "var(--mint)",
-              padding: "12px 0",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <CheckCircle size={14} /> Demo data loaded - refreshing...
-          </span>
-        )}
       </div>
 
       {/* Progress dots */}

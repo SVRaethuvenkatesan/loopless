@@ -23,7 +23,8 @@ export async function POST(req: Request) {
 
     const result = await withDb(async (db) => {
       const { checkins, streaks, badges } = await import("@/lib/db/schema");
-      const { eq, and, gte, lt, desc } = await import("drizzle-orm");
+      const { eq, and, gte, lt, desc, ne, or, isNull } = await import("drizzle-orm");
+      const realCheckinMode = or(ne(checkins.timezoneOffset, "__seed__"), isNull(checkins.timezoneOffset));
 
       const now = new Date();
       const todayUTC = new Date(now);
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
 
       // Prevent duplicate checkin today
       const existing = await db.query.checkins.findFirst({
-        where: and(eq(checkins.userId, userId), gte(checkins.checkedInAt, todayUTC)),
+        where: and(eq(checkins.userId, userId), gte(checkins.checkedInAt, todayUTC), realCheckinMode),
       });
       // Upsert: update today's entry if it already exists
       if (existing) {
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
           eq(checkins.userId, userId),
           gte(checkins.checkedInAt, yesterdayUTC),
           lt(checkins.checkedInAt, todayUTC),
+          realCheckinMode,
         ),
       });
 

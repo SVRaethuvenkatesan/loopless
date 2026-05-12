@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   checkins, urgeEvents, mlInsights,
-  riskPredictions, dailyInsights
+  riskPredictions, dailyInsights, copingSessions
 } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 
@@ -14,7 +14,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const session = await auth();
-  const userId = session?.user?.id;
+  const guestId = req.headers.get("x-guest-id");
+  const userId = session?.user?.id ?? guestId;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const mode = new URL(req.url).searchParams.get("mode");
@@ -29,6 +30,7 @@ export async function GET(req: Request) {
       db.delete(mlInsights).where(eq(mlInsights.userId, userId)),
       db.delete(dailyInsights).where(eq(dailyInsights.userId, userId)),
       db.delete(riskPredictions).where(eq(riskPredictions.userId, userId)),
+      db.delete(copingSessions).where(eq(copingSessions.userId, userId)),
     ]);
 
     return NextResponse.json({
@@ -53,7 +55,10 @@ export async function GET(req: Request) {
       and(eq(dailyInsights.userId, userId), eq(dailyInsights.source, "seed"))
     ),
     db.delete(riskPredictions).where(
-      and(eq(riskPredictions.userId, userId), eq(riskPredictions.status, "pending"))
+      and(eq(riskPredictions.userId, userId), eq(riskPredictions.status, "seed"))
+    ),
+    db.delete(copingSessions).where(
+      and(eq(copingSessions.userId, userId), eq(copingSessions.toolType, "__seed__"))
     ),
   ]);
 

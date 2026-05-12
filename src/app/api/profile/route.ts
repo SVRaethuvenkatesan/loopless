@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { withDb } from "@/lib/db/with-db";
 import { computeXP, computeLevel } from "@/lib/xp";
+import { isTestDataModeFromRequest } from "@/lib/data-mode";
 
 function getUserId(session: any, req: Request): string | null {
   return session?.user?.id ?? req.headers.get("x-guest-id") ?? null;
@@ -14,13 +15,14 @@ export async function GET(req: Request) {
   try {
     const session = await auth();
     const userId = getUserId(session, req);
+    const testMode = isTestDataModeFromRequest(req);
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const data = await withDb(async (db) => {
       const { users, stressTriggers, badges, streaks, checkins } =
         await import("@/lib/db/schema");
-      const { eq, and, gte, desc } = await import("drizzle-orm");
+      const { eq, and, gte, desc, ne, or, isNull } = await import("drizzle-orm");
       const { v4: uuid } = await import("uuid");
 
       let user = await db.query.users.findFirst({
@@ -74,10 +76,18 @@ export async function GET(req: Request) {
 
       const [triggers, earnedBadges, userStreaks, recentCheckins] = await Promise.all([
         db.select().from(stressTriggers).where(eq(stressTriggers.userId, user.id)),
-        db.select().from(badges).where(eq(badges.userId, user.id)),
-        db.select().from(streaks).where(eq(streaks.userId, user.id)),
+        testMode ? Promise.resolve([]) : db.select().from(badges).where(eq(badges.userId, user.id)),
+        testMode ? Promise.resolve([]) : db.select().from(streaks).where(eq(streaks.userId, user.id)),
         db.select().from(checkins)
-          .where(and(eq(checkins.userId, user.id), gte(checkins.checkedInAt, thirtyDaysAgo)))
+          .where(
+            and(
+              eq(checkins.userId, user.id),
+              gte(checkins.checkedInAt, thirtyDaysAgo),
+              testMode
+                ? eq(checkins.timezoneOffset, "__seed__")
+                : or(ne(checkins.timezoneOffset, "__seed__"), isNull(checkins.timezoneOffset)),
+            ),
+          )
           .orderBy(desc(checkins.checkedInAt))
           .limit(30),
       ]);
@@ -85,7 +95,7 @@ export async function GET(req: Request) {
       // Compute streak from history if streaks table is empty or zero
       let computedStreaks = userStreaks;
       const dbStreak = userStreaks.find(s => s.streakType === "checkin");
-      if (!dbStreak || (dbStreak.count ?? 0) === 0) {
+      if (testMode || !dbStreak || (dbStreak.count ?? 0) === 0) {
         let streak = 0;
         const todayUTC = new Date(); todayUTC.setUTCHours(0, 0, 0, 0);
         let expected = new Date(todayUTC);
@@ -102,7 +112,7 @@ export async function GET(req: Request) {
       const xp = computeXP(earnedBadges, streakCount, recentCheckins);
       const { level, xpInLevel, xpToNext } = computeLevel(xp);
 
-      return { user, triggers, earnedBadges, userStreaks: computedStreaks, recentCheckins, xp, level, xpInLevel, xpToNext };
+      return { user, triggers, earnedBadges, userStreaks: computedStreaks, recentCheckins, xp, level, xpInLevel, xpToNext, testMode };
     });
 
     if (!data)

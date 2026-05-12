@@ -2,10 +2,12 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { GuestChoiceModal } from "@/components/auth/guest-choice-modal";
+import { getStoredGuest, setStoredGuest, type StoredGuest } from "@/lib/guest-storage";
 
 // Inline SVG icons for step headers
 const WaveIcon = () => (
@@ -72,24 +74,6 @@ const STEPS = [
     shadow: "#3d6b4f",
     bg: "#e8f5ec",
     borderCol: "#5a8f6a66",
-  },
-  {
-    id: 1,
-    title: "How old are you?",
-    sub: "Helps us tailor your experience to what works for your age group.",
-    accent: "#c9982a",
-    shadow: "#8c6400",
-    bg: "#fffbef",
-    borderCol: "#c9982a66",
-  },
-  {
-    id: 2,
-    title: "What usually triggers your urge to vape?",
-    sub: "Pick all that apply - we'll build your personal coping toolkit around these.",
-    accent: "#e07b5a",
-    shadow: "#a84f2a",
-    bg: "#fdf0ea",
-    borderCol: "#e07b5a66",
   },
 ];
 
@@ -322,14 +306,25 @@ export default function GuestPage() {
   const [triggers, setTriggers] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [storedGuest, setStoredGuestState] = useState<StoredGuest | null>(null);
+  const [showGuestChoice, setShowGuestChoice] = useState(false);
 
   const cur = STEPS[step];
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "1") return;
+    const guest = getStoredGuest();
+    if (guest) {
+      setStoredGuestState(guest);
+      setShowGuestChoice(true);
+    }
+  }, []);
 
   function toggleTrigger(v: string) {
     setTriggers((t) => (t.includes(v) ? t.filter((x) => x !== v) : [...t, v]));
   }
 
-  const canNext = [name.trim().length > 0, !!age, triggers.length > 0][step];
+  const canNext = name.trim().length > 0;
 
   async function finish() {
     setLoading(true);
@@ -347,7 +342,7 @@ export default function GuestPage() {
         body: JSON.stringify({
           guestId: existingId,
           firstName: name,
-          ageGroup: age,
+          ageGroup: "",
         }),
       });
       const data = await res.json();
@@ -357,11 +352,7 @@ export default function GuestPage() {
         return;
       }
 
-      // Persist guest meta locally
-      localStorage.setItem("loopless_guest_id", data.guestId);
-      localStorage.setItem("loopless_guest_name", name);
-      localStorage.setItem("loopless_guest_triggers", JSON.stringify(triggers));
-      localStorage.setItem("loopless_guest_age", age);
+      setStoredGuest({ id: data.guestId, name, triggers: [] });
 
       // Sign in with guestId so NextAuth creates a real session
       const signInRes = await signIn("credentials", {
@@ -401,6 +392,11 @@ export default function GuestPage() {
 
   return (
     <>
+      <GuestChoiceModal
+        guest={storedGuest}
+        open={showGuestChoice}
+        onClose={() => setShowGuestChoice(false)}
+      />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }

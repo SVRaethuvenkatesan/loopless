@@ -5,7 +5,6 @@ import DailyInsightCard from "@/components/insights/DailyInsightCard";
 import RelapsePatternCard from "@/components/insights/RelapsePatternCard";
 import InsightsEmptyState from "@/components/insights/InsightsEmptyState";
 import OneThingCallout from "@/components/insights/OneThingCallout";
-import SectionRow from "@/components/insights/ui/SectionRow";
 
 interface TabTodayProps {
   hasEnoughData: boolean;
@@ -27,11 +26,14 @@ export default function TabToday({
   primaryInsight,
   top3HighStress,
   relapseInsight,
-  openInfo,
-  setOpenInfo,
 }: TabTodayProps) {
+  const hasSecondaryCards =
+    (risk && canSendNudge) ||
+    (hasEnoughData && primaryInsight) ||
+    Boolean(relapseInsight);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+    <div className="insights-today-layout">
       {!hasEnoughData && <InsightsEmptyState checkinCount={checkinCount} />}
 
       <OneThingCallout
@@ -42,88 +44,46 @@ export default function TabToday({
         relapseInsight={relapseInsight}
       />
 
-      {risk && canSendNudge && (
-        <div>
-          <SectionRow
-            title="Risk Window Alert"
-            infoKey="risk"
-            openInfo={openInfo}
-            setOpenInfo={setOpenInfo}
-            infoTitle="How risk windows are predicted"
-            infoLines={[
-              "Source: urge_events table (last 14 days)",
-              "Method: Buckets your urges by hour of day (0–23). If one hour has 2+ urges, it's flagged as a risk window.",
-              "Confidence = fraction of total urges in that hour, clamped to 50–92%.",
-              "Freshness: Computed once per day. Only shown if the window is within the next 24 hours.",
-            ]}
-          />
-          <RiskAlertBanner
-            riskId={risk.id}
-            confidence={risk.confidence}
-            windowEnd={risk.predictedWindowEnd}
-          />
-        </div>
-      )}
+      {hasSecondaryCards && (
+        <section className="insights-secondary-section">
+          <div className="insights-section-heading">
+            <h2>Details for today</h2>
+            <p>Use these only when you want more context.</p>
+          </div>
 
-      {hasEnoughData && primaryInsight && (
-        <div>
-          <SectionRow
-            title="Today's Insight"
-            infoKey="insight"
-            openInfo={openInfo}
-            setOpenInfo={setOpenInfo}
-            infoTitle="How today's insight is generated"
-            infoLines={[
-              "Source: checkins + urge_events (last 30 days)",
-              "Method: Rule-based pattern detection - checks for day-of-week stress peaks, consecutive high-stress runs, sleep-urge links, and weekend recovery.",
-              "Text: Gemini 2.0 Flash (if key set), otherwise a pre-written fallback sentence.",
-              "Freshness: Generated once per day, cached in daily_insights table.",
-            ]}
-          />
-          <DailyInsightCard
-            insightText={primaryInsight.insightText}
-            dataPoints={top3HighStress}
-            insightDate={primaryInsight.insightDate}
-            patternType={primaryInsight.patternType}
-          />
-        </div>
-      )}
+          <div className="insights-secondary-stack">
+            {risk && canSendNudge && (
+              <RiskAlertBanner
+                riskId={risk.id}
+                confidence={risk.confidence}
+                windowEnd={risk.predictedWindowEnd}
+              />
+            )}
 
-      {relapseInsight && (
-        <div>
-          <SectionRow
-            title="Pattern Watch"
-            infoKey="relapse"
-            openInfo={openInfo}
-            setOpenInfo={setOpenInfo}
-            infoTitle="How relapse patterns are detected"
-            infoLines={[
-              "Source: checkins + urge_events + coping_sessions (last 30 days)",
-              "Trigger: 3+ urges logged within 48 hours of a high-stress day (stress ≥ 7).",
-              "Best tool: The coping tool with the lowest average stress delta from your past sessions.",
-              "Freshness: Runs at most once every 7 days to avoid duplicate alerts.",
-            ]}
-          />
-          <RelapsePatternCard
-            patternText={relapseInsight.patternText}
-            topTrigger={relapseInsight.topTrigger}
-            urgesIn48h={relapseInsight.urgesIn48h}
-            suggestedTool={relapseInsight.suggestedTool}
-            confidence={relapseInsight.confidence}
-          />
-        </div>
+            {hasEnoughData && primaryInsight && (
+              <DailyInsightCard
+                insightText={primaryInsight.insightText}
+                dataPoints={top3HighStress}
+                insightDate={primaryInsight.insightDate}
+                patternType={primaryInsight.patternType}
+              />
+            )}
+
+            {relapseInsight && (
+              <RelapsePatternCard
+                patternText={relapseInsight.patternText}
+                topTrigger={relapseInsight.topTrigger}
+                urgesIn48h={relapseInsight.urgesIn48h}
+                suggestedTool={relapseInsight.suggestedTool}
+                confidence={relapseInsight.confidence}
+              />
+            )}
+          </div>
+        </section>
       )}
 
       {!hasEnoughData && !risk && !primaryInsight && !relapseInsight && (
-        <p
-          style={{
-            fontSize: 13,
-            color: "var(--text3)",
-            fontWeight: 600,
-            textAlign: "center",
-            padding: "20px 0",
-          }}
-        >
+        <p className="insights-muted-center">
           Check in daily to unlock personalised insights here.
         </p>
       )}

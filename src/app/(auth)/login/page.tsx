@@ -1,9 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { GuestChoiceModal } from "@/components/auth/guest-choice-modal";
+import { getStoredGuest, type StoredGuest } from "@/lib/guest-storage";
 
 const SMOKE = [
   { x: "10%", size: 70, dur: 5, delay: 0 },
@@ -46,17 +49,30 @@ const FireIcon = () => (
 
 export default function LoginPage() {
   const router = useRouter();
+  const [storedGuest, setStoredGuest] = useState<StoredGuest | null>(null);
+  const [showGuestChoice, setShowGuestChoice] = useState(false);
 
   async function handleGoogle() {
     await signIn("google", { callbackUrl: "/dashboard" });
   }
 
   function handleGuest() {
+    const guest = getStoredGuest();
+    if (guest) {
+      setStoredGuest(guest);
+      setShowGuestChoice(true);
+      return;
+    }
     router.push("/guest");
   }
 
   return (
     <>
+      <GuestChoiceModal
+        guest={storedGuest}
+        open={showGuestChoice}
+        onClose={() => setShowGuestChoice(false)}
+      />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
         @keyframes smokeRise {

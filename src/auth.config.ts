@@ -50,12 +50,6 @@ export const authConfig = {
         return Response.redirect(new URL("/dashboard", nextUrl));
       }
 
-      // Send new Google users to onboarding (flag set in jwt callback)
-      const token = auth as any;
-      if (isLoggedIn && token?.isNewGoogleUser === true && path !== "/onboarding") {
-        return Response.redirect(new URL("/onboarding", nextUrl));
-      }
-
       return true;
     },
   },

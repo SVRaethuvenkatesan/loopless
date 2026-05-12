@@ -1,741 +1,332 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  Bell,
+  Bot,
+  Check,
+  ChevronRight,
+  Clock3,
+  DownloadCloud,
+  FileText,
+  HelpCircle,
+  Loader2,
+  Lock,
+  MessageCircle,
+  Save,
+  ShieldCheck,
+  Smartphone,
+  Trash2,
+  Volume2,
+  Wifi,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 
-/* ── Toggle component ──────────────── */
-function Toggle({
-  on,
-  onChange,
-}: {
-  on: boolean;
-  onChange: (v: boolean) => void;
-}) {
+function Toggle({ on, onChange }: { on: boolean; onChange: (value: boolean) => void }) {
   return (
-    <button
-      onClick={() => onChange(!on)}
-      style={{
-        width: 44,
-        height: 24,
-        borderRadius: 12,
-        flexShrink: 0,
-        background: on ? "var(--mint2)" : "var(--bg4)",
-        border: `2px solid ${on ? "var(--mint)" : "var(--border3)"}`,
-        position: "relative",
-        cursor: "pointer",
-        transition: "background .2s, border-color .2s",
-        boxShadow: on ? "inset 0 1px 3px rgba(0,0,0,.15)" : "none",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          width: 16,
-          height: 16,
-          borderRadius: "50%",
-          background: "white",
-          top: 2,
-          left: on ? 22 : 2,
-          transition: "left .2s",
-          border: `1.5px solid ${on ? "var(--mint)" : "var(--border3)"}`,
-          boxShadow: "0 1px 3px rgba(0,0,0,.2)",
-        }}
-      />
+    <button className={`settings-toggle${on ? " is-on" : ""}`} onClick={() => onChange(!on)} type="button" aria-pressed={on}>
+      <span />
     </button>
   );
 }
 
-/* ── Setting row ───────────────────── */
 function SettingRow({
-  icon,
+  Icon,
   label,
   sub,
   right,
-  accent = false,
+  tone = "var(--mint2)",
 }: {
-  icon: string;
+  Icon: LucideIcon;
   label: string;
   sub?: string;
-  right: React.ReactNode;
-  accent?: boolean;
+  right: ReactNode;
+  tone?: string;
 }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 14,
-        padding: "13px 0",
-        borderBottom: "2px dashed var(--border)",
-      }}
-    >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 12,
-          flexShrink: 0,
-          background: accent ? "var(--coral3)" : "var(--mint3)",
-          border: `1.5px solid ${accent ? "var(--coral)" : "var(--mint2)"}`,
-          opacity: 0.7,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 18,
-        }}
-      >
-        {icon}
+    <div className="setting-row" style={{ "--setting-tone": tone } as React.CSSProperties}>
+      <div className="setting-icon">
+        <Icon size={18} />
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text1)" }}>
-          {label}
-        </div>
-        {sub && (
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 500,
-              color: "var(--text3)",
-              marginTop: 1,
-            }}
-          >
-            {sub}
-          </div>
-        )}
+      <div className="setting-copy">
+        <strong>{label}</strong>
+        {sub ? <span>{sub}</span> : null}
       </div>
-      {right}
+      <div className="setting-right">{right}</div>
     </div>
+  );
+}
+
+function getGuestHeaders(): Record<string, string> {
+  const guestId =
+    typeof window !== "undefined" ? localStorage.getItem("loopless_guest_id") : null;
+  return guestId ? { "x-guest-id": guestId } : {};
+}
+
+function Styles() {
+  return (
+    <style>{`
+      .settings-v2{width:min(1120px,calc(100vw - 48px));margin:0 auto;padding:28px 0 120px;}
+      .settings-hero,.settings-card,.settings-alert{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;box-shadow:0 16px 44px rgba(21,31,26,.07);}
+      .dark .settings-hero,.dark .settings-card,.dark .settings-alert{box-shadow:none;}
+      .settings-hero{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;padding:24px;margin-bottom:18px;background:radial-gradient(circle at top right,color-mix(in srgb,var(--mint) 14%,transparent),transparent 34%),var(--bg2);}
+      .settings-kicker{display:inline-flex;align-items:center;gap:8px;min-height:30px;padding:0 11px;border-radius:999px;background:color-mix(in srgb,var(--mint) 14%,transparent);color:var(--mint2);font-size:12px;font-weight:950;}
+      .settings-title{margin-top:13px;color:var(--text1);font-family:var(--font-display);font-size:clamp(32px,4.5vw,52px);font-weight:650;line-height:1;letter-spacing:0;}
+      .settings-sub{max-width:680px;margin-top:10px;color:var(--text2);font-size:15px;font-weight:750;line-height:1.6;}
+      .settings-status{display:grid;gap:10px;align-content:center;}
+      .settings-status-item{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid var(--border2);border-radius:15px;background:var(--bg0);}
+      .settings-status-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--mint) 10%,transparent);color:var(--mint2);}
+      .settings-status-item strong{display:block;color:var(--text1);font-size:14px;font-weight:950;}
+      .settings-status-item span{display:block;margin-top:3px;color:var(--text3);font-size:11px;font-weight:850;}
+      .settings-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start;}
+      .settings-stack{display:grid;gap:14px;}
+      .settings-card{padding:20px;}
+      .settings-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px;}
+      .settings-card-head h2,.settings-card-head h3{color:var(--text1);font-size:18px;font-weight:950;line-height:1.2;}
+      .settings-card-head p{margin-top:4px;color:var(--text3);font-size:12px;font-weight:800;line-height:1.45;}
+      .setting-row{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:66px;padding:11px 0;border-top:1px solid var(--border);}
+      .setting-row:first-of-type{border-top:0;}
+      .setting-icon{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;color:var(--setting-tone);background:color-mix(in srgb,var(--setting-tone) 10%,transparent);border:1px solid color-mix(in srgb,var(--setting-tone) 24%,var(--border2));}
+      .setting-copy strong{display:block;color:var(--text1);font-size:13.5px;font-weight:950;}
+      .setting-copy span{display:block;margin-top:3px;color:var(--text3);font-size:11.5px;font-weight:750;line-height:1.4;}
+      .setting-right{display:flex;align-items:center;justify-content:flex-end;}
+      .settings-toggle{width:48px;height:28px;padding:3px;border-radius:999px;border:1px solid var(--border2);background:var(--bg0);cursor:pointer;transition:background .16s,border-color .16s;}
+      .settings-toggle span{display:block;width:20px;height:20px;border-radius:50%;background:var(--text3);transition:transform .18s,background .18s;}
+      .settings-toggle.is-on{background:color-mix(in srgb,var(--mint) 14%,var(--bg0));border-color:color-mix(in srgb,var(--mint) 42%,var(--border2));}
+      .settings-toggle.is-on span{transform:translateX(20px);background:var(--mint2);}
+      .settings-button,.settings-ghost,.settings-danger{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:13px;padding:0 15px;font-family:var(--font-sans);font-size:13px;font-weight:950;cursor:pointer;transition:transform .15s,opacity .15s;text-decoration:none;}
+      .settings-button{border:1px solid transparent;background:var(--text1);color:var(--bg0);}
+      .settings-ghost{border:1px solid var(--border2);background:var(--bg0);color:var(--text1);}
+      .settings-danger{width:100%;border:1px solid color-mix(in srgb,var(--coral) 34%,var(--border2));background:color-mix(in srgb,var(--coral) 8%,var(--bg0));color:var(--coral2);}
+      .settings-danger.confirm{background:var(--coral);color:white;border-color:var(--coral);}
+      .settings-button:hover,.settings-ghost:hover,.settings-danger:hover{transform:translateY(-1px);}
+      .settings-button:disabled,.settings-ghost:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+      .settings-time{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+      .time-input{min-height:44px;background:var(--bg0);border:1px solid var(--border2);border-radius:13px;padding:0 13px;color:var(--text1);font-family:var(--font-sans);font-size:14px;font-weight:900;outline:none;}
+      .time-input:focus{border-color:color-mix(in srgb,var(--mint2) 45%,var(--border2));box-shadow:0 0 0 3px color-mix(in srgb,var(--mint2) 14%,transparent);}
+      .settings-alert{display:flex;gap:10px;align-items:flex-start;padding:13px 15px;margin-bottom:14px;color:var(--text2);font-size:13px;font-weight:800;}
+      .settings-alert.success{border-color:color-mix(in srgb,var(--mint) 36%,var(--border2));background:color-mix(in srgb,var(--mint) 8%,var(--bg2));}
+      .settings-alert.error{border-color:color-mix(in srgb,var(--coral) 36%,var(--border2));background:color-mix(in srgb,var(--coral) 8%,var(--bg2));}
+      .link-list{display:grid;gap:8px;}
+      .settings-link{display:flex;align-items:center;gap:12px;min-height:48px;padding:10px 12px;border:1px solid var(--border2);border-radius:14px;background:var(--bg0);color:var(--text1);font-size:13px;font-weight:900;text-decoration:none;}
+      .settings-link svg:last-child{margin-left:auto;color:var(--text3);}
+      .demo-actions{display:grid;gap:10px;}
+      .settings-note{color:var(--text3);font-size:12px;font-weight:750;line-height:1.55;}
+      @media(max-width:980px){.settings-v2{width:min(100% - 32px,860px)}.settings-hero,.settings-layout{grid-template-columns:1fr}.settings-status{grid-template-columns:repeat(2,minmax(0,1fr));}}
+      @media(max-width:680px){.settings-v2{width:calc(100% - 24px);padding-top:18px}.settings-hero,.settings-card{padding:16px}.settings-status{grid-template-columns:1fr}.setting-row{grid-template-columns:40px minmax(0,1fr);}.setting-right{grid-column:1 / -1;justify-content:flex-start;padding-left:52px}.settings-button,.settings-ghost{width:100%;}.settings-card-head{flex-direction:column;}}
+    `}</style>
   );
 }
 
 export default function SettingsPage() {
   const { data: session } = useSession();
-  const router = useRouter();
   const [isGuest, setIsGuest] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [delConfirm, setDelConfirm] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Notification prefs
   const [dailyCheckin, setDailyCheckin] = useState(true);
   const [urgeFollowup, setUrgeFollowup] = useState(true);
   const [weeklyReport, setWeeklyReport] = useState(false);
   const [smartNudges, setSmartNudges] = useState(true);
-
-  // App prefs
   const [offlineMode, setOfflineMode] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
   const [streakFreeze, setStreakFreeze] = useState(false);
-
-  // Notif time
   const [notifTime, setNotifTime] = useState("08:00");
-
-  // Demo data state
-  const [demoLoading, setDemoLoading] = useState(false);
-  const [demoMsg, setDemoMsg] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-  const [restoreLoading, setRestoreLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const gi = localStorage.getItem("loopless_guest_id");
-    setIsGuest(!session?.user && !!gi);
+    const guestId = localStorage.getItem("loopless_guest_id");
+    setIsGuest(!session?.user && !!guestId);
   }, [session]);
 
   async function save() {
-    const prefs = {
+    setSaving(true);
+    setMessage(null);
+    const notifPrefs = {
       dailyCheckin,
       urgeFollowup,
       weeklyReport,
       smartNudges,
       notifTime,
+      offlineMode,
+      soundEffects,
+      streakFreeze,
     };
+
     try {
-      await fetch("/api/settings/notifications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notifPrefs: prefs }),
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...getGuestHeaders() },
+        body: JSON.stringify({ notifPrefs }),
       });
-    } catch {}
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+      if (!res.ok) throw new Error("save failed");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setMessage({ type: "error", text: "Settings could not be saved. Try again." });
+    } finally {
+      setSaving(false);
+    }
   }
 
-  async function deleteAccount() {
+  async function exitOrDelete() {
     if (!delConfirm) {
       setDelConfirm(true);
       return;
     }
-    try {
-      await fetch("/api/account/delete", { method: "DELETE" });
-    } catch {}
+
     if (typeof window !== "undefined") localStorage.clear();
     await signOut({ callbackUrl: "/" });
   }
 
-  async function loadDemoData() {
-    setDemoLoading(true);
-    setDemoMsg(null);
-    try {
-      const res = await fetch("/api/dev/seed-insights");
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setDemoMsg({
-          type: "success",
-          text: `✅ Demo data loaded! ${data.seeded.checkins} check-ins, ${data.seeded.urges} urges, ${data.seeded.insights} insights seeded. Redirecting to dashboard…`,
-        });
-        setTimeout(() => router.push("/dashboard"), 2200);
-      } else {
-        setDemoMsg({
-          type: "error",
-          text: `❌ ${data.error || "Failed to load demo data"}`,
-        });
-      }
-    } catch {
-      setDemoMsg({
-        type: "error",
-        text: "❌ Network error. Is the server running?",
-      });
-    }
-    setDemoLoading(false);
-  }
+  const notificationRows = [
+    { Icon: Bell, label: "Daily check-in reminder", sub: "Nudge to log stress and mood", right: <Toggle on={dailyCheckin} onChange={setDailyCheckin} /> },
+    { Icon: MessageCircle, label: "Urge follow-up", sub: "Prompt after high-risk moments", right: <Toggle on={urgeFollowup} onChange={setUrgeFollowup} /> },
+    { Icon: FileText, label: "Weekly progress summary", sub: "A short view of your last 7 days", right: <Toggle on={weeklyReport} onChange={setWeeklyReport} /> },
+    { Icon: Bot, label: "Smart nudges", sub: "Predictive reminders from your patterns", right: <Toggle on={smartNudges} onChange={setSmartNudges} /> },
+  ];
 
-  async function restoreRealData() {
-    setRestoreLoading(true);
-    setDemoMsg(null);
-    try {
-      const res = await fetch("/api/dev/clear-seed");
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setDemoMsg({
-          type: "success",
-          text: "✅ Demo data removed. Your real data is restored. Redirecting…",
-        });
-        setTimeout(() => router.push("/dashboard"), 2000);
-      } else {
-        setDemoMsg({
-          type: "error",
-          text: `❌ ${data.error || "Failed to restore data"}`,
-        });
-      }
-    } catch {
-      setDemoMsg({
-        type: "error",
-        text: "❌ Network error. Is the server running?",
-      });
-    }
-    setRestoreLoading(false);
-  }
-
-  const sections = [
-    {
-      title: "🔔 Notifications",
-      rows: [
-        {
-          icon: "📋",
-          label: "Daily check-in reminder",
-          sub: "Nudge to log your stress & mood",
-          right: <Toggle on={dailyCheckin} onChange={setDailyCheckin} />,
-        },
-        {
-          icon: "💬",
-          label: "Urge follow-up (30 min)",
-          sub: "How did you go after an urge?",
-          right: <Toggle on={urgeFollowup} onChange={setUrgeFollowup} />,
-        },
-        {
-          icon: "📊",
-          label: "Weekly progress summary",
-          sub: "Your wins from the past 7 days",
-          right: <Toggle on={weeklyReport} onChange={setWeeklyReport} />,
-        },
-        {
-          icon: "🤖",
-          label: "Smart nudges (ML-based)",
-          sub: "Heads-up before your high-risk windows",
-          right: <Toggle on={smartNudges} onChange={setSmartNudges} />,
-        },
-      ],
-    },
-    {
-      title: "⚙️ App preferences",
-      rows: [
-        {
-          icon: "📴",
-          label: "Offline mode",
-          sub: "Cache coping tools for use without data",
-          right: <Toggle on={offlineMode} onChange={setOfflineMode} />,
-        },
-        {
-          icon: "🔊",
-          label: "Sound effects",
-          sub: "Subtle sounds on actions and achievements",
-          right: <Toggle on={soundEffects} onChange={setSoundEffects} />,
-        },
-        {
-          icon: "🧊",
-          label: "Streak freeze tokens",
-          sub: "Protect streak when life gets in the way",
-          right: <Toggle on={streakFreeze} onChange={setStreakFreeze} />,
-        },
-      ],
-    },
-    {
-      title: "🔒 Privacy & Security",
-      rows: [
-        {
-          icon: "🔐",
-          label: "Data encryption",
-          sub: "AES-256 at rest · TLS in transit",
-          right: (
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "var(--mint2)",
-                background: "var(--mint3)",
-                border: "1.5px solid var(--mint2)",
-                borderRadius: 50,
-                padding: "3px 10px",
-              }}
-            >
-              Active ✓
-            </span>
-          ),
-        },
-        {
-          icon: "👁️",
-          label: "Data visibility",
-          sub: "Your data is never sold or shared",
-          right: (
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "var(--mint2)",
-                background: "var(--mint3)",
-                border: "1.5px solid var(--mint2)",
-                borderRadius: 50,
-                padding: "3px 10px",
-              }}
-            >
-              Private ✓
-            </span>
-          ),
-        },
-      ],
-    },
+  const appRows = [
+    { Icon: Wifi, label: "Offline mode", sub: "Keep coping tools available without data", right: <Toggle on={offlineMode} onChange={setOfflineMode} /> },
+    { Icon: Volume2, label: "Sound effects", sub: "Subtle feedback on key actions", right: <Toggle on={soundEffects} onChange={setSoundEffects} /> },
+    { Icon: ShieldCheck, label: "Streak freeze tokens", sub: "Protect streaks when life gets messy", right: <Toggle on={streakFreeze} onChange={setStreakFreeze} /> },
   ];
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
-        *,*::before,*::after{box-sizing:border-box;}
-        h1,h2,h3{font-family:'Fredoka',sans-serif;}
-        a{text-decoration:none;color:inherit;}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
-
-        .settings-page{max-width:640px;margin:0 auto;padding:28px 24px 80px;}
-        @media(max-width:640px){.settings-page{padding:16px 14px 100px;}}
-
-        .settings-card{background:var(--bg2);border:2px solid var(--border2);border-radius:20px;padding:20px;box-shadow:var(--shadow-card);margin-bottom:14px;}
-        .section-title{font-family:'Fredoka',sans-serif;font-size:17px;font-weight:600;color:var(--text1);margin-bottom:2px;}
-
-        .save-btn{background:var(--mint2);border:2.5px solid var(--stroke);border-radius:14px;padding:13px;width:100%;font-size:15px;font-weight:800;color:white;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:var(--shadow-mint);transition:all .12s;display:flex;align-items:center;justify-content:center;gap:8px;}
-        .save-btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--shadow-mint);}
-
-        .demo-btn{background:var(--sky3);border:2px solid var(--sky);border-radius:12px;padding:11px 16px;width:100%;font-size:13.5px;font-weight:800;color:var(--sky2);cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:3px 3px 0 rgba(0,0,0,.1);transition:all .12s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;}
-        .demo-btn:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,.12);}
-        .demo-btn:disabled{opacity:0.55;cursor:not-allowed;}
-
-        .restore-btn{background:var(--amber3);border:2px solid var(--amber);border-radius:12px;padding:11px 16px;width:100%;font-size:13.5px;font-weight:800;color:var(--amber2);cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:3px 3px 0 rgba(0,0,0,.1);transition:all .12s;display:flex;align-items:center;justify-content:center;gap:8px;}
-        .restore-btn:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,.12);}
-        .restore-btn:disabled{opacity:0.55;cursor:not-allowed;}
-
-        .danger-btn{background:var(--coral3);border:2.5px solid var(--coral);border-radius:14px;padding:13px;width:100%;font-size:14px;font-weight:800;color:var(--text1);cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:3px 3px 0 var(--shadow-coral);transition:all .12s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
-        .danger-btn:hover{background:var(--coral2);color:white;transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--shadow-coral);}
-        .danger-btn.confirm{background:var(--coral);color:white;border-color:var(--stroke);}
-
-        .time-input{background:var(--bg0);border:2px solid var(--border3);border-radius:12px;padding:8px 12px;font-size:14px;font-weight:700;color:var(--text1);font-family:'Nunito',sans-serif;outline:none;}
-        .time-input:focus{border-color:var(--mint2);}
-      `}</style>
-
-      <div className="settings-page">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ marginBottom: 20 }}
-        >
-          <h1
-            style={{
-              fontFamily: "'Fredoka',sans-serif",
-              fontSize: 28,
-              fontWeight: 600,
-              color: "var(--text1)",
-              marginBottom: 4,
-            }}
-          >
-            Settings ⚙️
-          </h1>
-          <p style={{ fontSize: 13.5, fontWeight: 500, color: "var(--text3)" }}>
-            Customise your Loopless experience
-          </p>
-        </motion.div>
-
-        {saved && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{
-              background: "var(--mint3)",
-              border: "2px solid var(--mint2)",
-              borderRadius: 14,
-              padding: "12px 16px",
-              fontSize: 13,
-              fontWeight: 700,
-              color: "var(--mint2)",
-              marginBottom: 14,
-              display: "flex",
-              gap: 8,
-            }}
-          >
-            ✅ Settings saved successfully!
-          </motion.div>
-        )}
-
-        {/* Notification time */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="settings-card"
-        >
-          <div className="section-title">⏰ Check-in reminder time</div>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 500,
-              color: "var(--text3)",
-              marginBottom: 12,
-            }}
-          >
-            When should we remind you to check in daily?
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <input
-              type="time"
-              className="time-input"
-              value={notifTime}
-              onChange={(e) => setNotifTime(e.target.value)}
-            />
-            <div
-              style={{ fontSize: 12, fontWeight: 600, color: "var(--text2)" }}
-            >
-              Local time · {Intl.DateTimeFormat().resolvedOptions().timeZone}
+      <Styles />
+      <main className="settings-v2">
+        <section className="settings-hero">
+          <div>
+            <div className="settings-kicker">
+              <Smartphone size={14} />
+              App preferences
             </div>
+            <h1 className="settings-title">Settings</h1>
+            <p className="settings-sub">
+              Keep reminders, privacy, and account actions in one predictable place.
+            </p>
           </div>
-        </motion.div>
-
-        {/* Toggle sections */}
-        {sections.map((sec, si) => (
-          <motion.div
-            key={si}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08 * (si + 1) }}
-            className="settings-card"
-          >
-            <div className="section-title" style={{ marginBottom: 12 }}>
-              {sec.title}
+          <aside className="settings-status">
+            <div className="settings-status-item">
+              <div className="settings-status-icon"><Lock size={18} /></div>
+              <div><strong>Private by default</strong><span>Your data is not sold.</span></div>
             </div>
-            {sec.rows.map((row, ri) => (
-              <SettingRow key={ri} {...row} />
-            ))}
+            <div className="settings-status-item">
+              <div className="settings-status-icon"><Clock3 size={18} /></div>
+              <div><strong>{notifTime}</strong><span>Check-in reminder</span></div>
+            </div>
+          </aside>
+        </section>
+
+        {saved ? (
+          <motion.div className="settings-alert success" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+            <Check size={17} /> Settings saved.
           </motion.div>
-        ))}
+        ) : null}
+        {message ? (
+          <motion.div className={`settings-alert ${message.type}`} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+            {message.type === "success" ? <Check size={17} /> : <X size={17} />}
+            {message.text}
+          </motion.div>
+        ) : null}
 
-        {/* ── Demo Data Card ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.32 }}
-          className="settings-card"
-        >
-          <div className="section-title" style={{ marginBottom: 4 }}>
-            🧪 Demo Data
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 500,
-              color: "var(--text3)",
-              marginBottom: 14,
-              lineHeight: 1.5,
-            }}
-          >
-            Load 30 days of realistic demo data to explore the app - or restore
-            your real data anytime. Demo data is tagged and{" "}
-            <strong style={{ color: "var(--text2)" }}>
-              never overwrites your real records
-            </strong>
-            .
-          </div>
-
-          {/* Feedback message */}
-          {demoMsg && (
-            <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              style={{
-                background:
-                  demoMsg.type === "success" ? "var(--mint3)" : "var(--coral3)",
-                border: `2px solid ${demoMsg.type === "success" ? "var(--mint2)" : "var(--coral)"}`,
-                borderRadius: 12,
-                padding: "10px 14px",
-                fontSize: 12.5,
-                fontWeight: 700,
-                color:
-                  demoMsg.type === "success" ? "var(--mint2)" : "var(--coral)",
-                marginBottom: 12,
-                lineHeight: 1.45,
-              }}
-            >
-              {demoMsg.text}
-            </motion.div>
-          )}
-
-          <button
-            className="demo-btn"
-            onClick={loadDemoData}
-            disabled={demoLoading || restoreLoading}
-          >
-            {demoLoading ? (
-              <>
-                <span
-                  style={{
-                    display: "inline-block",
-                    animation: "spin 1s linear infinite",
-                  }}
-                >
-                  ⚙️
-                </span>
-                Loading demo data…
-              </>
-            ) : (
-              <>🧪 Load Demo Data (30 days)</>
-            )}
-          </button>
-
-          <button
-            className="restore-btn"
-            onClick={restoreRealData}
-            disabled={demoLoading || restoreLoading}
-          >
-            {restoreLoading ? (
-              <>
-                <span
-                  style={{
-                    display: "inline-block",
-                    animation: "spin 1s linear infinite",
-                  }}
-                >
-                  ⚙️
-                </span>
-                Restoring real data…
-              </>
-            ) : (
-              <>🔄 Restore My Real Data</>
-            )}
-          </button>
-        </motion.div>
-
-        {/* About */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="settings-card"
-        >
-          <div className="section-title" style={{ marginBottom: 12 }}>
-            ℹ️ About
-          </div>
-          {[
-            { icon: "📋", label: "Terms of Service", href: "/terms" },
-            { icon: "🔒", label: "Privacy Policy", href: "/privacy" },
-            { icon: "🆘", label: "Crisis support", href: "/support" },
-            { icon: "💬", label: "Send feedback", href: "/support" },
-          ].map((item, i) => (
-            <div
-              key={i}
-              style={{
-                borderBottom: "2px dashed var(--border)",
-              }}
-            >
-              <Link href={item.href}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 14,
-                    padding: "12px 0",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.opacity = ".7")}
-                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-                >
-                  <span style={{ fontSize: 18 }}>{item.icon}</span>
-                  <span
-                    style={{
-                      fontSize: 13.5,
-                      fontWeight: 700,
-                      color: "var(--text1)",
-                      flex: 1,
-                    }}
-                  >
-                    {item.label}
-                  </span>
-                  <span style={{ color: "var(--text3)", fontWeight: 700 }}>
-                    →
-                  </span>
+        <div className="settings-layout">
+          <div className="settings-stack">
+            <section className="settings-card">
+              <div className="settings-card-head">
+                <div>
+                  <h2>Reminder time</h2>
+                  <p>Used for daily check-in notifications.</p>
                 </div>
-              </Link>
-            </div>
-          ))}
+              </div>
+              <div className="settings-time">
+                <input className="time-input" type="time" value={notifTime} onChange={(event) => setNotifTime(event.target.value)} />
+                <span className="settings-note">
+                  Local timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                </span>
+              </div>
+            </section>
 
-          {/* Iteration version links */}
-          <div style={{ padding: "14px 0 6px" }}>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "var(--text3)",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                marginBottom: 10,
-              }}
-            >
-              Previous iterations
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {[
-                { label: "Iteration 1", href: "https://iteration1.loopless.tech" },
-                { label: "Iteration 2", href: "https://iteration2.loopless.tech" },
-                { label: "Iteration 3", href: "https://iteration3.loopless.tech" },
-              ].map((v) => (
-                <a
-                  key={v.href}
-                  href={v.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: "var(--text2)",
-                    padding: "6px 14px",
-                    borderRadius: 50,
-                    border: "1.5px solid var(--border3)",
-                    background: "var(--bg0)",
-                    textDecoration: "none",
-                    transition: "color 0.15s, border-color 0.15s, background 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "var(--mint2)";
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--mint2)";
-                    (e.currentTarget as HTMLElement).style.background = "var(--mint3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "var(--text2)";
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--border3)";
-                    (e.currentTarget as HTMLElement).style.background = "var(--bg0)";
-                  }}
-                >
-                  {v.label} ↗
-                </a>
-              ))}
-            </div>
+            <section className="settings-card">
+              <div className="settings-card-head">
+                <div>
+                  <h2>Notifications</h2>
+                  <p>Choose the reminders that help without becoming noise.</p>
+                </div>
+              </div>
+              {notificationRows.map((row) => <SettingRow key={row.label} {...row} />)}
+            </section>
+
+            <section className="settings-card">
+              <div className="settings-card-head">
+                <div>
+                  <h2>App preferences</h2>
+                  <p>Small behavior settings for the app experience.</p>
+                </div>
+              </div>
+              {appRows.map((row) => <SettingRow key={row.label} {...row} tone="var(--sky)" />)}
+            </section>
           </div>
 
-          <div
-            style={{
-              marginTop: 8,
-              textAlign: "center",
-              fontSize: 11,
-              fontWeight: 600,
-              color: "var(--text3)",
-            }}
-          >
-            Loopless · v1.0
-          </div>
-        </motion.div>
-
-        {/* Save button */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          <button className="save-btn" onClick={save}>
-            💾 Save all settings
-          </button>
-
-          {/* Account danger zone */}
-          <div style={{ marginTop: 20 }}>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                color: "var(--coral)",
-                textTransform: "uppercase",
-                letterSpacing: ".06em",
-                marginBottom: 8,
-              }}
-            >
-              ⚠️ Danger zone
-            </div>
-            <button
-              className={`danger-btn${delConfirm ? " confirm" : ""}`}
-              onClick={deleteAccount}
-            >
-              🗑️{" "}
-              {delConfirm
-                ? "⚠️ Tap again to permanently delete all data"
-                : isGuest
-                  ? "Delete guest data & exit"
-                  : "Delete my account"}
-            </button>
-            {delConfirm && (
-              <button
-                onClick={() => setDelConfirm(false)}
-                style={{
-                  width: "100%",
-                  marginTop: 6,
-                  background: "transparent",
-                  border: "2px solid var(--border3)",
-                  borderRadius: 12,
-                  padding: "10px",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "var(--text2)",
-                  cursor: "pointer",
-                  fontFamily: "'Nunito',sans-serif",
-                }}
-              >
-                Cancel
+          <aside className="settings-stack">
+            <section className="settings-card">
+              <div className="settings-card-head">
+                <div>
+                  <h3>Save changes</h3>
+                  <p>Notification preferences save to your profile.</p>
+                </div>
+              </div>
+              <button className="settings-button" onClick={save} disabled={saving} style={{ width: "100%" }}>
+                {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                Save settings
               </button>
-            )}
-          </div>
-        </motion.div>
-      </div>
+            </section>
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
+            <section className="settings-card">
+              <div className="settings-card-head">
+                <div>
+                  <h3>Privacy and help</h3>
+                  <p>Policy, support, and previous iterations.</p>
+                </div>
+              </div>
+              <div className="link-list">
+                <Link className="settings-link" href="/privacy"><Lock size={17} />Privacy Policy<ChevronRight size={16} /></Link>
+                <Link className="settings-link" href="/terms"><FileText size={17} />Terms of Service<ChevronRight size={16} /></Link>
+                <Link className="settings-link" href="/support"><HelpCircle size={17} />Support<ChevronRight size={16} /></Link>
+                <a className="settings-link" href="https://iteration1.loopless.tech" target="_blank" rel="noreferrer"><DownloadCloud size={17} />Iteration 1<ChevronRight size={16} /></a>
+                <a className="settings-link" href="https://iteration2.loopless.tech" target="_blank" rel="noreferrer"><DownloadCloud size={17} />Iteration 2<ChevronRight size={16} /></a>
+                <a className="settings-link" href="https://iteration3.loopless.tech" target="_blank" rel="noreferrer"><DownloadCloud size={17} />Iteration 3<ChevronRight size={16} /></a>
+              </div>
+            </section>
+
+            <section className="settings-card">
+              <div className="settings-card-head">
+                <div>
+                  <h3>{isGuest ? "Guest data" : "Account session"}</h3>
+                  <p>{isGuest ? "Clears local guest data on this device." : "Sign out of this device."}</p>
+                </div>
+              </div>
+              <button className={`settings-danger${delConfirm ? " confirm" : ""}`} onClick={exitOrDelete}>
+                <Trash2 size={16} />
+                {delConfirm ? "Confirm and exit" : isGuest ? "Clear guest data" : "Sign out"}
+              </button>
+              {delConfirm ? (
+                <button className="settings-ghost" onClick={() => setDelConfirm(false)} style={{ width: "100%", marginTop: 8 }}>
+                  Cancel
+                </button>
+              ) : null}
+            </section>
+          </aside>
+        </div>
+      </main>
     </>
   );
 }

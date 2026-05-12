@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import type { Session } from "next-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { computeLevel, computeXP } from "@/lib/xp";
+import { clearLocalTestProgress, createLocalTestProgress, getLocalTestProgress, setLocalTestProgress } from "@/lib/local-test-progress";
 
 // SVG nav icons as inline components
 const HomeIcon = () => (
@@ -99,6 +100,22 @@ const SettingsIcon = () => (
   >
     <circle cx="12" cy="12" r="3" />
     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+  </svg>
+);
+const TestDataIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M10 2v6.5L4.8 18.7A2.3 2.3 0 0 0 6.9 22h10.2a2.3 2.3 0 0 0 2.1-3.3L14 8.5V2" />
+    <path d="M8 2h8" />
+    <path d="M7.4 16h9.2" />
   </svg>
 );
 const UserIcon = () => (
@@ -234,17 +251,16 @@ const BOTTOM_NAV: NavItem[] = [
 ];
 
 const COLLAPSED_KEY = "loopless-sidebar-collapsed";
+const XP_PANEL_KEY = "loopless-sidebar-xp-expanded";
 
 /** App favicon from `src/app/icon.tsx` (served at `/icon`) */
 function SidebarAppIcon({ size = 38 }: { size?: number }) {
   return (
-    <Image
+    <img
       src="/icon"
       alt="Loopless"
       width={size}
       height={size}
-      sizes={`${size}px`}
-      priority
       className="sidebar-app-icon"
       style={{
         flexShrink: 0,
@@ -277,12 +293,25 @@ const ChevronRailIcon = ({ collapsed }: { collapsed: boolean }) => (
   </svg>
 );
 
-// Derive gamification level from total XP
-function deriveLevel(xpTotal: number) {
-  const level = Math.max(1, Math.floor(xpTotal / 500) + 1);
-  const xpInLvl = xpTotal % 500;
-  return { level, xpInLvl, xpToNext: 500 };
-}
+const ChevronDownIcon = ({ open }: { open: boolean }) => (
+  <svg
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.4"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+    style={{
+      transform: open ? "rotate(180deg)" : undefined,
+      transition: "transform .2s ease",
+    }}
+  >
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
 
 export default function AppShell({
   children,
@@ -298,6 +327,8 @@ export default function AppShell({
   const [guestName, setGuestName] = useState("");
   const [isGuest, setIsGuest] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [testDataMode, setTestDataMode] = useState(false);
+  const [testDataBusy, setTestDataBusy] = useState<"loading" | "clearing" | null>(null);
   const [particles, setParticles] = useState<
     { id: number; x: number; y: number }[]
   >([]);
@@ -312,10 +343,12 @@ export default function AppShell({
   const nextId = useRef(0);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [xpExpanded, setXpExpanded] = useState(false);
 
   useEffect(() => {
     try {
       setSidebarCollapsed(localStorage.getItem(COLLAPSED_KEY) === "1");
+      setXpExpanded(localStorage.getItem(XP_PANEL_KEY) === "1");
     } catch {
       /* ignore */
     }
@@ -333,11 +366,24 @@ export default function AppShell({
     });
   }
 
+  function toggleXpExpanded() {
+    setXpExpanded((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(XP_PANEL_KEY, next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }
+
   /* load guest info from localStorage */
   useEffect(() => {
     if (typeof window === "undefined") return;
     setGuestName(localStorage.getItem("loopless_guest_name") ?? "");
     setIsGuest(!session?.user && !!localStorage.getItem("loopless_guest_id"));
+    setTestDataMode(document.cookie.split(";").some((part) => part.trim() === "loopless_data_mode=test"));
   }, [session]);
 
   /* fetch real stats */
@@ -358,13 +404,19 @@ export default function AppShell({
 
         if (profileRes.ok) {
           const p = await profileRes.json();
+          const localTest = testDataMode ? getLocalTestProgress() ?? createLocalTestProgress() : null;
           const userStreaks: { streakType: string; count: number | null }[] =
             p.userStreaks ?? [];
           const streakCount =
-            userStreaks.find((s) => s.streakType === "checkin")?.count ?? 0;
+            localTest?.streak ??
+            userStreaks.find((s) => s.streakType === "checkin")?.count ??
+            0;
           setStreak(streakCount);
-          // Use server-computed XP directly - consistent with dashboard and profile
-          setXpTotal(p.xp ?? 0);
+          setXpTotal(
+            localTest
+              ? computeXP(localTest.badges, streakCount, p.recentCheckins ?? [])
+              : p.xp ?? 0,
+          );
         }
 
         if (checkinRes.ok) {
@@ -377,7 +429,7 @@ export default function AppShell({
         setDataReady(true);
       }
     })();
-  }, [session]);
+  }, [session, testDataMode]);
 
   /* close dropdown on outside click */
   useEffect(() => {
@@ -410,6 +462,52 @@ export default function AppShell({
     } else await signOut({ callbackUrl: "/" });
   }
 
+  function getGuestHeaders(): Record<string, string> {
+    const gid =
+      typeof window !== "undefined"
+        ? (localStorage.getItem("loopless_guest_id") ?? "")
+        : "";
+    return gid ? { "x-guest-id": gid } : {};
+  }
+
+  function setDataModeCookie(enabled: boolean) {
+    document.cookie = enabled
+      ? "loopless_data_mode=test; path=/; max-age=604800; samesite=lax"
+      : "loopless_data_mode=; path=/; max-age=0; samesite=lax";
+    setTestDataMode(enabled);
+  }
+
+  async function loadTestData() {
+    if (testDataBusy) return;
+    setTestDataBusy("loading");
+    try {
+      const res = await fetch("/api/dev/seed-insights", {
+        headers: getGuestHeaders(),
+      });
+      if (!res.ok) throw new Error("seed failed");
+      setLocalTestProgress();
+      setDataModeCookie(true);
+      setProfileOpen(false);
+      router.refresh();
+    } finally {
+      setTestDataBusy(null);
+    }
+  }
+
+  async function clearTestData() {
+    if (testDataBusy) return;
+    setTestDataBusy("clearing");
+    try {
+      await fetch("/api/dev/clear-seed", { headers: getGuestHeaders() });
+      clearLocalTestProgress();
+      setDataModeCookie(false);
+      setProfileOpen(false);
+      router.refresh();
+    } finally {
+      setTestDataBusy(null);
+    }
+  }
+
   function isActive(href: string) {
     return pathname === href || pathname.startsWith(href + "/");
   }
@@ -417,8 +515,9 @@ export default function AppShell({
   const rawName = session?.user?.name ?? guestName ?? "there";
   const firstName = rawName.split(" ")[0];
   const initials = firstName.slice(0, 2).toUpperCase();
-  const { level, xpInLvl, xpToNext } = deriveLevel(xpTotal);
-  const xpPct = (xpInLvl / xpToNext) * 100;
+  const { level, xpInLevel, xpToNext } = computeLevel(xpTotal);
+  const xpLevelSize = xpInLevel + xpToNext;
+  const xpPct = xpLevelSize > 0 ? (xpInLevel / xpLevelSize) * 100 : 0;
 
   function topBarLabel(): string {
     const hit = NAV.find((n) => isActive(n.href));
@@ -458,69 +557,103 @@ export default function AppShell({
           min-height:100vh;
           min-height:100dvh;
           --rail-w:var(--sidebar-w);
-          --rail-collapsed-w:76px;
+          --rail-collapsed-w:72px;
         }
 
         /* ── Sidebar (desktop ≥1024 only - hidden on narrow viewports) ── */
         .sidebar{
           width:var(--rail-w);flex-shrink:0;background:var(--bg2);
-          border-right:2px solid var(--border2);
+          border-right:1px solid var(--border);
           display:none;
           flex-direction:column;
           position:fixed;top:0;left:0;height:100vh;z-index:150;
-          padding-bottom:env(safe-area-inset-bottom,0);
+          padding:0 0 env(safe-area-inset-bottom,0);
+          box-shadow:none;
           animation:none;
           transition:width .22s ease, box-shadow .2s ease;
         }
         @media(min-width:1024px){
           .sidebar{display:flex;}
-          .sidebar{animation:sideGlow 6s ease-in-out infinite;}
         }
         @media(max-width:1023px){.collapse-toggle{display:none!important;}}
         .sidebar-logo{
-          padding:max(14px, calc(8px + env(safe-area-inset-top))) 14px 12px;
-          border-bottom:2px dashed var(--border2);margin-bottom:8px;
+          padding:max(16px, calc(10px + env(safe-area-inset-top))) 12px 14px;
+          border-bottom:1px solid var(--border);margin-bottom:0;
         }
         .sidebar-brand-inner{
-          display:flex;align-items:flex-start;gap:12px;width:100%;
+          display:flex;align-items:center;gap:12px;width:100%;
         }
+        .sidebar-brand-link{display:flex;align-items:center;gap:12px;min-width:0;flex:1;border-radius:14px;outline:none;}
+        .sidebar-brand-link:focus-visible{box-shadow:0 0 0 3px color-mix(in srgb,var(--mint2) 20%,transparent);}
         .sidebar-brand-copy{flex:1;min-width:0;}
         .collapse-toggle{
-          flex-shrink:0;width:34px;height:34px;margin-left:auto;display:flex;
+          flex-shrink:0;width:36px;height:36px;margin-left:auto;display:flex;
           align-items:center;justify-content:center;
-          border-radius:10px;border:2px solid var(--border3);
-          background:var(--bg3);color:var(--text2);cursor:pointer;
+          border-radius:12px;border:1px solid var(--border2);
+          background:var(--bg0);color:var(--text2);cursor:pointer;
           transition:transform .15s,color .15s,background .15s,border-color .15s;
         }
-        .collapse-toggle:hover{border-color:var(--mint2);color:var(--mint2);}
-        .sidebar-app-icon{border:2px solid var(--border3);background:var(--bg3);}
-        .logo-text{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600;color:var(--text1);line-height:1.15;}
+        .collapse-toggle:hover{border-color:color-mix(in srgb,var(--mint2) 42%,var(--border2));color:var(--mint2);background:color-mix(in srgb,var(--mint2) 8%,var(--bg0));}
+        .sidebar-app-icon{border:1px solid var(--border2);background:var(--bg0);box-shadow:none!important;}
+        .logo-text{font-family:'Fredoka',sans-serif;font-size:23px;font-weight:650;color:var(--text1);line-height:1.05;letter-spacing:0;}
         .logo-accent{color:var(--mint2);}
-        .logo-tag{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+        .logo-tag{font-size:10px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;}
 
         .shell-collapsed-sidebar{--rail-w:var(--rail-collapsed-w);}
         .shell-collapsed-sidebar .collapse-toggle{border-color:var(--mint2);color:var(--mint2);}
         .shell-collapsed-sidebar .sidebar-brand-copy{display:none!important;}
         .shell-collapsed-sidebar .sidebar-brand-inner{flex-direction:column;align-items:center;gap:8px;padding:0 2px;}
+        .shell-collapsed-sidebar .sidebar-brand-link{justify-content:center;flex:none;}
         .shell-collapsed-sidebar .collapse-toggle{margin-left:0!important;}
         .shell-collapsed-sidebar .nav-group-label,
         .shell-collapsed-sidebar .nav-label,
         .shell-collapsed-sidebar .nav-badge,
         .shell-collapsed-sidebar .nav-check{display:none!important;}
-        .shell-collapsed-sidebar .nav-item{padding-left:11px!important;padding-right:11px!important;justify-content:center!important;}
+        .shell-collapsed-sidebar .sidebar-logo{padding-left:10px;padding-right:10px;}
+        .shell-collapsed-sidebar .nav-section{padding-left:8px!important;padding-right:8px!important;}
+        .shell-collapsed-sidebar .nav-item{padding-left:8px!important;padding-right:8px!important;justify-content:center!important;}
+        .shell-collapsed-sidebar .nav-icon{margin:0!important;}
         .shell-collapsed-sidebar .sidebar-user-meta,
         .shell-collapsed-sidebar .sidebar-user-arrow,
         .shell-collapsed-sidebar .guest-delete-btn{display:none!important;}
-        .shell-collapsed-sidebar .sidebar-bottom .user-card{justify-content:center;padding:11px!important;}
+        .shell-collapsed-sidebar .sidebar-bottom{padding-left:8px!important;padding-right:8px!important;}
+        .shell-collapsed-sidebar .sidebar-bottom .user-card{justify-content:center;padding:8px!important;}
         .shell-collapsed-sidebar .sidebar-xp{display:none!important;}
+        .shell-collapsed-sidebar .side-quick-link{display:none!important;}
 
         /* XP card */
         .sidebar-xp{
-          margin:0 12px 12px;
-          background:linear-gradient(135deg,#1a3d28,#2d5a3d);
-          border:2px solid #1a1208;border-radius:16px;padding:12px 14px;
-          box-shadow:3px 3px 0 rgba(26,18,8,.15);
+          margin:12px 12px 10px;
+          background:
+            radial-gradient(circle at 88% 8%,color-mix(in srgb,var(--mint2) 18%,transparent),transparent 34%),
+            linear-gradient(145deg,color-mix(in srgb,var(--mint2) 9%,transparent),var(--bg0));
+          border:1px solid color-mix(in srgb,var(--mint2) 22%,var(--border2));
+          border-radius:16px;padding:10px;
+          box-shadow:0 14px 34px rgba(21,31,26,.06);
+          overflow:hidden;position:relative;
         }
+        .dark .sidebar-xp{box-shadow:none;}
+        .sidebar-xp-trigger{
+          all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;
+          justify-content:space-between;gap:10px;cursor:pointer;border-radius:12px;
+          padding:4px;
+        }
+        .sidebar-xp-trigger:focus-visible{outline:2px solid color-mix(in srgb,var(--mint2) 55%,transparent);outline-offset:2px;}
+        .sidebar-xp-top{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;}
+        .sidebar-xp-summary{display:flex;align-items:center;gap:10px;min-width:0;}
+        .sidebar-label{display:block;font-size:9px;font-weight:950;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+        .sidebar-level{display:block;font-family:'Fredoka',sans-serif;font-size:22px;font-weight:650;line-height:1;color:var(--text1);}
+        .sidebar-rank{display:block;margin-top:3px;color:var(--mint2);font-size:10px;font-weight:950;line-height:1.1;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .sidebar-xp-ring{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;box-shadow:inset 0 0 0 1px var(--border2);}
+        .sidebar-xp-ring span{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--bg2);border:1px solid var(--border2);font-size:9px;font-weight:950;color:var(--text1);}
+        .sidebar-xp-chevron{width:24px;height:24px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;color:var(--text3);background:color-mix(in srgb,var(--bg2) 76%,transparent);border:1px solid var(--border2);}
+        .sidebar-xp-details{padding:10px 4px 2px;}
+        .xp-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px;color:var(--text3);font-size:10px;font-weight:850;}
+        .xp-meta strong{color:var(--text1);font-size:11px;}
+        .xp-next{margin-top:10px;padding:9px 10px;border:1px solid var(--border2);border-radius:13px;background:color-mix(in srgb,var(--bg2) 72%,transparent);display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--text2);font-size:11px;font-weight:850;}
+        .xp-next strong{color:var(--mint2);font-weight:950;}
+        .side-quick-link{display:flex;align-items:center;justify-content:center;gap:7px;min-height:36px;margin:0 12px 10px;border-radius:12px;border:1px solid color-mix(in srgb,var(--mint2) 28%,var(--border2));background:color-mix(in srgb,var(--mint2) 9%,transparent);color:var(--mint2);font-size:12px;font-weight:950;transition:transform .15s,background .15s;}
+        .side-quick-link:hover{transform:translateY(-1px);background:color-mix(in srgb,var(--mint2) 14%,transparent);}
         .xp-stat-row{
           display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;
         }
@@ -530,15 +663,15 @@ export default function AppShell({
           padding:6px 10px;font-size:11px;font-weight:800;border-radius:999px;
           box-sizing:border-box;
         }
-        .xp-pill-streak{color:#fca5a5;background:rgba(224,123,90,.22);border:1px solid rgba(224,123,90,.45);}
+        .xp-pill-streak{color:var(--coral2);background:color-mix(in srgb,var(--coral) 10%,transparent);border:1px solid color-mix(in srgb,var(--coral) 24%,transparent);}
         .xp-pill-streak svg{flex-shrink:0;display:block;margin-top:.5px;}
-        .xp-pill-done{color:#5ddba8;background:rgba(93,219,168,.14);border:1px solid rgba(93,219,168,.4);}
-        .xp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
-        .xp-val{font-family:'Fredoka',sans-serif;font-size:13px;font-weight:600;color:#5ddba8;}
-        .xp-bar-bg{height:6px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;position:relative;}
+        .xp-pill-done{color:var(--mint2);background:color-mix(in srgb,var(--mint) 10%,transparent);border:1px solid color-mix(in srgb,var(--mint) 24%,transparent);}
+        .xp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+        .xp-val{font-family:'Fredoka',sans-serif;font-size:13px;font-weight:600;color:var(--mint2);}
+        .xp-bar-bg{height:8px;background:var(--bg3);border-radius:999px;overflow:hidden;position:relative;border:1px solid var(--border2);}
         .xp-bar-fill{
-          height:100%;border-radius:3px;
-          background:linear-gradient(90deg,#5ddba8,#3bc98e);
+          height:100%;border-radius:999px;
+          background:var(--mint2);
           transition:width 1.2s ease;
           position:relative;overflow:hidden;
         }
@@ -550,51 +683,65 @@ export default function AppShell({
         }
 
         /* Nav */
-        .nav-section{flex:1;overflow-y:auto;padding:0 10px;}
-        .nav-group-label{font-size:9px;font-weight:800;color:var(--text4);text-transform:uppercase;letter-spacing:.08em;padding:8px 8px 4px;}
+        .nav-section{flex:1;overflow-y:auto;padding:10px 10px 8px;}
+        .nav-section::-webkit-scrollbar{width:0;height:0;}
+        .nav-group-label{font-size:9px;font-weight:900;color:var(--text4);text-transform:uppercase;letter-spacing:.09em;padding:12px 8px 7px;}
         .nav-item{
           display:flex;align-items:center;gap:10px;
-          padding:9px 10px;border-radius:12px;
-          color:var(--text2);font-size:13.5px;font-weight:600;
-          cursor:pointer;transition:all .15s;
-          border:2px solid transparent;position:relative;margin-bottom:2px;
+          min-height:46px;
+          padding:6px 9px;border-radius:14px;
+          color:var(--text2);font-size:13px;font-weight:850;
+          cursor:pointer;transition:background .15s,border-color .15s,color .15s,transform .15s;
+          border:1px solid transparent;position:relative;margin-bottom:2px;
         }
-        .nav-item:hover{background:var(--bg3);color:var(--text1);border-color:var(--border2);}
+        .nav-item:hover{background:var(--bg0);color:var(--text1);border-color:var(--border2);transform:translateX(1px);}
         .nav-item.active{
-          background:linear-gradient(135deg,var(--mint3),rgba(59,201,142,.12));
-          color:var(--mint2);border-color:var(--mint2);
-          box-shadow:2px 2px 0 rgba(61,107,79,.2);font-weight:800;
+          background:color-mix(in srgb,var(--mint2) 10%,var(--bg0));
+          color:var(--text1);border-color:color-mix(in srgb,var(--mint2) 34%,var(--border2));
+          box-shadow:none;font-weight:800;
         }
-        .nav-item.active::before{content:'';position:absolute;left:-10px;top:25%;bottom:25%;width:3px;background:var(--mint2);border-radius:0 2px 2px 0;}
+        .nav-item.active::before{content:'';position:absolute;left:-10px;top:12px;bottom:12px;width:3px;background:var(--mint2);border-radius:0 999px 999px 0;}
+        .nav-icon{
+          width:32px;height:32px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+          flex:0 0 auto;color:currentColor;background:transparent;
+          transition:background .15s,color .15s;
+        }
+        .nav-item.active .nav-icon{background:color-mix(in srgb,var(--mint2) 14%,transparent);color:var(--mint2);}
         .nav-label{flex:1;min-width:0;}
-        .nav-badge{margin-left:auto;background:var(--coral2);color:white;border:1.5px solid var(--stroke);border-radius:20px;padding:1px 7px;font-size:9px;font-weight:800;}
-        .nav-check{margin-left:auto;color:#5ddba8;font-weight:900;font-size:14px;}
+        .nav-badge{margin-left:auto;background:color-mix(in srgb,var(--coral) 12%,transparent);color:var(--coral2);border:1px solid color-mix(in srgb,var(--coral) 26%,transparent);border-radius:999px;padding:3px 8px;font-size:9px;font-weight:950;}
+        .nav-check{margin-left:auto;color:var(--mint2);font-weight:950;font-size:13px;background:color-mix(in srgb,var(--mint) 12%,transparent);border:1px solid color-mix(in srgb,var(--mint) 24%,transparent);border-radius:999px;padding:1px 7px;}
 
         /* Sidebar bottom */
-        .sidebar-bottom{border-top:2px dashed var(--border2);padding:12px;}
-        .user-card{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:2px solid var(--border2);background:var(--bg0);box-shadow:2px 2px 0 var(--stroke-light);cursor:pointer;transition:all .15s;}
-        .user-card:hover{border-color:var(--mint2);background:var(--bg3);}
-        .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--mint2),var(--mint3));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;border:2px solid var(--stroke);flex-shrink:0;box-shadow:2px 2px 0 var(--shadow-card);}
+        .sidebar-bottom{border-top:1px solid var(--border);padding:12px;}
+        .user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:15px;border:1px solid var(--border2);background:var(--bg0);box-shadow:none;cursor:pointer;transition:background .15s,border-color .15s,transform .15s;}
+        .user-card:hover{border-color:color-mix(in srgb,var(--mint2) 38%,var(--border2));background:color-mix(in srgb,var(--mint2) 7%,var(--bg0));transform:translateY(-1px);}
+        .avatar{width:36px;height:36px;border-radius:12px;background:var(--text1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:var(--bg0);border:1px solid var(--border2);flex-shrink:0;box-shadow:none;}
         .user-name{font-size:12.5px;font-weight:800;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .user-sub{font-size:10px;font-weight:600;color:var(--text3);}
-        .guest-delete-btn{width:100%;margin-top:8px;background:var(--coral3);border:2px solid var(--coral);border-radius:12px;padding:9px;font-size:12px;font-weight:800;color:var(--text1);cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:2px 2px 0 var(--shadow-coral);transition:all .12s;display:flex;align-items:center;justify-content:center;gap:7px;}
-        .guest-delete-btn:hover{background:var(--coral2);color:white;transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--shadow-coral);}
+        .user-sub{font-size:10.5px;font-weight:750;color:var(--text3);}
+        .guest-delete-btn{width:100%;margin-top:8px;background:color-mix(in srgb,var(--coral) 8%,transparent);border:1px solid color-mix(in srgb,var(--coral) 26%,transparent);border-radius:12px;padding:9px;font-size:12px;font-weight:850;color:var(--coral2);cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:none;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:7px;}
+        .guest-delete-btn:hover{background:color-mix(in srgb,var(--coral) 14%,transparent);transform:translateY(-1px);}
 
         /* Main - offset by sidebar rail width on desktop */
         .main-area{margin-left:0;flex:1;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;overflow-x:hidden;min-width:0;}
         @media(min-width:1024px){ .main-area{margin-left:var(--rail-w);transition:margin-left .22s ease;} }
 
         /* Topbar */
-        .topbar{height:60px;background:var(--smoke1);backdrop-filter:blur(20px);border-bottom:2px solid var(--border2);padding:0 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 0 var(--border);}
+        .topbar{height:64px;background:var(--smoke1);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:none;}
         .topbar-title{font-family:'Fredoka',sans-serif;font-size:20px;font-weight:600;color:var(--text1);}
-        .streak-pill{display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--mint3),var(--mint2));border:2px solid var(--stroke);border-radius:50px;padding:5px 12px;font-size:13px;font-weight:800;color:white;box-shadow:2px 2px 0 var(--shadow-card);}
-        .level-pill{display:flex;align-items:center;gap:6px;background:var(--bg3);border:2px solid var(--border3);border-radius:50px;padding:5px 12px;font-size:12px;font-weight:800;color:var(--text2);box-shadow:2px 2px 0 var(--shadow-card);}
-        .profile-btn{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--mint2),var(--mint3));border:2.5px solid var(--stroke);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;box-shadow:2px 2px 0 var(--shadow-card);transition:transform .12s;position:relative;}
+        .streak-pill{display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border2);border-radius:50px;padding:6px 12px;font-size:13px;font-weight:800;color:var(--text2);box-shadow:none;}
+        .level-pill{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border2);border-radius:50px;padding:6px 12px;font-size:12px;font-weight:800;color:var(--text2);box-shadow:none;}
+        .profile-btn{width:38px;height:38px;border-radius:50%;background:var(--text1);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--bg0);box-shadow:none;transition:transform .12s;position:relative;}
         .profile-btn:hover{transform:scale(1.06);}
-        .profile-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:var(--bg2);border:2.5px solid var(--border2);border-radius:18px;padding:8px;box-shadow:6px 6px 0 var(--shadow-card);min-width:210px;z-index:300;}
-        .dropdown-header{padding:10px 12px;border-bottom:2px dashed var(--border2);margin-bottom:6px;}
+        .profile-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:8px;box-shadow:var(--shadow-card-lg);min-width:246px;z-index:300;}
+        .dropdown-header{padding:10px 12px;border-bottom:1px solid var(--border2);margin-bottom:6px;}
         .dropdown-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;font-size:13px;font-weight:700;color:var(--text1);cursor:pointer;transition:background .12s;}
         .dropdown-item:hover{background:var(--bg3);}
+        .dropdown-item button{all:unset;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;}
+        .dropdown-item.test{color:var(--mint2);background:color-mix(in srgb,var(--mint2) 8%,transparent);border:1px solid color-mix(in srgb,var(--mint2) 24%,transparent);}
+        .dropdown-item.test:hover{background:color-mix(in srgb,var(--mint2) 13%,transparent);}
+        .dropdown-note{margin:7px 8px 6px;padding:9px 10px;border-radius:12px;background:var(--bg0);border:1px solid var(--border2);color:var(--text3);font-size:11px;font-weight:750;line-height:1.35;}
+        .dropdown-status{display:inline-flex;align-items:center;gap:6px;margin-top:8px;border-radius:999px;padding:3px 9px;font-size:10px;font-weight:900;border:1px solid var(--border2);background:var(--bg0);color:var(--text3);}
+        .dropdown-status.on{border-color:color-mix(in srgb,var(--mint2) 38%,var(--border2));background:color-mix(in srgb,var(--mint2) 11%,var(--bg0));color:var(--mint2);}
         .dropdown-item.danger{color:var(--coral2);}
         .dropdown-item.danger:hover{background:var(--coral3);}
 
@@ -620,23 +767,27 @@ export default function AppShell({
         .bnav{
           display:flex;position:fixed;bottom:0;left:0;right:0;z-index:120;
           background:var(--smoke1);backdrop-filter:blur(20px);
-          border-top:2px solid var(--border2);
-          padding:6px 8px calc(8px + env(safe-area-inset-bottom));
-          box-shadow:0 -6px 28px rgba(0,0,0,.12);
-          gap:4px;
+          border-top:1px solid var(--border2);
+          padding:7px 10px calc(9px + env(safe-area-inset-bottom));
+          box-shadow:0 -14px 36px rgba(0,0,0,.08);
+          gap:6px;
         }
         .bnav-item{
           flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
-          min-height:54px;justify-content:center;border-radius:14px;padding:6px 4px;
+          min-height:54px;justify-content:center;border-radius:16px;padding:6px 4px;
           text-decoration:none;color:var(--text3);transition:background .15s,color .15s,transform .12s;
           -webkit-tap-highlight-color:transparent;
         }
         .bnav-item:active{transform:scale(.97);}
         .bnav-item.bnav-active{
           background:color-mix(in srgb,var(--mint2) 16%,transparent);
-          color:var(--mint2);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--mint2) 42%,transparent);
+          color:var(--mint2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mint2) 38%,transparent);
         }
         .bnav-item.bnav-active div{color:var(--mint2)!important;}
+        @media(max-width:380px){
+          .bnav{gap:3px;padding-left:6px;padding-right:6px;}
+          .bnav-item div:last-child{font-size:10px!important;}
+        }
         @media(min-width:1024px){.bnav{display:none!important;}}
       `}</style>
 
@@ -651,13 +802,20 @@ export default function AppShell({
         <aside id="app-sidebar" className="sidebar">
           <div className="sidebar-logo">
             <div className="sidebar-brand-inner">
-              <SidebarAppIcon size={sidebarCollapsed ? 36 : 40} />
-              <div className="sidebar-brand-copy">
-                <div className="logo-text">
-                  Loop<span className="logo-accent">less</span>
+              <Link
+                href="/dashboard"
+                className="sidebar-brand-link"
+                title="Go to home"
+                aria-label="Go to home"
+              >
+                <SidebarAppIcon size={sidebarCollapsed ? 36 : 40} />
+                <div className="sidebar-brand-copy">
+                  <div className="logo-text">
+                    Loop<span className="logo-accent">less</span>
+                  </div>
+                  <div className="logo-tag">Break the cycle</div>
                 </div>
-                <div className="logo-tag">Break the cycle</div>
-              </div>
+              </Link>
               <button
                 type="button"
                 className="collapse-toggle"
@@ -675,31 +833,60 @@ export default function AppShell({
 
           {/* XP card - desktop expanded rail only */}
           <div className="sidebar-xp">
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: "rgba(255,255,255,.55)",
-                textTransform: "uppercase",
-                letterSpacing: ".06em",
-                marginBottom: 4,
-              }}
+            <button
+              type="button"
+              className="sidebar-xp-trigger"
+              onClick={toggleXpExpanded}
+              aria-expanded={xpExpanded}
+              aria-controls="sidebar-xp-details"
             >
-              Lv.{dataReady ? level : "-"} Loop Breaker
-            </div>
+              <div className="sidebar-xp-top">
+                <div className="sidebar-xp-summary">
+                  <div
+                    className="sidebar-xp-ring"
+                    style={{
+                      background: dataReady
+                        ? `conic-gradient(var(--mint2) ${xpPct * 3.6}deg, var(--bg3) 0deg)`
+                        : "var(--bg3)",
+                    }}
+                    aria-label="XP progress"
+                  >
+                    <span>{dataReady ? `${Math.round(xpPct)}%` : "-"}</span>
+                  </div>
+                  <div>
+                    <span className="sidebar-label">Current rank</span>
+                    <strong className="sidebar-level">Lv.{dataReady ? level : "-"}</strong>
+                    <span className="sidebar-rank">Loop Breaker</span>
+                  </div>
+                </div>
+                <span className="sidebar-xp-chevron">
+                  <ChevronDownIcon open={xpExpanded} />
+                </span>
+              </div>
+            </button>
+            <AnimatePresence initial={false}>
+              {xpExpanded ? (
+                <motion.div
+                  id="sidebar-xp-details"
+                  className="sidebar-xp-details"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                >
             <div className="xp-row">
               <span
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
-                  color: "rgba(255,255,255,.55)",
+                  color: "var(--text3)",
                 }}
               >
                 XP Progress
               </span>
               <span className="xp-val">
                 {dataReady ? (
-                  `${xpInLvl}/${xpToNext}`
+                  `${xpInLevel}/${xpLevelSize}`
                 ) : (
                   <span
                     className="skel"
@@ -714,6 +901,14 @@ export default function AppShell({
                 style={{ width: dataReady ? `${xpPct}%` : "0%" }}
               />
             </div>
+            <div className="xp-meta">
+              <span>Total</span>
+              <strong>{dataReady ? `${xpTotal} XP` : "-"}</strong>
+            </div>
+            <div className="xp-next">
+              <span>Next level</span>
+              <strong>{dataReady ? `${xpToNext} XP` : "-"}</strong>
+            </div>
             {/* Streak + check-in status */}
             <div className="xp-stat-row">
               <span className="xp-pill xp-pill-streak">
@@ -725,12 +920,21 @@ export default function AppShell({
                 <span className="xp-pill xp-pill-done">Checked in ✓</span>
               )}
             </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
           </div>
+
+          {dataReady && !checkedToday ? (
+            <Link className="side-quick-link" href="/checkin">
+              <CheckinIcon /> Check in
+            </Link>
+          ) : null}
 
           <nav className="nav-section">
             <div className="nav-group-label">Main</div>
             {NAV_MAIN.map((item) => (
-              <Link key={item.href} href={item.href} onClick={onNavLinkClick}>
+              <Link key={item.href} href={item.href} onClick={onNavLinkClick} title={item.label}>
                 <div
                   className={`nav-item${isActive(item.href) ? " active" : ""}`}
                 >
@@ -751,7 +955,7 @@ export default function AppShell({
               Tools
             </div>
             {NAV_TOOLS.map((item) => (
-              <Link key={item.href} href={item.href} onClick={onNavLinkClick}>
+              <Link key={item.href} href={item.href} onClick={onNavLinkClick} title={item.label}>
                 <div
                   className={`nav-item${isActive(item.href) ? " active" : ""}`}
                 >
@@ -980,6 +1184,27 @@ export default function AppShell({
                               {checkedToday ? "Checked in" : "Check in today"}
                             </span>
                           </div>
+                          <span className={`dropdown-status${testDataMode ? " on" : ""}`}>
+                            <TestDataIcon />
+                            {testDataMode ? "Test data mode" : "Real data mode"}
+                          </span>
+                        </div>
+                        <div className="dropdown-note">
+                          Test data is tagged on your current profile and can be removed without deleting real check-ins.
+                        </div>
+                        <div
+                          className="dropdown-item test"
+                          onClick={testDataMode ? clearTestData : loadTestData}
+                          aria-disabled={!!testDataBusy}
+                        >
+                          <TestDataIcon />
+                          {testDataBusy === "loading"
+                            ? "Creating test records..."
+                            : testDataBusy === "clearing"
+                              ? "Removing test records..."
+                              : testDataMode
+                                ? "Remove test data"
+                                : "Load test data"}
                         </div>
                         {[
                           {
@@ -1126,6 +1351,7 @@ export default function AppShell({
             <Link
               key={item.href}
               href={item.href}
+              title={item.label}
               className={`bnav-item${on ? " bnav-active" : ""}`}
             >
               <div
