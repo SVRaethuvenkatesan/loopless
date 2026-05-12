@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import {
   mlInsights,
@@ -17,6 +18,7 @@ import { checkRelapsePatterns } from "@/lib/relapse-detector";
 import InsightsDashboard from "./insights-dashboard";
 import Link from "next/link";
 import { Activity, CalendarCheck2, Plus } from "lucide-react";
+import { isTestDataModeFromCookieStore, TEST_DATA_COOKIE } from "@/lib/data-mode";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +27,8 @@ export default async function InsightsPage() {
   const userId = session?.user?.id;
   if (!userId) redirect("/dashboard");
 
-  const isDemoMode = false;
+  const cookieStore = await cookies();
+  const isDemoMode = isTestDataModeFromCookieStore(cookieStore.get(TEST_DATA_COOKIE)?.value);
 
   // Run all engines in parallel (engine is scoped to seed or real data, not both)
   const [correlationData] = await Promise.all([
@@ -42,9 +45,9 @@ export default async function InsightsPage() {
       topTimeSentence: null,
       computedAt: new Date().toISOString(),
     })),
-    getOrComputeDailyInsight(userId).catch(() => null),
-    getOrComputeRiskPrediction(userId).catch(() => {}),
-    checkRelapsePatterns(userId).catch(() => {}),
+    isDemoMode ? Promise.resolve(null) : getOrComputeDailyInsight(userId).catch(() => null),
+    isDemoMode ? Promise.resolve(null) : getOrComputeRiskPrediction(userId).catch(() => {}),
+    isDemoMode ? Promise.resolve(null) : checkRelapsePatterns(userId).catch(() => {}),
   ]);
 
   const thirtyDaysAgo = new Date();

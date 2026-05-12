@@ -12,6 +12,7 @@ import {
   riskPredictions,
   dailyInsights,
   correlationInsights,
+  copingSessions,
 } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 
@@ -20,7 +21,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   try {
     const session = await auth();
-    const userId = session?.user?.id;
+    const guestId = req.headers.get("x-guest-id");
+    const userId = session?.user?.id ?? guestId;
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -81,10 +83,18 @@ export async function GET(req: Request) {
         .where(
           and(
             eq(riskPredictions.userId, userId),
-            eq(riskPredictions.status, "pending"),
+            eq(riskPredictions.status, "seed"),
           ),
         ),
       // ← Also invalidate the correlation cache so fresh seed data is re-computed
+      db
+        .delete(copingSessions)
+        .where(
+          and(
+            eq(copingSessions.userId, userId),
+            eq(copingSessions.toolType, "__seed__"),
+          ),
+        ),
       db
         .delete(correlationInsights)
         .where(eq(correlationInsights.userId, userId)),
@@ -193,6 +203,27 @@ export async function GET(req: Request) {
       await db.insert(urgeEvents).values(urgeData);
     }
 
+    const copingData = dailyStressMap
+      .filter((item) => item.stress >= 6)
+      .slice(0, 10)
+      .map(({ date, stress }) => {
+        const completedAt = new Date(date);
+        completedAt.setHours(18, Math.floor(Math.random() * 50));
+        return {
+          userId,
+          toolType: "__seed__",
+          durationSec: 180 + Math.floor(Math.random() * 240),
+          preStress: Math.min(10, stress + 1),
+          postStress: Math.max(1, stress - 2),
+          stressDelta: -2,
+          completedAt,
+        };
+      });
+
+    if (copingData.length > 0) {
+      await db.insert(copingSessions).values(copingData);
+    }
+
     // ── Generate ml_insights (tagged with source = "seed") ──────────────────
     const insightTemplates = [
       {
@@ -256,7 +287,7 @@ export async function GET(req: Request) {
       predictedWindowStart: now,
       predictedWindowEnd: riskEnd,
       confidence: 0.73,
-      status: "pending",
+      status: "seed",
     });
 
     return NextResponse.json({
@@ -267,6 +298,7 @@ export async function GET(req: Request) {
         checkins: checkinData.length,
         urges: urgeData.length,
         insights: insightTemplates.length,
+        copingSessions: copingData.length,
         dailyInsight: 1,
         riskPrediction: 1,
       },

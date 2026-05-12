@@ -419,6 +419,134 @@ function Styles() {
         gap: 14px;
       }
 
+      .signal-board {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(220px, .85fr);
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid color-mix(in srgb, var(--mint2) 28%, var(--border2));
+        border-radius: 20px;
+        background:
+          radial-gradient(circle at 12% 12%, color-mix(in srgb, var(--stress-color) 16%, transparent), transparent 34%),
+          linear-gradient(135deg, color-mix(in srgb, var(--mint2) 8%, transparent), var(--bg2));
+        overflow: hidden;
+      }
+
+      .signal-orb-wrap {
+        display: grid;
+        grid-template-columns: 96px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+      }
+
+      .signal-orb {
+        position: relative;
+        width: 96px;
+        height: 96px;
+        display: grid;
+        place-items: center;
+        border-radius: 28px;
+        background: color-mix(in srgb, var(--stress-color) 12%, var(--bg0));
+        border: 1px solid color-mix(in srgb, var(--stress-color) 34%, var(--border2));
+        color: var(--stress-color);
+        box-shadow: inset 0 0 0 10px color-mix(in srgb, var(--stress-color) 7%, transparent);
+      }
+
+      .signal-orb strong {
+        position: relative;
+        z-index: 1;
+        font-family: var(--font-display);
+        font-size: 44px;
+        line-height: 1;
+      }
+
+      .signal-orb:after {
+        content: "";
+        position: absolute;
+        inset: 13px;
+        border-radius: 22px;
+        border: 1px solid color-mix(in srgb, var(--stress-color) 30%, transparent);
+        animation: signalPulse var(--stress-speed, 2s) ease-out infinite;
+      }
+
+      @keyframes signalPulse {
+        from { transform: scale(.85); opacity: .7; }
+        to { transform: scale(1.28); opacity: 0; }
+      }
+
+      .signal-copy h2 {
+        color: var(--text1);
+        font-size: 22px;
+        line-height: 1.05;
+        font-weight: 950;
+      }
+
+      .signal-copy p {
+        margin-top: 7px;
+        color: var(--text2);
+        font-size: 13px;
+        line-height: 1.5;
+        font-weight: 800;
+      }
+
+      .step-rail {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 7px;
+        margin-top: 13px;
+      }
+
+      .step-dot {
+        min-height: 44px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--border2);
+        border-radius: 13px;
+        background: var(--bg0);
+        color: var(--text3);
+      }
+
+      .step-dot.is-done {
+        color: var(--mint2);
+        border-color: color-mix(in srgb, var(--mint2) 36%, var(--border2));
+        background: color-mix(in srgb, var(--mint2) 10%, var(--bg0));
+      }
+
+      .signal-mini-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .signal-mini {
+        min-height: 86px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid var(--border2);
+        border-radius: 16px;
+        background: var(--bg0);
+        padding: 12px;
+      }
+
+      .signal-mini span {
+        color: var(--text3);
+        font-size: 10px;
+        font-weight: 950;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+      }
+
+      .signal-mini strong {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--text1);
+        font-size: 13px;
+        font-weight: 950;
+        line-height: 1.2;
+      }
+
       .checkin-card {
         padding: 20px;
       }
@@ -621,8 +749,10 @@ function Styles() {
       }
 
       .choice-button {
+        position: relative;
+        overflow: hidden;
         min-width: 0;
-        min-height: 92px;
+        min-height: 104px;
         padding: 12px 10px;
         border: 1px solid var(--border2);
         border-radius: 15px;
@@ -639,12 +769,27 @@ function Styles() {
         border-color: var(--border3);
       }
 
+      .choice-button::after {
+        content: "";
+        position: absolute;
+        right: -20px;
+        bottom: -26px;
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--choice-tone) 13%, transparent);
+        opacity: .7;
+      }
+
       .choice-button.is-active {
         background: linear-gradient(135deg, color-mix(in srgb, var(--choice-tone) 12%, transparent), var(--bg0));
         border-color: color-mix(in srgb, var(--choice-tone) 48%, var(--border2));
+        transform: translateY(-2px);
       }
 
       .choice-icon {
+        position: relative;
+        z-index: 1;
         width: 34px;
         height: 34px;
         display: flex;
@@ -657,6 +802,8 @@ function Styles() {
       }
 
       .choice-button strong {
+        position: relative;
+        z-index: 1;
         display: block;
         overflow-wrap: anywhere;
         color: var(--text1);
@@ -666,11 +813,27 @@ function Styles() {
       }
 
       .choice-button span {
+        position: relative;
+        z-index: 1;
         display: block;
         margin-top: 3px;
         color: var(--text3);
         font-size: 10px;
         font-weight: 850;
+      }
+
+      .choice-check {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+        width: 22px;
+        height: 22px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--choice-tone);
+        color: white;
       }
 
       .trigger-grid {
@@ -680,6 +843,8 @@ function Styles() {
       }
 
       .trigger-button {
+        position: relative;
+        overflow: hidden;
         min-height: 58px;
         display: flex;
         align-items: center;
@@ -706,6 +871,17 @@ function Styles() {
         color: var(--text1);
         background: color-mix(in srgb, var(--mint) 10%, var(--bg0));
         border-color: color-mix(in srgb, var(--mint) 42%, var(--border2));
+      }
+
+      .trigger-button.is-active:after {
+        content: "";
+        position: absolute;
+        right: 10px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--mint2);
+        box-shadow: 0 0 18px color-mix(in srgb, var(--mint2) 55%, transparent);
       }
 
       .optional-grid {
@@ -832,6 +1008,56 @@ function Styles() {
         border-radius: 15px;
         background: var(--bg0);
         padding: 14px;
+      }
+
+      .recap-gauge {
+        position: relative;
+        min-height: 170px;
+        display: grid;
+        place-items: center;
+        border: 1px solid color-mix(in srgb, var(--stress-color) 30%, var(--border2));
+        border-radius: 18px;
+        background:
+          radial-gradient(circle at 50% 12%, color-mix(in srgb, var(--stress-color) 18%, transparent), transparent 46%),
+          var(--bg0);
+      }
+
+      .recap-gauge-ring {
+        width: 126px;
+        height: 126px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: conic-gradient(var(--stress-color) var(--stress-angle), var(--bg3) 0deg);
+        box-shadow: inset 0 0 0 1px var(--border2);
+      }
+
+      .recap-gauge-core {
+        width: 88px;
+        height: 88px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--bg2);
+        border: 1px solid var(--border2);
+        text-align: center;
+      }
+
+      .recap-gauge-core strong {
+        display: block;
+        color: var(--text1);
+        font-family: var(--font-display);
+        font-size: 34px;
+        line-height: .9;
+      }
+
+      .recap-gauge-core span {
+        display: block;
+        margin-top: 4px;
+        color: var(--text3);
+        font-size: 10px;
+        font-weight: 950;
+        text-transform: uppercase;
       }
 
       .recap-label {
@@ -1055,6 +1281,10 @@ function Styles() {
         .checkin-status-card {
           min-width: 0;
         }
+
+        .signal-board {
+          grid-template-columns: 1fr;
+        }
       }
 
       @media (max-width: 720px) {
@@ -1070,8 +1300,13 @@ function Styles() {
 
         .mood-grid,
         .trigger-grid,
-        .optional-grid {
+        .optional-grid,
+        .signal-mini-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .signal-orb-wrap {
+          grid-template-columns: 1fr;
         }
 
         .submit-row {
@@ -1100,7 +1335,8 @@ function Styles() {
       @media (max-width: 430px) {
         .mood-grid,
         .trigger-grid,
-        .optional-grid {
+        .optional-grid,
+        .signal-mini-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -1271,6 +1507,89 @@ function MilestoneModal({
           Continue
         </button>
       </motion.div>
+    </motion.div>
+  );
+}
+
+function CheckinSignalBoard({
+  stress,
+  selectedMood,
+  selectedTrigger,
+  sleepQuality,
+  energyLevel,
+  estimatedXP,
+}: {
+  stress: number;
+  selectedMood: Mood | null;
+  selectedTrigger: Trigger | null;
+  sleepQuality: number | null;
+  energyLevel: number | null;
+  estimatedXP: number;
+}) {
+  const MoodIcon = selectedMood?.Icon ?? Smile;
+  const TriggerIcon = selectedTrigger?.Icon ?? ShieldCheck;
+  const optionalDone = Boolean(sleepQuality || energyLevel);
+  const steps = [
+    { label: "Stress", done: true, Icon: Gauge },
+    { label: "Mood", done: Boolean(selectedMood), Icon: MoodIcon },
+    { label: "Context", done: Boolean(selectedTrigger), Icon: TriggerIcon },
+    { label: "Bonus", done: optionalDone, Icon: Sparkles },
+  ];
+
+  return (
+    <motion.div
+      className="signal-board"
+      style={
+        {
+          "--stress-color": stressColor(stress),
+          "--stress-speed": `${Math.max(0.75, 2.4 - stress * 0.15)}s`,
+        } as React.CSSProperties
+      }
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+    >
+      <div className="signal-orb-wrap">
+        <motion.div
+          className="signal-orb"
+          animate={{ scale: stress >= 7 ? [1, 1.03, 1] : [1, 1.015, 1] }}
+          transition={{ duration: stress >= 7 ? 0.9 : 1.8, repeat: Infinity }}
+        >
+          <strong>{stress}</strong>
+        </motion.div>
+        <div className="signal-copy">
+          <h2>{stressLabel(stress)} signal</h2>
+          <p>{selectedMood?.response ?? STRESS_HINTS[stress]}</p>
+          <div className="step-rail" aria-label="Check-in progress">
+            {steps.map((step) => {
+              const Icon = step.Icon;
+              return (
+                <div className={`step-dot${step.done ? " is-done" : ""}`} key={step.label} title={step.label}>
+                  <Icon size={17} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <div className="signal-mini-grid">
+        <div className="signal-mini">
+          <span>Mood</span>
+          <strong><MoodIcon size={17} color={selectedMood?.tone ?? "var(--text3)"} />{selectedMood?.label ?? "Pick one"}</strong>
+        </div>
+        <div className="signal-mini">
+          <span>Context</span>
+          <strong><TriggerIcon size={17} color={selectedTrigger ? "var(--mint2)" : "var(--text3)"} />{selectedTrigger?.label ?? "Choose"}</strong>
+        </div>
+        <div className="signal-mini">
+          <span>Extras</span>
+          <strong><Bed size={17} />{optionalDone ? "Added" : "Optional"}</strong>
+        </div>
+        <div className="signal-mini">
+          <span>Reward</span>
+          <strong><Zap size={17} color="var(--amber)" />{estimatedXP} XP</strong>
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -1745,6 +2064,15 @@ export default function CheckInPage() {
           ) : (
             <section className="checkin-grid">
               <div className="checkin-form">
+                <CheckinSignalBoard
+                  stress={stress}
+                  selectedMood={selectedMood}
+                  selectedTrigger={selectedTrigger}
+                  sleepQuality={sleepQuality}
+                  energyLevel={energyLevel}
+                  estimatedXP={estimatedXP}
+                />
+
                 <div
                   className="checkin-card"
                   style={
@@ -1880,6 +2208,15 @@ export default function CheckInPage() {
                           onClick={() => setMood(item.val)}
                           aria-pressed={active}
                         >
+                          {active ? (
+                            <motion.span
+                              className="choice-check"
+                              initial={{ scale: 0.5, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                            >
+                              <CheckCircle2 size={14} />
+                            </motion.span>
+                          ) : null}
                           <div className="choice-icon">
                             <Icon size={18} />
                           </div>
@@ -1926,6 +2263,7 @@ export default function CheckInPage() {
                         >
                           <Icon size={16} />
                           {item.label}
+                          {active ? <CheckCircle2 size={15} style={{ marginLeft: "auto" }} /> : null}
                         </button>
                       );
                     })}
@@ -2018,7 +2356,26 @@ function LiveRecap({
   const TriggerIcon = selectedTrigger?.Icon ?? ShieldCheck;
 
   return (
-    <aside className="checkin-recap">
+    <aside
+      className="checkin-recap"
+      style={
+        {
+          "--stress-color": stressColor(stress),
+          "--stress-angle": `${stress * 36}deg`,
+        } as React.CSSProperties
+      }
+    >
+      <div className="recap-gauge">
+        <div className="recap-gauge-ring">
+          <div className="recap-gauge-core">
+            <div>
+              <strong>{stress}</strong>
+              <span>{stressLabel(stress)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div>
         <div className="recap-label">Live recap</div>
         <div className="recap-value">

@@ -19,7 +19,8 @@ import {
 } from "./dash-icons";
 import { LungSvg, MILESTONES, lungPct } from "./dash-lung";
 import { BadgesSection } from "./dash-badges";
-import { computeLevel } from "@/lib/xp";
+import { computeLevel, computeXP } from "@/lib/xp";
+import { createLocalTestProgress, getLocalTestProgress, type LocalTestProgress } from "@/lib/local-test-progress";
 
 const SakuraLottie = dynamic(() => import("./sakura-lottie"), { ssr: false });
 
@@ -44,6 +45,7 @@ interface Props {
   userName: string;
   userId: string;
   recentCheckins: Checkin[];
+  xpCheckins?: Checkin[];
   serverXP: number;
   checkInStreak: number;
   checkedInToday: boolean;
@@ -318,6 +320,7 @@ function StatCard({
 export default function DashboardClient({
   userName,
   recentCheckins,
+  xpCheckins,
   serverXP,
   checkInStreak,
   checkedInToday,
@@ -337,11 +340,14 @@ export default function DashboardClient({
   const [submitting, setSubmitting] = useState(false);
   const [showMilestones, setShowMilestones] = useState(false);
   const [showHeroStats, setShowHeroStats] = useState(false);
+  const [testProgress, setTestProgress] = useState<LocalTestProgress | null>(null);
 
   useEffect(() => {
     const h = new Date().getHours();
     setTod(h < 12 ? "morning" : h < 17 ? "afternoon" : "evening");
     setGuestName(localStorage.getItem("loopless_guest_name") ?? "");
+    const testMode = document.cookie.split(";").some((part) => part.trim() === "loopless_data_mode=test");
+    setTestProgress(testMode ? getLocalTestProgress() ?? createLocalTestProgress() : null);
   }, []);
 
   useEffect(() => {
@@ -353,16 +359,20 @@ export default function DashboardClient({
   }, [checkedInToday, todayEntry]);
 
   const name = (userName || guestName || "there").split(" ")[0];
-  const { level, xpInLevel, xpToNext } = computeLevel(serverXP);
-  const xpPct = Math.round((xpInLevel / xpToNext) * 100);
+  const displayStreak = testProgress?.streak ?? checkInStreak;
+  const displayBadges = testProgress?.badges ?? earnedBadges;
+  const displayXP = testProgress ? computeXP(displayBadges, displayStreak, xpCheckins ?? recentCheckins) : serverXP;
+  const { level, xpInLevel, xpToNext } = computeLevel(displayXP);
+  const xpLevelSize = xpInLevel + xpToNext;
+  const xpPct = xpLevelSize > 0 ? Math.round((xpInLevel / xpLevelSize) * 100) : 0;
   const avgStress = recentCheckins.length
     ? recentCheckins.reduce((sum, c) => sum + c.stressLevel, 0) / recentCheckins.length
     : null;
   const stressLive = stressTone(stress);
   const moodLive = MOODS.find((item) => item.v === mood);
-  const recoveryPct = lungPct(checkInStreak);
-  const nextMilestone = MILESTONES.find((m) => checkInStreak < m.days);
-  const moneySaved = Math.round(checkInStreak * 2.5);
+  const recoveryPct = lungPct(displayStreak);
+  const nextMilestone = MILESTONES.find((m) => displayStreak < m.days);
+  const moneySaved = Math.round(displayStreak * 2.5);
   const completedQuests = [
     done,
     copingSessionsThisWeek > 0,
@@ -587,8 +597,8 @@ export default function DashboardClient({
                 </div>
                 <XPBar pct={xpPct} />
                 <div className="xp-caption">
-                  <span>{xpInLevel}/{xpToNext} XP</span>
-                  <span>{xpPct}% charged</span>
+                  <span>{xpInLevel}/{xpLevelSize} XP</span>
+                  <span>{xpToNext} XP to next</span>
                 </div>
               </div>
               <div>
@@ -611,14 +621,14 @@ export default function DashboardClient({
                   <div className="hero-stat">
                     <div className="hero-stat-icon"><IcoFire /></div>
                     <span>Streak</span>
-                    <strong>{checkInStreak}d</strong>
+                    <strong>{displayStreak}d</strong>
                     <small>Daily chain</small>
                   </div>
                   <div className="hero-stat">
                     <div className="hero-stat-icon"><IcoStar /></div>
                     <span>Level</span>
                     <strong>{level}</strong>
-                    <small>{xpPct}% to next</small>
+                    <small>{xpToNext} XP to next</small>
                   </div>
                   <div className="hero-stat">
                     <div className="hero-stat-icon"><IcoAlert /></div>
@@ -816,13 +826,13 @@ export default function DashboardClient({
                   <div>
                     <div className="recovery-score">{recoveryPct}%</div>
                     <p style={{ margin: "6px 0 0", color: "var(--text2)", fontSize: 13 }}>
-                      after {checkInStreak} clean day{checkInStreak === 1 ? "" : "s"}
+                      after {displayStreak} clean day{displayStreak === 1 ? "" : "s"}
                     </p>
                     {nextMilestone && (
                       <p style={{ margin: "12px 0 0", color: "var(--text3)", fontSize: 12, lineHeight: 1.5 }}>
                         Next checkpoint: <strong>{nextMilestone.label}</strong> in{" "}
-                        {nextMilestone.days - checkInStreak} day
-                        {nextMilestone.days - checkInStreak === 1 ? "" : "s"}.
+                        {nextMilestone.days - displayStreak} day
+                        {nextMilestone.days - displayStreak === 1 ? "" : "s"}.
                       </p>
                     )}
                   </div>
@@ -840,11 +850,11 @@ export default function DashboardClient({
                       style={{ overflow: "hidden" }}
                     >
                       {MILESTONES.map((m) => {
-                        const complete = checkInStreak >= m.days;
+                        const complete = displayStreak >= m.days;
                         return (
                           <div className={`milestone ${complete ? "done" : ""}`} key={m.days}>
                             <strong>{m.label}</strong>
-                            <span>{complete ? "Reached" : `${m.days - checkInStreak}d away`}</span>
+                            <span>{complete ? "Reached" : `${m.days - displayStreak}d away`}</span>
                           </div>
                         );
                       })}
@@ -894,7 +904,7 @@ export default function DashboardClient({
               </section>
 
               <section className="dash-card dash-pad">
-                <BadgesSection earnedBadges={earnedBadges as any[]} />
+                <BadgesSection earnedBadges={displayBadges as any[]} />
               </section>
             </aside>
           </div>
