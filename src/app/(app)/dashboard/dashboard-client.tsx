@@ -550,6 +550,7 @@ export default function DashboardClient({
         <div className="dash-stack">
           <motion.section
             className="dash-card dash-hero"
+            data-tour="tour-greeting"
             initial={reduceMotion ? false : { opacity: 0, y: 14 }}
             animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
@@ -581,19 +582,20 @@ export default function DashboardClient({
                 Your next move is simple: protect the streak, cool down urges,
                 and build XP without turning recovery into another stressful task.
               </p>
-              <div className="dash-hero-actions">
-                <Link className="dash-btn" href={done ? "/insights" : "/checkin"}>
+              <div className="dash-hero-actions" data-tour="tour-dashboard-actions">
+                <Link className="dash-btn" href={done ? "/insights" : "/checkin"} data-tour="tour-start-quest">
                   {done ? "Review patterns" : "Start today's quest"} <IcoArrow />
                 </Link>
-                <Link className="dash-btn secondary" href="/urge">
+                <Link className="dash-btn secondary" href="/urge" data-tour="tour-log-urge">
                   <IcoZap /> Log urge
                 </Link>
-                <Link className="dash-btn secondary" href="/coping">
+                <Link className="dash-btn secondary" href="/coping" data-tour="tour-calm-tool">
                   <IcoWind2 /> Calm tool
                 </Link>
                 <button
                   className="dash-btn secondary hero-toggle"
                   type="button"
+                  data-tour="tour-show-stats"
                   onClick={() => setShowHeroStats((value) => !value)}
                 >
                   {showHeroStats ? "Hide stats" : "Show stats"}
@@ -601,7 +603,7 @@ export default function DashboardClient({
               </div>
             </div>
 
-            <aside className="player-card" aria-label="Player progress">
+            <aside className="player-card" aria-label="Player progress" data-tour="tour-player-card">
               <div>
                 <div className="player-level">
                   <div>
@@ -763,7 +765,7 @@ export default function DashboardClient({
                     </AnimatePresence>
                   </div>
 
-                  <div className="today-state">
+                  <div className="today-state" data-tour="tour-dashboard-checkin">
                     <div
                       className="mood-reactor"
                       style={{ ["--reactor" as string]: moodLive?.c ?? stressLive.color }}
@@ -834,10 +836,12 @@ export default function DashboardClient({
                   </div>
                   <Link href="/checkin">History</Link>
                 </div>
-                <WeekChart checkins={recentCheckins} />
+                <div data-tour="tour-week-map">
+                  <WeekChart checkins={recentCheckins} />
+                </div>
               </section>
 
-              <section className="dash-card dash-pad">
+              <section className="dash-card dash-pad" data-tour="tour-recovery">
                 <div className="section-head">
                   <div>
                     <p className="dash-eyebrow">Recovery game</p>
@@ -897,7 +901,7 @@ export default function DashboardClient({
                     <h2>{completedQuests}/3 cleared</h2>
                   </div>
                 </div>
-                <div className="quest-stack">
+                <div className="quest-stack" data-tour="tour-quests">
                   <QuestCard
                     icon={<IcoClipboard />}
                     title="Daily check-in"
@@ -928,7 +932,7 @@ export default function DashboardClient({
                 </div>
               </section>
 
-              <section className="dash-card dash-pad">
+              <section className="dash-card dash-pad" data-tour="tour-badges">
                 <BadgesSection earnedBadges={displayBadges as any[]} />
               </section>
             </aside>

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import type { Session } from "next-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import OnboardingTour from "@/components/onboarding-tour";
 import { computeLevel, computeXP } from "@/lib/xp";
 import { clearLocalTestProgress, createLocalTestProgress, getLocalTestProgress, setLocalTestProgress } from "@/lib/local-test-progress";
 import GuideBotWidget from "@/components/guide-bot/GuideBotWidget";
@@ -293,6 +294,22 @@ const ChevronRailIcon = ({ collapsed }: { collapsed: boolean }) => (
     <polyline points="14 17 9 12 14 7" />
   </svg>
 );
+const GuideIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 2l1.8 5.5L19 9.3l-5.2 1.8L12 17l-1.8-5.9L5 9.3l5.2-1.8L12 2z" />
+    <path d="M19 15l.9 2.8L23 19l-3.1 1.2L19 23l-.9-2.8L15 19l3.1-1.2L19 15z" />
+    <path d="M5 14l.7 2.1L8 17l-2.3.9L5 20l-.7-2.1L2 17l2.3-.9L5 14z" />
+  </svg>
+);
 
 const ChevronDownIcon = ({ open }: { open: boolean }) => (
   <svg
@@ -323,7 +340,9 @@ export default function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: clientSession } = useSession();
+  const session = clientSession ?? serverSession ?? null;
+  const tourStorageKey = `loopless-app-tour-seen:${session?.user?.id ?? "local"}`;
 
   const [guestName, setGuestName] = useState("");
   const [isGuest, setIsGuest] = useState(false);
@@ -345,6 +364,8 @@ export default function AppShell({
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [xpExpanded, setXpExpanded] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
+  const [tourAutoChecked, setTourAutoChecked] = useState(false);
 
   useEffect(() => {
     try {
@@ -354,6 +375,21 @@ export default function AppShell({
       /* ignore */
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !session?.user?.id || tourAutoChecked)
+      return;
+
+    setTourAutoChecked(true);
+    if (localStorage.getItem(tourStorageKey) === "1") return;
+
+    if (pathname !== "/dashboard") {
+      router.push("/dashboard");
+    }
+
+    const timer = window.setTimeout(() => setTourOpen(true), 650);
+    return () => window.clearTimeout(timer);
+  }, [pathname, router, session?.user?.id, tourAutoChecked, tourStorageKey]);
 
   function toggleSidebarCollapsed() {
     setSidebarCollapsed((prev) => {
@@ -377,6 +413,23 @@ export default function AppShell({
       }
       return next;
     });
+  }
+
+  function openTour() {
+    setProfileOpen(false);
+    setSidebarCollapsed(false);
+    try {
+      localStorage.setItem(COLLAPSED_KEY, "0");
+    } catch {
+      /* ignore */
+    }
+    if (pathname !== "/dashboard") {
+      setTourOpen(false);
+      router.push("/dashboard");
+      window.setTimeout(() => setTourOpen(true), 350);
+      return;
+    }
+    setTourOpen(true);
   }
 
   /* load guest info from localStorage */
@@ -511,6 +564,16 @@ export default function AppShell({
 
   function isActive(href: string) {
     return pathname === href || pathname.startsWith(href + "/");
+  }
+
+  function tourTargetForHref(href: string) {
+    if (href === "/dashboard") return "tour-side-dashboard";
+    if (href === "/checkin") return "tour-side-checkin";
+    if (href === "/awareness") return "tour-side-awareness";
+    if (href === "/insights") return "tour-side-insights";
+    if (href === "/coping") return "tour-side-toolkit";
+    if (href === "/support") return "tour-side-support";
+    return undefined;
   }
 
   const rawName = session?.user?.name ?? guestName ?? "there";
@@ -731,6 +794,8 @@ export default function AppShell({
         .topbar-title{font-family:'Fredoka',sans-serif;font-size:20px;font-weight:600;color:var(--text1);}
         .streak-pill{display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border2);border-radius:50px;padding:6px 12px;font-size:13px;font-weight:800;color:var(--text2);box-shadow:none;}
         .level-pill{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border2);border-radius:50px;padding:6px 12px;font-size:12px;font-weight:800;color:var(--text2);box-shadow:none;}
+        .tour-btn{min-height:36px;border-radius:999px;border:1px solid color-mix(in srgb,var(--mint2) 34%,var(--border2));background:color-mix(in srgb,var(--mint2) 10%,var(--bg2));color:var(--mint2);font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;cursor:pointer;transition:transform .12s,background .12s,border-color .12s;}
+        .tour-btn:hover{transform:translateY(-1px);background:color-mix(in srgb,var(--mint2) 15%,var(--bg2));}
         .profile-btn{width:38px;height:38px;border-radius:50%;background:var(--text1);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--bg0);box-shadow:none;transition:transform .12s;position:relative;}
         .profile-btn:hover{transform:scale(1.06);}
         .profile-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:8px;box-shadow:var(--shadow-card-lg);min-width:246px;z-index:300;}
@@ -761,6 +826,8 @@ export default function AppShell({
         }
         @media(max-width:400px){
           .level-pill{display:none!important;}
+          .tour-btn span{display:none;}
+          .tour-btn{width:36px;padding:0;}
           .topbar-title{font-size:17px;max-width:50vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         }
         .shell-collapsed-sidebar .nav-item.active::before{display:none;}
@@ -800,7 +867,7 @@ export default function AppShell({
 
       <div className={`shell${shellCls}`}>
         {/* ── SIDEBAR (desktop ≥1024 only, CSS hides below) ── */}
-        <aside id="app-sidebar" className="sidebar">
+        <aside id="app-sidebar" className="sidebar" data-tour="tour-sidebar">
           <div className="sidebar-logo">
             <div className="sidebar-brand-inner">
               <Link
@@ -808,6 +875,7 @@ export default function AppShell({
                 className="sidebar-brand-link"
                 title="Go to home"
                 aria-label="Go to home"
+                data-tour="tour-home"
               >
                 <SidebarAppIcon size={sidebarCollapsed ? 36 : 40} />
                 <div className="sidebar-brand-copy">
@@ -833,7 +901,7 @@ export default function AppShell({
           </div>
 
           {/* XP card - desktop expanded rail only */}
-          <div className="sidebar-xp">
+          <div className="sidebar-xp" data-tour="tour-progress">
             <button
               type="button"
               className="sidebar-xp-trigger"
@@ -927,7 +995,7 @@ export default function AppShell({
           </div>
 
           {dataReady && !checkedToday ? (
-            <Link className="side-quick-link" href="/checkin">
+            <Link className="side-quick-link" href="/checkin" data-tour="tour-side-checkin">
               <CheckinIcon /> Check in
             </Link>
           ) : null}
@@ -935,7 +1003,13 @@ export default function AppShell({
           <nav className="nav-section">
             <div className="nav-group-label">Main</div>
             {NAV_MAIN.map((item) => (
-              <Link key={item.href} href={item.href} onClick={onNavLinkClick} title={item.label}>
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavLinkClick}
+                title={item.label}
+                data-tour={tourTargetForHref(item.href)}
+              >
                 <div
                   className={`nav-item${isActive(item.href) ? " active" : ""}`}
                 >
@@ -956,7 +1030,13 @@ export default function AppShell({
               Tools
             </div>
             {NAV_TOOLS.map((item) => (
-              <Link key={item.href} href={item.href} onClick={onNavLinkClick} title={item.label}>
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavLinkClick}
+                title={item.label}
+                data-tour={tourTargetForHref(item.href)}
+              >
                 <div
                   className={`nav-item${isActive(item.href) ? " active" : ""}`}
                 >
@@ -970,7 +1050,7 @@ export default function AppShell({
           </nav>
 
           <div className="sidebar-bottom">
-            <Link href="/profile">
+            <Link href="/profile" data-tour="tour-side-profile">
               <div className="user-card">
                 <div className="avatar">{initials}</div>
                 <div
@@ -1006,12 +1086,14 @@ export default function AppShell({
         <div className="main-area">
           <header className="topbar">
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div className="topbar-title">{topBarLabel()}</div>
+              <div className="topbar-title" data-tour="tour-home">
+                {topBarLabel()}
+              </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {/* Streak pill - real */}
-              <div className="streak-pill">
+              <div className="streak-pill" data-tour="tour-progress">
                 <span
                   style={{
                     display: "inline-flex",
@@ -1038,14 +1120,14 @@ export default function AppShell({
               </div>
 
               {/* Level pill - real */}
-              <div className="level-pill">
+              <div className="level-pill" data-tour="tour-progress">
                 <StarIcon />
                 <span>Lv.{dataReady ? level : "…"}</span>
               </div>
 
               {/* Checkin badge */}
               {dataReady && !checkedToday && (
-                <Link href="/checkin">
+                <Link href="/checkin" data-tour="tour-checkin">
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -1081,11 +1163,26 @@ export default function AppShell({
 
               {/* Profile dropdown */}
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {pathname === "/dashboard" ? (
+                  <button
+                    type="button"
+                    className="tour-btn"
+                    onClick={openTour}
+                    data-tour="tour-replay"
+                    aria-label="Open app tutorial"
+                    title="Open app tutorial"
+                  >
+                    <GuideIcon />
+                    <span>Guide</span>
+                  </button>
+                ) : null}
                 <ThemeToggle />
                 <div ref={profileRef} style={{ position: "relative" }}>
                   <button
                     className="profile-btn"
                     onClick={() => setProfileOpen(!profileOpen)}
+                    data-tour="tour-profile"
+                    aria-label="Open profile menu"
                   >
                     {initials}
                     <span
@@ -1354,6 +1451,7 @@ export default function AppShell({
               href={item.href}
               title={item.label}
               className={`bnav-item${on ? " bnav-active" : ""}`}
+              data-tour={tourTargetForHref(item.href)}
             >
               <div
                 style={{
@@ -1377,6 +1475,11 @@ export default function AppShell({
         })}
       </nav>
       <GuideBotWidget userName={session?.user?.name ?? guestName ?? ""} />
+      <OnboardingTour
+        open={tourOpen}
+        storageKey={tourStorageKey}
+        onClose={() => setTourOpen(false)}
+      />
     </>
   );
 }

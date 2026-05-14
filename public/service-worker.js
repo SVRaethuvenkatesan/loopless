@@ -1,9 +1,10 @@
 // Loopless Service Worker v2
 // Offline caching + push notifications
 
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const STATIC_CACHE = "loopless-static-" + CACHE_VERSION;
 const DYNAMIC_CACHE = "loopless-dynamic-" + CACHE_VERSION;
+const CRISIS_CACHE = "loopless-crisis-resources-" + CACHE_VERSION;
 
 // Shell pages to pre-cache on install
 const PRECACHE_URLS = [
@@ -15,25 +16,38 @@ const PRECACHE_URLS = [
   "/apple-icon.png",
 ];
 
+const CRISIS_RESOURCE_URLS = ["/crisis-resources.json"];
+
 // ── Install ───────────────────────────────────────────────────────────────────
 self.addEventListener("install", function (event) {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(STATIC_CACHE).then(function (cache) {
-      return Promise.allSettled(
-        PRECACHE_URLS.map(function (url) {
-          return cache.add(url).catch(function () {
-            /* ignore single-file failures */
-          });
-        }),
-      );
-    }),
+    Promise.all([
+      caches.open(STATIC_CACHE).then(function (cache) {
+        return Promise.allSettled(
+          PRECACHE_URLS.map(function (url) {
+            return cache.add(url).catch(function () {
+              /* ignore single-file failures */
+            });
+          }),
+        );
+      }),
+      caches.open(CRISIS_CACHE).then(function (cache) {
+        return Promise.allSettled(
+          CRISIS_RESOURCE_URLS.map(function (url) {
+            return cache.add(url).catch(function () {
+              /* crisis constants also exist in app code */
+            });
+          }),
+        );
+      }),
+    ]),
   );
 });
 
 // ── Activate ──────────────────────────────────────────────────────────────────
 self.addEventListener("activate", function (event) {
-  var allowed = [STATIC_CACHE, DYNAMIC_CACHE];
+  var allowed = [STATIC_CACHE, DYNAMIC_CACHE, CRISIS_CACHE];
   event.waitUntil(
     caches
       .keys()
@@ -70,6 +84,12 @@ self.addEventListener("fetch", function (event) {
 
   // API routes: always network (no caching - user data must be fresh)
   if (url.pathname.startsWith("/api/")) return;
+
+  // Safety-critical resource names and numbers: separate cache.
+  if (CRISIS_RESOURCE_URLS.includes(url.pathname)) {
+    event.respondWith(staleWhileRevalidate(request, CRISIS_CACHE));
+    return;
+  }
 
   // Next.js static assets: cache-first (they have content hashes, safe forever)
   if (
