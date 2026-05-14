@@ -9,6 +9,7 @@ import type { Session } from "next-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { computeLevel, computeXP } from "@/lib/xp";
 import { clearLocalTestProgress, createLocalTestProgress, getLocalTestProgress, setLocalTestProgress } from "@/lib/local-test-progress";
+import GuideBotWidget from "@/components/guide-bot/GuideBotWidget";
 
 // SVG nav icons as inline components
 const HomeIcon = () => (
@@ -1375,6 +1376,7 @@ export default function AppShell({
           );
         })}
       </nav>
+      <GuideBotWidget userName={session?.user?.name ?? guestName ?? ""} />
     </>
   );
 }

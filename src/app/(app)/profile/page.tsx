@@ -331,6 +331,15 @@ export default function ProfilePage() {
     setEditTriggers(data?.triggers.map((trigger) => trigger.triggerType) ?? []);
   }
 
+  function toggleTestMode() {
+    if (testProgress) {
+      document.cookie = "loopless_data_mode=; max-age=0; path=/;";
+    } else {
+      document.cookie = "loopless_data_mode=test; path=/; max-age=31536000;";
+    }
+    window.location.reload();
+  }
+
   function toggleTrigger(value: string) {
     setEditTriggers((items) =>
       items.includes(value) ? items.filter((item) => item !== value) : [...items, value],
@@ -930,6 +939,18 @@ export default function ProfilePage() {
             </div>
           </section>
         ) : null}
+
+        <section className="profile-card" style={{ marginTop: 18, border: "1px dashed var(--coral)" }}>
+          <div className="profile-card-head" style={{ marginBottom: 0 }}>
+            <div>
+              <h3 style={{ color: "var(--coral)" }}>Developer Testing</h3>
+              <p>Toggle 30-day demo data to preview all charts and insights safely.</p>
+            </div>
+            <button className="profile-ghost" onClick={toggleTestMode} style={{ color: "var(--coral)" }}>
+              {testProgress ? "Disable Test Data" : "Load Test Data"}
+            </button>
+          </div>
+        </section>
       </main>
     </>
   );

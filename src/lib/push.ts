@@ -1,11 +1,19 @@
 import webPush from "web-push";
 import { withDb } from "@/lib/db/with-db";
 
-webPush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!,
-);
+if (
+  process.env.VAPID_SUBJECT &&
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY &&
+  process.env.VAPID_PRIVATE_KEY
+) {
+  webPush.setVapidDetails(
+    process.env.VAPID_SUBJECT,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY,
+  );
+} else {
+  console.warn("VAPID keys missing. Skipping webPush configuration.");
+}
 
 export interface PushPayload {
   title: string;

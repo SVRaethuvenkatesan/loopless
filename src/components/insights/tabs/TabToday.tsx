@@ -4,7 +4,15 @@ import RiskAlertBanner from "@/components/insights/RiskAlertBanner";
 import DailyInsightCard from "@/components/insights/DailyInsightCard";
 import RelapsePatternCard from "@/components/insights/RelapsePatternCard";
 import InsightsEmptyState from "@/components/insights/InsightsEmptyState";
-import OneThingCallout from "@/components/insights/OneThingCallout";
+import TodaySummaryCard from "@/components/insights/TodaySummaryCard";
+
+interface CheckinPoint {
+  date: string;
+  stressLevel: number;
+  mood: string;
+  sleepQuality?: number | null;
+  energyLevel?: number | null;
+}
 
 interface TabTodayProps {
   hasEnoughData: boolean;
@@ -14,6 +22,13 @@ interface TabTodayProps {
   primaryInsight: any;
   top3HighStress: any[];
   relapseInsight: any;
+  chartData?: CheckinPoint[];
+  urgeCount: number;
+  triggerCounts: Record<string, number>;
+  avgSleep: number;
+  avgEnergy: number;
+  sleepTrend: "improving" | "declining" | "stable";
+  energyTrend: "improving" | "declining" | "stable";
   openInfo: string | null;
   setOpenInfo: (k: string | null) => void;
 }
@@ -26,6 +41,13 @@ export default function TabToday({
   primaryInsight,
   top3HighStress,
   relapseInsight,
+  chartData,
+  urgeCount,
+  triggerCounts,
+  avgSleep,
+  avgEnergy,
+  sleepTrend,
+  energyTrend,
 }: TabTodayProps) {
   const hasSecondaryCards =
     (risk && canSendNudge) ||
@@ -36,14 +58,26 @@ export default function TabToday({
     <div className="insights-today-layout">
       {!hasEnoughData && <InsightsEmptyState checkinCount={checkinCount} />}
 
-      <OneThingCallout
-        hasEnoughData={hasEnoughData}
-        risk={risk}
-        canSendNudge={canSendNudge}
-        primaryInsight={primaryInsight}
-        relapseInsight={relapseInsight}
-      />
+      {/* ── Executive Summary Card ──────────────────────────────────────── */}
+      {hasEnoughData && chartData && chartData.length > 0 && (
+        <TodaySummaryCard
+          chartData={chartData}
+          checkinCount={checkinCount}
+          urgeCount={urgeCount}
+          avgSleep={avgSleep}
+          avgEnergy={avgEnergy}
+          sleepTrend={sleepTrend}
+          energyTrend={energyTrend}
+          triggerCounts={triggerCounts}
+          risk={risk}
+          canSendNudge={canSendNudge}
+          primaryInsight={primaryInsight}
+          relapseInsight={relapseInsight}
+          hasEnoughData={hasEnoughData}
+        />
+      )}
 
+      {/* ── Secondary Detail Cards ─────────────────────────────────────── */}
       {hasSecondaryCards && (
         <section className="insights-secondary-section">
           <div className="insights-section-heading">

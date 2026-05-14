@@ -70,35 +70,16 @@ const STATIC_INSIGHTS: InsightItem[] = [
 
 export function AIInsights() {
   const [insights, setInsights] = useState<InsightItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
 
   useEffect(() => {
-    const key = "loopless_insights_v2";
-    const cached = sessionStorage.getItem(key);
-    if (cached) {
-      try {
-        setInsights(JSON.parse(cached));
-        setLoading(false);
-        return;
-      } catch {}
-    }
-    (async () => {
-      try {
-        const r = await fetch("/api/ai/dashboard-news", { method: "POST" });
-        const d = await r.json();
-        const items = d.items?.length ? d.items : STATIC_INSIGHTS;
-        setInsights(items);
-        sessionStorage.setItem(key, JSON.stringify(items));
-      } catch {
-        setInsights(STATIC_INSIGHTS);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    // Shuffle STATIC_INSIGHTS and pick top 4 on client mount
+    const shuffled = [...STATIC_INSIGHTS].sort(() => 0.5 - Math.random()).slice(0, 4);
+    setInsights(shuffled);
   }, []);
 
-  const items = insights.length ? insights : STATIC_INSIGHTS;
+  // Prevent hydration mismatch by returning empty before mount, or use the items if loaded
+  const items = insights.length ? insights : STATIC_INSIGHTS.slice(0, 4);
 
   return (
     <div>
@@ -146,25 +127,6 @@ export function AIInsights() {
       >
         Evidence-based facts about vaping cessation - all sources linked.
       </p>
-
-      {loading ? (
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
-        >
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="skel"
-              style={{
-                height: 80,
-                borderRadius: 14,
-                background: "var(--bg3)",
-                animation: `shimmerPulse 1.5s ease-in-out ${i * 0.15}s infinite`,
-              }}
-            />
-          ))}
-        </div>
-      ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {items.map((item, i) => (
             <motion.div
@@ -277,7 +239,6 @@ export function AIInsights() {
             </motion.div>
           ))}
         </div>
-      )}
     </div>
   );
 }
