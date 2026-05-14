@@ -121,6 +121,13 @@ export default function InsightsDashboard(props: DashboardProps) {
               primaryInsight={props.primaryInsight}
               top3HighStress={props.top3HighStress}
               relapseInsight={props.relapseInsight}
+              chartData={props.chartData}
+              urgeCount={props.urgeCount}
+              triggerCounts={props.triggerCounts}
+              avgSleep={props.avgSleep}
+              avgEnergy={props.avgEnergy}
+              sleepTrend={props.sleepTrend}
+              energyTrend={props.energyTrend}
               openInfo={openInfo}
               setOpenInfo={setOpenInfo}
             />

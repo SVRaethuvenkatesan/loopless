@@ -303,14 +303,17 @@ export default function UrgePage() {
       const d = await r.json();
       if (d.id) setUrgeEventId(d.id);
     } catch {}
-    try {
-      const r = await fetch("/api/ai/urge-scenario", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ stress, trigger }) });
-      const d = await r.json();
-      setScenario(d.scenario ?? DEFAULT_SCENARIO);
-      setScenarioSource(d.source === "ai" ? "ai" : "preset");
-    } catch { setScenario(DEFAULT_SCENARIO); setScenarioSource("preset"); }
-    setBossHp(Math.round(60 + stress * 4));
-    setPhase("battle");
+    
+    setTimeout(() => {
+      const customScenario = {
+        ...DEFAULT_SCENARIO,
+        name: trigger ? `The ${trigger.charAt(0).toUpperCase() + trigger.slice(1)} Beast` : DEFAULT_SCENARIO.name
+      };
+      setScenario(customScenario);
+      setScenarioSource("preset");
+      setBossHp(Math.round(60 + stress * 4));
+      setPhase("battle");
+    }, 600);
   }
 
   function spawnDmg(dmg: number) {
@@ -347,13 +350,11 @@ export default function UrgePage() {
   async function doVictory() {
     setPhase("victory");
     setAiLoading(true);
-    try {
-      const r = await fetch("/api/ai/urge-debrief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ stress, trigger, tools: usedTools, journalText }) });
-      const d = await r.json();
-      if (d.message) setAiText(d.message);
-      setDebriefSource(d.source === "ai" ? "ai" : "preset");
-    } catch { setAiText("You fought back and won. Each victory weakens the loop. 💪"); }
-    finally { setAiLoading(false); }
+    setTimeout(() => {
+      setAiText("You fought back and won. Each victory weakens the loop. Keep stacking these wins. 💪");
+      setDebriefSource("preset");
+      setAiLoading(false);
+    }, 500);
   }
 
   const sc       = scenario ?? DEFAULT_SCENARIO;

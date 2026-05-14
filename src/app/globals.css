@@ -2741,4 +2741,21 @@ input[type="range"]::-webkit-slider-thumb {
   .insights-focus-actions {
     min-width: 0;
   }
+
+  .today-summary-vitals {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .today-summary-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .today-summary-footer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
 }
+

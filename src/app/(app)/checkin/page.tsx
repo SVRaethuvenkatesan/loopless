@@ -1801,32 +1801,29 @@ export default function CheckInPage() {
     setTimeout(() => setXpPops((items) => items.filter((item) => item.id !== id)), 1500);
   }
 
-  async function fetchCoach(stressLevel: number, moodVal: string, triggerVal: string) {
+  function fetchCoach(stressLevel: number, moodVal: string, triggerVal: string) {
     setAiLoading(true);
-    try {
-      const res = await fetch("/api/ai/checkin-reaction", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stress: stressLevel, mood: moodVal, trigger: triggerVal }),
-      });
-      const data = await res.json();
-      setAiText(data.message || "Saved. Keep the next step small and specific.");
-    } catch {
-      setAiText("Saved. Keep the next step small and specific.");
-    }
-    setAiLoading(false);
+    setTimeout(() => {
+      let reaction = "Saved. Keep the next step small and specific.";
+      if (stressLevel >= 8) reaction = "That's a lot of stress. Consider opening the Coping tools right now.";
+      else if (stressLevel <= 3) reaction = "Low stress is a great foundation. Keep your guard up, but enjoy the calm.";
+      else if (moodVal === "terrible" || moodVal === "bad") reaction = "Tough day. Checking in despite feeling down is a massive win for your streak.";
+      else if (moodVal === "great" || moodVal === "good") reaction = "Great mood! Lock in this feeling—this is what recovery looks like.";
+      else if (triggerVal === "boredom") reaction = "Boredom is a classic trigger. Finding a quick distraction is key right now.";
+      
+      setAiText(reaction);
+      setAiLoading(false);
+    }, 600);
   }
 
-  async function fetchMilestoneMsg(badgeType: string, streak: number) {
-    try {
-      const res = await fetch("/api/ai/milestone-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ milestone: badgeType, streak }),
-      });
-      const data = await res.json();
-      if (data.message) setMilestoneMsg(data.message);
-    } catch {}
+  function fetchMilestoneMsg(badgeType: string, streak: number) {
+    let msg = `You've unlocked the ${badgeType} badge!`;
+    if (streak > 0) msg = `Incredible focus. You've hit a ${streak}-day streak and earned the ${badgeType} badge.`;
+    if (badgeType.includes("24h") || badgeType.includes("day1")) msg = "The hardest part is over. The physical withdrawal peaks now. Keep going!";
+    else if (badgeType.includes("7d") || badgeType.includes("week1")) msg = "One full week. Your dopamine receptors are officially starting to reset.";
+    else if (badgeType.includes("30d") || badgeType.includes("month1")) msg = "One month! Your lung capacity has significantly improved.";
+    
+    setMilestoneMsg(msg);
   }
 
   async function submit(event: MouseEvent<HTMLElement>) {

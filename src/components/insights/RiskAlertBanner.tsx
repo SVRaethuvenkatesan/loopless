@@ -194,7 +194,7 @@ export default function RiskAlertBanner({
 
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <Link
-                  href="/coping"
+                  href="/coping?tool=breathe"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -213,7 +213,7 @@ export default function RiskAlertBanner({
                   }}
                 >
                   <Heart size={16} strokeWidth={2.5} />
-                  Use a coping tool
+                  Start 4-7-8 Breathing
                 </Link>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
