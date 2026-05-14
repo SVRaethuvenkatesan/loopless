@@ -150,6 +150,24 @@ const BadgeIcon = () => (
     <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
   </svg>
 );
+const LeaderboardIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M8 21h8" />
+    <path d="M12 17v4" />
+    <path d="M7 4h10v4a5 5 0 0 1-10 0V4z" />
+    <path d="M17 5h3a2 2 0 0 1-2 4h-1" />
+    <path d="M7 5H4a2 2 0 0 0 2 4h1" />
+  </svg>
+);
 const LogOutIcon = () => (
   <svg
     width="16"
@@ -233,6 +251,7 @@ type NavItem = { href: string; Icon: typeof HomeIcon; label: string };
 const NAV_MAIN: NavItem[] = [
   { href: "/dashboard", Icon: HomeIcon, label: "Home" },
   { href: "/checkin", Icon: CheckinIcon, label: "Check-in" },
+  { href: "/leaderboard", Icon: LeaderboardIcon, label: "Leaderboard" },
   { href: "/awareness", Icon: SparkleIcon, label: "Awareness" },
   { href: "/insights", Icon: InsightsIcon, label: "Insights" },
 ];
@@ -345,6 +364,7 @@ export default function AppShell({
   const tourStorageKey = `loopless-app-tour-seen:${session?.user?.id ?? "local"}`;
 
   const [guestName, setGuestName] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [testDataMode, setTestDataMode] = useState(false);
@@ -440,6 +460,14 @@ export default function AppShell({
     setTestDataMode(document.cookie.split(";").some((part) => part.trim() === "loopless_data_mode=test"));
   }, [session]);
 
+  useEffect(() => {
+    const handleProfileImage = (event: Event) => {
+      setProfileImage((event as CustomEvent<string | null>).detail ?? null);
+    };
+    window.addEventListener("loopless:profile-image", handleProfileImage);
+    return () => window.removeEventListener("loopless:profile-image", handleProfileImage);
+  }, []);
+
   /* fetch real stats */
   useEffect(() => {
     (async () => {
@@ -458,6 +486,7 @@ export default function AppShell({
 
         if (profileRes.ok) {
           const p = await profileRes.json();
+          setProfileImage(p.user?.profileImage ?? null);
           const localTest = testDataMode ? getLocalTestProgress() ?? createLocalTestProgress() : null;
           const userStreaks: { streakType: string; count: number | null }[] =
             p.userStreaks ?? [];
@@ -569,6 +598,7 @@ export default function AppShell({
   function tourTargetForHref(href: string) {
     if (href === "/dashboard") return "tour-side-dashboard";
     if (href === "/checkin") return "tour-side-checkin";
+    if (href === "/leaderboard") return "tour-side-leaderboard";
     if (href === "/awareness") return "tour-side-awareness";
     if (href === "/insights") return "tour-side-insights";
     if (href === "/coping") return "tour-side-toolkit";
@@ -588,6 +618,7 @@ export default function AppShell({
     if (hit) return hit.label;
     const fallbacks = [
       ["/urge", "Urge log"],
+      ["/leaderboard", "Leaderboard"],
       ["/profile", "Profile"],
       ["/settings", "Settings"],
       ["/privacy", "Privacy"],
@@ -779,7 +810,8 @@ export default function AppShell({
         .sidebar-bottom{border-top:1px solid var(--border);padding:12px;}
         .user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:15px;border:1px solid var(--border2);background:var(--bg0);box-shadow:none;cursor:pointer;transition:background .15s,border-color .15s,transform .15s;}
         .user-card:hover{border-color:color-mix(in srgb,var(--mint2) 38%,var(--border2));background:color-mix(in srgb,var(--mint2) 7%,var(--bg0));transform:translateY(-1px);}
-        .avatar{width:36px;height:36px;border-radius:12px;background:var(--text1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:var(--bg0);border:1px solid var(--border2);flex-shrink:0;box-shadow:none;}
+        .avatar{width:36px;height:36px;border-radius:12px;background:var(--text1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:var(--bg0);border:1px solid var(--border2);flex-shrink:0;box-shadow:none;overflow:hidden;}
+        .avatar img,.profile-btn img{width:100%;height:100%;object-fit:cover;display:block;}
         .user-name{font-size:12.5px;font-weight:800;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         .user-sub{font-size:10.5px;font-weight:750;color:var(--text3);}
         .guest-delete-btn{width:100%;margin-top:8px;background:color-mix(in srgb,var(--coral) 8%,transparent);border:1px solid color-mix(in srgb,var(--coral) 26%,transparent);border-radius:12px;padding:9px;font-size:12px;font-weight:850;color:var(--coral2);cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:none;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:7px;}
@@ -796,7 +828,7 @@ export default function AppShell({
         .level-pill{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border2);border-radius:50px;padding:6px 12px;font-size:12px;font-weight:800;color:var(--text2);box-shadow:none;}
         .tour-btn{min-height:36px;border-radius:999px;border:1px solid color-mix(in srgb,var(--mint2) 34%,var(--border2));background:color-mix(in srgb,var(--mint2) 10%,var(--bg2));color:var(--mint2);font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;cursor:pointer;transition:transform .12s,background .12s,border-color .12s;}
         .tour-btn:hover{transform:translateY(-1px);background:color-mix(in srgb,var(--mint2) 15%,var(--bg2));}
-        .profile-btn{width:38px;height:38px;border-radius:50%;background:var(--text1);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--bg0);box-shadow:none;transition:transform .12s;position:relative;}
+        .profile-btn{width:38px;height:38px;border-radius:50%;background:var(--text1);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--bg0);box-shadow:none;transition:transform .12s;position:relative;overflow:hidden;}
         .profile-btn:hover{transform:scale(1.06);}
         .profile-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:8px;box-shadow:var(--shadow-card-lg);min-width:246px;z-index:300;}
         .dropdown-header{padding:10px 12px;border-bottom:1px solid var(--border2);margin-bottom:6px;}
@@ -1052,7 +1084,9 @@ export default function AppShell({
           <div className="sidebar-bottom">
             <Link href="/profile" data-tour="tour-side-profile">
               <div className="user-card">
-                <div className="avatar">{initials}</div>
+                <div className="avatar">
+                  {profileImage ? <img src={profileImage} alt="" /> : initials}
+                </div>
                 <div
                   className="sidebar-user-meta"
                   style={{ flex: 1, minWidth: 0 }}
@@ -1184,7 +1218,7 @@ export default function AppShell({
                     data-tour="tour-profile"
                     aria-label="Open profile menu"
                   >
-                    {initials}
+                    {profileImage ? <img src={profileImage} alt="" /> : initials}
                     <span
                       style={{
                         position: "absolute",

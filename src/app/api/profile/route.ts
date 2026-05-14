@@ -11,6 +11,20 @@ function getUserId(session: any, req: Request): string | null {
   return session?.user?.id ?? req.headers.get("x-guest-id") ?? null;
 }
 
+function sanitizeProfileImage(value: unknown) {
+  if (value === null) return null;
+  if (value === undefined) return undefined;
+  if (typeof value !== "string") throw new Error("Invalid profile image");
+  if (value === "") return null;
+  if (!/^data:image\/(png|jpeg|webp);base64,/.test(value)) {
+    throw new Error("Profile image must be png, jpeg, or webp");
+  }
+  if (value.length > 350_000) {
+    throw new Error("Profile image is too large");
+  }
+  return value;
+}
+
 export async function GET(req: Request) {
   try {
     const session = await auth();
@@ -132,7 +146,8 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { ageGroup, copingStyle, triggers, notifPrefs } = body;
+    const { ageGroup, copingStyle, triggers, notifPrefs, profileImage } = body;
+    const safeProfileImage = sanitizeProfileImage(profileImage);
 
     await withDb(async (db) => {
       const { users, stressTriggers } = await import("@/lib/db/schema");
@@ -162,6 +177,7 @@ export async function PATCH(req: Request) {
             isGuest: false,
             ageGroup: ageGroup ?? null,
             copingStyle: copingStyle ?? null,
+            profileImage: safeProfileImage ?? null,
             notifPrefs: notifPrefs ?? [],
             consentAt: new Date(),
           })
@@ -170,6 +186,7 @@ export async function PATCH(req: Request) {
         const update: Record<string, unknown> = { updatedAt: new Date() };
         if (ageGroup !== undefined) update.ageGroup = ageGroup;
         if (copingStyle !== undefined) update.copingStyle = copingStyle;
+        if (safeProfileImage !== undefined) update.profileImage = safeProfileImage;
         if (notifPrefs !== undefined) update.notifPrefs = notifPrefs;
         await db.update(users).set(update).where(eq(users.id, targetId));
       }
