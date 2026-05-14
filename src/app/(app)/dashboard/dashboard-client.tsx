@@ -43,7 +43,6 @@ export type CriticalInsightBanner = {
 
 interface Props {
   userName: string;
-  userId: string;
   recentCheckins: Checkin[];
   xpCheckins?: Checkin[];
   serverXP: number;
@@ -942,3 +941,5 @@ export default function DashboardClient({
     </>
   );
 }
+
+
