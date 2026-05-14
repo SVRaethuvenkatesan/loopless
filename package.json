@@ -11,7 +11,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "seed": "tsx scripts/seed-demo.ts",
-    "seed:clear": "tsx scripts/seed-demo.ts --clear"
+    "seed:clear": "tsx scripts/seed-demo.ts --clear",
+    "crisis:quality-gate": "node scripts/crisis-quality-gate.mjs"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",

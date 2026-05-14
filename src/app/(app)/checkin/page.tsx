@@ -25,7 +25,6 @@ import {
   LockKeyhole,
   MessageCircle,
   Moon,
-  PartyPopper,
   RefreshCw,
   ShieldCheck,
   Smile,
@@ -36,12 +35,14 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import { CrisisSupportBanner } from "@/components/crisis-support-banner";
 
 type CheckInRecord = {
   id: string;
   stressLevel: number;
   mood: string;
   triggerType: string | null;
+  note?: string | null;
   sleepQuality?: number | null;
   energyLevel?: number | null;
   checkedInAt: string;
@@ -49,6 +50,7 @@ type CheckInRecord = {
 };
 
 type Tab = "checkin" | "history";
+type CheckinStep = 0 | 1 | 2;
 
 type Mood = {
   val: string;
@@ -421,11 +423,11 @@ function Styles() {
 
       .signal-board {
         display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(220px, .85fr);
-        gap: 12px;
-        padding: 16px;
+        grid-template-columns: minmax(0, .9fr) minmax(260px, 1.1fr);
+        gap: 10px;
+        padding: 10px;
         border: 1px solid color-mix(in srgb, var(--mint2) 28%, var(--border2));
-        border-radius: 20px;
+        border-radius: 16px;
         background:
           radial-gradient(circle at 12% 12%, color-mix(in srgb, var(--stress-color) 16%, transparent), transparent 34%),
           linear-gradient(135deg, color-mix(in srgb, var(--mint2) 8%, transparent), var(--bg2));
@@ -434,39 +436,34 @@ function Styles() {
 
       .signal-orb-wrap {
         display: grid;
-        grid-template-columns: 96px minmax(0, 1fr);
-        gap: 14px;
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 10px;
         align-items: center;
       }
 
       .signal-orb {
         position: relative;
-        width: 96px;
-        height: 96px;
+        width: 58px;
+        height: 58px;
         display: grid;
         place-items: center;
-        border-radius: 28px;
+        border-radius: 18px;
         background: color-mix(in srgb, var(--stress-color) 12%, var(--bg0));
         border: 1px solid color-mix(in srgb, var(--stress-color) 34%, var(--border2));
         color: var(--stress-color);
-        box-shadow: inset 0 0 0 10px color-mix(in srgb, var(--stress-color) 7%, transparent);
+        box-shadow: inset 0 0 0 6px color-mix(in srgb, var(--stress-color) 7%, transparent);
       }
 
       .signal-orb strong {
         position: relative;
         z-index: 1;
         font-family: var(--font-display);
-        font-size: 44px;
+        font-size: 28px;
         line-height: 1;
       }
 
       .signal-orb:after {
-        content: "";
-        position: absolute;
-        inset: 13px;
-        border-radius: 22px;
-        border: 1px solid color-mix(in srgb, var(--stress-color) 30%, transparent);
-        animation: signalPulse var(--stress-speed, 2s) ease-out infinite;
+        display: none;
       }
 
       @keyframes signalPulse {
@@ -476,32 +473,32 @@ function Styles() {
 
       .signal-copy h2 {
         color: var(--text1);
-        font-size: 22px;
-        line-height: 1.05;
+        font-size: 16px;
+        line-height: 1.1;
         font-weight: 950;
       }
 
       .signal-copy p {
-        margin-top: 7px;
+        margin-top: 4px;
         color: var(--text2);
-        font-size: 13px;
-        line-height: 1.5;
+        font-size: 12px;
+        line-height: 1.35;
         font-weight: 800;
       }
 
       .step-rail {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 7px;
-        margin-top: 13px;
+        gap: 5px;
+        margin-top: 8px;
       }
 
       .step-dot {
-        min-height: 44px;
+        min-height: 30px;
         display: grid;
         place-items: center;
         border: 1px solid var(--border2);
-        border-radius: 13px;
+        border-radius: 10px;
         background: var(--bg0);
         color: var(--text3);
       }
@@ -514,24 +511,24 @@ function Styles() {
 
       .signal-mini-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
       }
 
       .signal-mini {
-        min-height: 86px;
+        min-height: 56px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         border: 1px solid var(--border2);
-        border-radius: 16px;
+        border-radius: 12px;
         background: var(--bg0);
-        padding: 12px;
+        padding: 8px;
       }
 
       .signal-mini span {
         color: var(--text3);
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 950;
         text-transform: uppercase;
         letter-spacing: .07em;
@@ -542,9 +539,40 @@ function Styles() {
         align-items: center;
         gap: 7px;
         color: var(--text1);
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 950;
         line-height: 1.2;
+      }
+
+      .checkin-step-panel {
+        display: grid;
+        gap: 14px;
+      }
+
+      .step-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px;
+        border: 1px solid var(--border2);
+        border-radius: 16px;
+        background: var(--bg2);
+      }
+
+      .step-actions p {
+        margin: 0;
+        color: var(--text3);
+        font-size: 12px;
+        font-weight: 850;
+        line-height: 1.35;
+      }
+
+      .step-buttons {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex: 0 0 auto;
       }
 
       .checkin-card {
@@ -890,21 +918,108 @@ function Styles() {
         gap: 12px;
       }
 
-      .mini-scale {
+      .checkin-note {
+        width: 100%;
+        min-height: 116px;
         border: 1px solid var(--border2);
         border-radius: 15px;
         background: var(--bg0);
-        padding: 13px;
+        color: var(--text1);
+        padding: 13px 14px;
+        font: inherit;
+        font-size: 14px;
+        line-height: 1.55;
+        resize: vertical;
+        outline: none;
+      }
+
+      .checkin-note:focus {
+        border-color: color-mix(in srgb, var(--mint2) 46%, var(--border2));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--mint2) 14%, transparent);
+      }
+
+      .mini-scale {
+        --mini-tone: var(--mint2);
+        border: 1px solid var(--border2);
+        border-radius: 15px;
+        background:
+          linear-gradient(135deg, color-mix(in srgb, var(--mini-tone) 9%, var(--bg0)), var(--bg0) 58%),
+          var(--bg0);
+        padding: 12px;
+        overflow: hidden;
       }
 
       .mini-scale-head {
         display: flex;
         align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--text1);
+        margin-bottom: 10px;
+      }
+
+      .mini-scale-title {
+        display: flex;
+        align-items: center;
         gap: 9px;
+        min-width: 0;
+      }
+
+      .mini-scale-title > span {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+        background: color-mix(in srgb, var(--mini-tone) 13%, var(--bg2));
+        border: 1px solid color-mix(in srgb, var(--mini-tone) 28%, var(--border2));
+        color: var(--mini-tone);
+        flex: 0 0 auto;
+      }
+
+      .mini-scale-title strong,
+      .mini-scale-title small {
+        display: block;
+      }
+
+      .mini-scale-title strong {
         color: var(--text1);
         font-size: 13px;
         font-weight: 950;
-        margin-bottom: 10px;
+        line-height: 1.15;
+      }
+
+      .mini-scale-title small {
+        margin-top: 2px;
+        color: var(--text3);
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+
+      .mini-scale-score {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 2px;
+        min-width: 48px;
+        height: 34px;
+        border-radius: 11px;
+        background: var(--bg2);
+        border: 1px solid color-mix(in srgb, var(--mini-tone) 30%, var(--border2));
+        color: var(--text1);
+      }
+
+      .mini-scale-score strong {
+        font-family: var(--font-display);
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .mini-scale-score span {
+        color: var(--text3);
+        font-size: 9px;
+        font-weight: 950;
       }
 
       .mini-options {
@@ -915,19 +1030,36 @@ function Styles() {
 
       .mini-option {
         min-height: 34px;
-        border: 1px solid var(--border2);
-        border-radius: 10px;
+        border: 1px solid color-mix(in srgb, var(--mini-tone) 20%, var(--border2));
+        border-radius: 11px;
         background: var(--bg2);
         color: var(--text3);
         font-family: var(--font-sans);
+        font-size: 11px;
         font-weight: 950;
         cursor: pointer;
+        transition: transform .15s ease, background .15s ease, border-color .15s ease, color .15s ease;
+      }
+
+      .mini-option:hover {
+        transform: translateY(-1px);
+        border-color: color-mix(in srgb, var(--mini-tone) 42%, var(--border2));
       }
 
       .mini-option.is-active {
-        background: var(--text1);
-        color: var(--bg0);
-        border-color: var(--text1);
+        background: color-mix(in srgb, var(--mini-tone) 17%, var(--bg2));
+        color: var(--text1);
+        border-color: var(--mini-tone);
+        box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--mini-tone) 35%, transparent);
+      }
+
+      .mini-clear {
+        border: 0;
+        background: transparent;
+        color: var(--text3);
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 900;
       }
 
       .submit-row {
@@ -1313,6 +1445,17 @@ function Styles() {
           grid-template-columns: 1fr;
         }
 
+        .step-actions {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .step-buttons {
+          width: 100%;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        }
+
         .primary-button,
         .secondary-button {
           width: 100%;
@@ -1380,12 +1523,41 @@ function MiniScale({
   value: number | null;
   onChange: (value: number | null) => void;
 }) {
+  const isSleep = title.toLowerCase().includes("sleep");
+  const labels = isSleep
+    ? ["Poor", "Restless", "Okay", "Good", "Deep"]
+    : ["Drained", "Low", "Steady", "Ready", "Charged"];
+  const helper = isSleep
+    ? "How restorative was last sleep?"
+    : "How much capacity do you have?";
+  const tone = isSleep ? "var(--purple)" : "var(--mint2)";
+  const current = value ?? 0;
+
   return (
-    <div className="mini-scale">
+    <div
+      className="mini-scale"
+      style={
+        {
+          "--mini-tone": tone,
+        } as React.CSSProperties
+      }
+    >
       <div className="mini-scale-head">
-        <Icon size={16} />
-        {title}
+        <div className="mini-scale-title">
+          <span>
+            <Icon size={17} />
+          </span>
+          <div>
+            <strong>{title}</strong>
+            <small>{helper}</small>
+          </div>
+        </div>
+        <div className="mini-scale-score" aria-hidden>
+          <strong>{current || "-"}</strong>
+          <span>/5</span>
+        </div>
       </div>
+
       <div className="mini-options">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
@@ -1394,11 +1566,17 @@ function MiniScale({
             onClick={() => onChange(value === n ? null : n)}
             type="button"
             aria-pressed={value === n}
+            aria-label={`${title}: ${n} out of 5, ${labels[n - 1]}`}
           >
-            {n}
+            {labels[n - 1]}
           </button>
         ))}
       </div>
+      {value ? (
+        <button type="button" className="mini-clear" onClick={() => onChange(null)}>
+          Clear {labels[value - 1].toLowerCase()}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -1575,19 +1753,31 @@ function CheckinSignalBoard({
       <div className="signal-mini-grid">
         <div className="signal-mini">
           <span>Mood</span>
-          <strong><MoodIcon size={17} color={selectedMood?.tone ?? "var(--text3)"} />{selectedMood?.label ?? "Pick one"}</strong>
+          <strong>
+            <MoodIcon size={17} color={selectedMood?.tone ?? "var(--text3)"} />
+            {selectedMood?.label ?? "Pick one"}
+          </strong>
         </div>
         <div className="signal-mini">
           <span>Context</span>
-          <strong><TriggerIcon size={17} color={selectedTrigger ? "var(--mint2)" : "var(--text3)"} />{selectedTrigger?.label ?? "Choose"}</strong>
+          <strong>
+            <TriggerIcon size={17} color={selectedTrigger ? "var(--mint2)" : "var(--text3)"} />
+            {selectedTrigger?.label ?? "Choose"}
+          </strong>
         </div>
         <div className="signal-mini">
           <span>Extras</span>
-          <strong><Bed size={17} />{optionalDone ? "Added" : "Optional"}</strong>
+          <strong>
+            <Bed size={17} />
+            {optionalDone ? "Added" : "Optional"}
+          </strong>
         </div>
         <div className="signal-mini">
           <span>Reward</span>
-          <strong><Zap size={17} color="var(--amber)" />{estimatedXP} XP</strong>
+          <strong>
+            <Zap size={17} color="var(--amber)" />
+            {estimatedXP} XP
+          </strong>
         </div>
       </div>
     </motion.div>
@@ -1696,6 +1886,8 @@ export default function CheckInPage() {
   const [stressDragging, setStressDragging] = useState(false);
   const [mood, setMood] = useState("");
   const [trigger, setTrigger] = useState("");
+  const [note, setNote] = useState("");
+  const [checkinStep, setCheckinStep] = useState<CheckinStep>(0);
   const [sleepQuality, setSleepQuality] = useState<number | null>(null);
   const [energyLevel, setEnergyLevel] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -1723,11 +1915,13 @@ export default function CheckInPage() {
     sub: string;
   } | null>(null);
   const [levelUp, setLevelUp] = useState<number | null>(null);
+  const [crisisSignalId, setCrisisSignalId] = useState<string | null>(null);
 
   const selectedMood = MOODS.find((item) => item.val === mood) ?? null;
   const selectedTrigger = TRIGGERS.find((item) => item.val === trigger) ?? null;
   const canSubmit = Boolean(mood && trigger && !loading);
   const estimatedXP = 20 + (stress >= 7 ? 10 : 0) + (sleepQuality ? 10 : 0) + (energyLevel ? 10 : 0);
+  const canAdvanceCheckin = checkinStep === 0 ? Boolean(mood) : checkinStep === 1 ? Boolean(trigger) : false;
 
   const avgStress = history.length
     ? +(history.reduce((sum, entry) => sum + entry.stressLevel, 0) / history.length).toFixed(1)
@@ -1755,6 +1949,7 @@ export default function CheckInPage() {
           setStress(entry.stressLevel);
           setMood(entry.mood);
           setTrigger(entry.triggerType ?? "");
+          setNote(entry.note ?? "");
           setSleepQuality(entry.sleepQuality ?? null);
           setEnergyLevel(entry.energyLevel ?? null);
         }
@@ -1844,6 +2039,7 @@ export default function CheckInPage() {
           stressLevel: stress,
           mood,
           triggerType: trigger,
+          note,
           sleepQuality,
           energyLevel,
           timezoneOffset: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -1863,6 +2059,7 @@ export default function CheckInPage() {
           stressLevel: stress,
           mood,
           triggerType: trigger,
+          note,
           sleepQuality,
           energyLevel,
           checkedInAt: new Date().toISOString(),
@@ -1872,6 +2069,9 @@ export default function CheckInPage() {
 
         if (xpEarned > 0) spawnXP(xpEarned, event);
         fetchCoach(stress, mood, trigger);
+        if (data.crisisSupport?.signalId) {
+          setCrisisSignalId(data.crisisSupport.signalId);
+        }
 
         if (STREAK_MILESTONES[streak]) {
           setStreakCelebration(STREAK_MILESTONES[streak]);
@@ -1939,6 +2139,7 @@ export default function CheckInPage() {
       </AnimatePresence>
 
       <main className="checkin-page">
+        <CrisisSupportBanner signalId={crisisSignalId} />
         <header className="checkin-top">
           <div>
             <Link className="checkin-back" href="/dashboard">
@@ -2070,6 +2271,16 @@ export default function CheckInPage() {
                   estimatedXP={estimatedXP}
                 />
 
+                <AnimatePresence mode="wait" initial={false}>
+                  {checkinStep === 0 ? (
+                    <motion.div
+                      key="checkin-step-stress-mood"
+                      className="checkin-step-panel"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                    >
                 <div
                   className="checkin-card"
                   style={
@@ -2239,6 +2450,30 @@ export default function CheckInPage() {
                   </AnimatePresence>
                 </div>
 
+                <div className="step-actions">
+                  <p>{mood ? "Mood selected. Continue to add the context." : "Choose a mood to continue."}</p>
+                  <div className="step-buttons">
+                    <button
+                      className="primary-button"
+                      type="button"
+                      onClick={() => setCheckinStep(1)}
+                      disabled={!canAdvanceCheckin}
+                    >
+                      Next
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+                  ) : checkinStep === 1 ? (
+                    <motion.div
+                      key="checkin-step-context"
+                      className="checkin-step-panel"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                    >
                 <div className="checkin-card">
                   <div className="checkin-card-head">
                     <div>
@@ -2270,6 +2505,50 @@ export default function CheckInPage() {
                 <div className="checkin-card">
                   <div className="checkin-card-head">
                     <div>
+                      <h2>Reflection note</h2>
+                      <p>Optional. Write a few words about what is happening today.</p>
+                    </div>
+                  </div>
+                  <textarea
+                    className="checkin-note"
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                    maxLength={2000}
+                    placeholder="What feels important to remember about today?"
+                    aria-label="Optional check-in reflection note"
+                  />
+                </div>
+
+                <div className="step-actions">
+                  <p>{trigger ? "Context is set. Optional signals are next." : "Choose an urge context to continue."}</p>
+                  <div className="step-buttons">
+                    <button className="secondary-button" type="button" onClick={() => setCheckinStep(0)}>
+                      Back
+                    </button>
+                    <button
+                      className="primary-button"
+                      type="button"
+                      onClick={() => setCheckinStep(2)}
+                      disabled={!canAdvanceCheckin}
+                    >
+                      Next
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+                  ) : (
+                    <motion.div
+                      key="checkin-step-optional"
+                      className="checkin-step-panel"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                    >
+                <div className="checkin-card">
+                  <div className="checkin-card-head">
+                    <div>
                       <h2>Optional detail</h2>
                       <p>These two signals sharpen sleep and energy insights.</p>
                     </div>
@@ -2291,20 +2570,28 @@ export default function CheckInPage() {
                         : `Ready to save. Estimated reward: ${estimatedXP} XP.`
                       : "Choose a mood and urge context to unlock save."}
                   </p>
-                  <button className="primary-button" onClick={submit} disabled={!canSubmit}>
-                    {loading ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin" />
-                        Saving
-                      </>
-                    ) : (
-                      <>
-                        {alreadyDone ? "Update check-in" : "Save check-in"}
-                        <ChevronRight size={16} />
-                      </>
-                    )}
-                  </button>
+                  <div className="step-buttons">
+                    <button className="secondary-button" type="button" onClick={() => setCheckinStep(1)}>
+                      Back
+                    </button>
+                    <button className="primary-button" onClick={submit} disabled={!canSubmit}>
+                      {loading ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          Saving
+                        </>
+                      ) : (
+                        <>
+                          {alreadyDone ? "Update check-in" : "Save check-in"}
+                          <ChevronRight size={16} />
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
+              </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               <LiveRecap

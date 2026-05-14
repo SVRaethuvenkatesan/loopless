@@ -32,6 +32,7 @@ export const checkins = pgTable("checkins", {
   stressLevel: integer("stress_level").notNull(),
   mood: text("mood").notNull(),
   triggerType: text("trigger_type"),
+  note: text("note"),
   sleepQuality: integer("sleep_quality"),
   energyLevel: integer("energy_level"),
   checkedInAt: timestamp("checked_in_at", { withTimezone: true }).defaultNow(),
