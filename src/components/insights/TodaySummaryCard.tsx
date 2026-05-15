@@ -223,6 +223,7 @@ export default function TodaySummaryCard({
   canSendNudge,
   primaryInsight,
   relapseInsight,
+  hasEnoughData,
 }: TodaySummaryCardProps) {
   const todayPoint = chartData[0] ?? null;
   const recent7 = chartData.slice(0, 7);
@@ -402,7 +403,7 @@ export default function TodaySummaryCard({
                 marginBottom: 3,
               }}
             >
-              Daily Snapshot
+              {hasEnoughData ? "Daily Snapshot" : "Early Preview"}
             </div>
             <div
               style={{

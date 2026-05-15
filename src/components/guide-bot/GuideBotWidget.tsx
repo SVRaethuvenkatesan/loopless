@@ -8,19 +8,30 @@ import { useVoice } from "./useVoice";
 import "./guide-bot.css";
 
 /* ── SVG Icons ──────────────────────────────────────────────────────────── */
-const AuraBotSVG = ({ size = 18 }: { size?: number }) => (
+const LoopBotSVG = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
     <defs>
-      <linearGradient id="aura-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="loop-grad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="var(--coral)" />
         <stop offset="100%" stopColor="var(--mint2)" />
       </linearGradient>
     </defs>
-    <motion.path 
-      d="M12 2C12 7.52285 7.52285 12 2 12C7.52285 12 12 16.4772 12 22C12 16.4772 16.4772 12 22 12C16.4772 12 12 7.52285 12 2Z" 
-      fill="url(#aura-grad)" 
-      animate={{ scale: [0.9, 1.15, 0.9], opacity: [0.75, 1, 0.75] }}
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+    {/* Chat bubble body */}
+    <motion.path
+      d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5l-3 3-3-3H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
+      fill="url(#loop-grad)"
+      animate={{ scale: [0.95, 1.05, 0.95] }}
+      transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+    />
+    {/* Infinity / loop symbol inside */}
+    <motion.path
+      d="M8.5 11c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm5 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z"
+      fill="none"
+      stroke="white"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      animate={{ opacity: [0.7, 1, 0.7] }}
+      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
     />
   </svg>
 );
@@ -37,10 +48,10 @@ const SendSVG = () => (
 );
 const KeyboardSVG = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <rect x="2" y="4" width="20" height="16" rx="2" ry="2"/>
-    <line x1="6" y1="8" x2="6.01" y2="8"/><line x1="10" y1="8" x2="10.01" y2="8"/><line x1="14" y1="8" x2="14.01" y2="8"/><line x1="18" y1="8" x2="18.01" y2="8"/>
-    <line x1="6" y1="12" x2="6.01" y2="12"/><line x1="10" y1="12" x2="10.01" y2="12"/><line x1="14" y1="12" x2="14.01" y2="12"/><line x1="18" y1="12" x2="18.01" y2="12"/>
-    <line x1="8" y1="16" x2="16" y2="16"/>
+    <rect x="2" y="4" width="20" height="16" rx="2" ry="2" />
+    <line x1="6" y1="8" x2="6.01" y2="8" /><line x1="10" y1="8" x2="10.01" y2="8" /><line x1="14" y1="8" x2="14.01" y2="8" /><line x1="18" y1="8" x2="18.01" y2="8" />
+    <line x1="6" y1="12" x2="6.01" y2="12" /><line x1="10" y1="12" x2="10.01" y2="12" /><line x1="14" y1="12" x2="14.01" y2="12" /><line x1="18" y1="12" x2="18.01" y2="12" />
+    <line x1="8" y1="16" x2="16" y2="16" />
   </svg>
 );
 const MicSVG = () => (
@@ -95,10 +106,10 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
   const firstName = userName.split(" ")[0] || "";
 
   /* Focus logic & Init */
-  useEffect(() => { 
+  useEffect(() => {
     if (open) {
       init(firstName);
-      if (showKeyboard) setTimeout(() => inputRef.current?.focus(), 300); 
+      if (showKeyboard) setTimeout(() => inputRef.current?.focus(), 300);
     }
   }, [open, showKeyboard, init, firstName]);
 
@@ -160,8 +171,8 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
         whileTap={{ scale: 0.96 }}
         style={{ position: "fixed" }}
       >
-        <span className="gb-fab-bot"><AuraBotSVG size={18} /></span>
-        <span className="gb-fab-label">AuraBot</span>
+        <span className="gb-fab-bot"><LoopBotSVG size={18} /></span>
+        <span className="gb-fab-label">loopbot</span>
       </motion.button>
 
       {/* ── Panel ─────────────────────────────────────────────────────── */}
@@ -181,9 +192,9 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
             >
               {/* Header */}
               <div className="gb-header">
-                <div className="gb-avatar" aria-hidden><AuraBotSVG size={22} /></div>
+                <div className="gb-avatar" aria-hidden><LoopBotSVG size={22} /></div>
                 <div className="gb-title">
-                  <strong>AuraBot</strong>
+                  <strong>loopbot</strong>
                   <span><span className="gb-online-dot" aria-hidden />{loading ? "Thinking..." : "Always here"}</span>
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
@@ -204,9 +215,9 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
               {/* State Machine View */}
               <div className="gb-state-view" role="log" aria-live="polite">
                 {currentState ? (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }} 
-                    animate={{ opacity: 1, y: 0 }} 
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     className="gb-current-state"
                   >
                     {/* User Last Message */}
@@ -220,7 +231,7 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
 
                     {/* Bot Message */}
                     <div className="gb-bot-message">
-                      <div className="gb-mini-av" aria-hidden><AuraBotSVG size={14} /></div>
+                      <div className="gb-mini-av" aria-hidden><LoopBotSVG size={14} /></div>
                       <div className="gb-bubble bot">
                         {currentState.message}
                       </div>
@@ -228,7 +239,7 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
 
                     {/* Action Card */}
                     {currentState.actionCard && currentState.actionCard.route && (
-                      <motion.button 
+                      <motion.button
                         className="gb-action-card"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -250,7 +261,7 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
 
                     {/* Choice Chips */}
                     {currentState.options && currentState.options.length > 0 && !showKeyboard && (
-                      <motion.div 
+                      <motion.div
                         className="gb-chips-container"
                         variants={containerVariants}
                         initial="hidden"
@@ -279,8 +290,8 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
               {/* Input bar (Demoted / Escape Hatch) */}
               <div className="gb-bar">
                 {/* Keyboard Toggle */}
-                <button 
-                  className={`gb-hbtn ${showKeyboard ? "on" : ""}`} 
+                <button
+                  className={`gb-hbtn ${showKeyboard ? "on" : ""}`}
                   onClick={() => setShowKeyboard(!showKeyboard)}
                   aria-label="Toggle keyboard"
                   title="Type a custom message"

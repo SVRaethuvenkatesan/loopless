@@ -59,7 +59,7 @@ export default function TabToday({
       {!hasEnoughData && <InsightsEmptyState checkinCount={checkinCount} />}
 
       {/* ── Executive Summary Card ──────────────────────────────────────── */}
-      {hasEnoughData && chartData && chartData.length > 0 && (
+      {chartData && chartData.length > 0 && (
         <TodaySummaryCard
           chartData={chartData}
           checkinCount={checkinCount}
@@ -116,11 +116,7 @@ export default function TabToday({
         </section>
       )}
 
-      {!hasEnoughData && !risk && !primaryInsight && !relapseInsight && (
-        <p className="insights-muted-center">
-          Check in daily to unlock personalised insights here.
-        </p>
-      )}
+
     </div>
   );
 }

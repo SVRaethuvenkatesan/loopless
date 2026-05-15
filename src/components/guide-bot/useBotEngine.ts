@@ -25,7 +25,7 @@ export interface PaResponse {
 
 const LOCAL_STATES: Record<string, Omit<PaResponse, "lastUserMessage">> = {
   welcome: {
-    message: "Hi there! I'm AuraBot. What can I help you with right now?",
+    message: "Hi there! I'm loopBot. What can I help you with right now?",
     actionCard: null,
     inlineWidget: "none",
     uiState: { allowFreeText: true },
@@ -262,7 +262,7 @@ export function useBotEngine() {
 
   const processInput = (text: string): keyof typeof LOCAL_STATES => {
     const t = text.toLowerCase();
-    
+
     // Direct Payload Matching (from chips)
     if (LOCAL_STATES[t]) return t as keyof typeof LOCAL_STATES;
 
@@ -287,7 +287,7 @@ export function useBotEngine() {
     if (text === "SYS_INIT") {
       setCurrentState({
         ...LOCAL_STATES.welcome,
-        message: `Hi ${userName || "there"}! I'm AuraBot. What can I help you with right now?`,
+        message: `Hi ${userName || "there"}! I'm loopBot. What can I help you with right now?`,
       });
       return;
     }
