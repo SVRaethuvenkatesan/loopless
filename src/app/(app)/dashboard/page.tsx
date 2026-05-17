@@ -236,7 +236,6 @@ export default async function DashboardPage() {
   return (
     <DashboardClient
       userName={session.user.name ?? ""}
-      userId={session.user.id}
       recentCheckins={data.recentCheckins as any[]}
       xpCheckins={data.xpCheckins as any[]}
       serverXP={data.serverXP}

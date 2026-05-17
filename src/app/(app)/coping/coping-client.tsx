@@ -21,6 +21,7 @@ import {
   Wind,
   X,
 } from "lucide-react";
+import { CrisisSupportBanner } from "@/components/crisis-support-banner";
 
 type Phase = "select" | "active" | "post" | "done";
 type ToolId = "breathe" | "walk" | "cold" | "journal" | "ground";
@@ -288,7 +289,7 @@ function ColdSession({
   );
 }
 
-function JournalSession({ onDone }: { onDone: (sec: number) => void }) {
+function JournalSession({ onDone }: { onDone: (sec: number, text?: string) => void }) {
   const [text, setText] = useState("");
   const startRef = useRef(Date.now());
   const [promptIdx] = useState(() =>
@@ -313,7 +314,7 @@ function JournalSession({ onDone }: { onDone: (sec: number) => void }) {
           type="button"
           disabled={text.trim().length < 5}
           onClick={() =>
-            onDone(Math.round((Date.now() - startRef.current) / 1000))
+            onDone(Math.round((Date.now() - startRef.current) / 1000), text)
           }
         >
           Done writing
@@ -369,7 +370,7 @@ function ActiveTool({
   onDone,
 }: {
   tool: Tool;
-  onDone: (sec: number) => void;
+  onDone: (sec: number, text?: string) => void;
 }) {
   if (tool.id === "breathe") return <BreatheSession tool={tool} onDone={onDone} />;
   if (tool.id === "walk") return <WalkSession tool={tool} onDone={onDone} />;
@@ -385,6 +386,8 @@ export default function CopingClient() {
   const [sessionSec, setSessionSec] = useState(0);
   const [postStress, setPostStress] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [journalText, setJournalText] = useState("");
+  const [crisisSignalId, setCrisisSignalId] = useState<string | null>(null);
 
   const tool = TOOLS.find((item) => item.id === selectedTool) ?? TOOLS[0];
   const selectedIndex = TOOLS.findIndex((item) => item.id === selectedTool);
@@ -402,8 +405,9 @@ export default function CopingClient() {
     setPhase("active");
   }
 
-  function handleDone(sec: number) {
+  function handleDone(sec: number, text?: string) {
     setSessionSec(sec);
+    setJournalText(text ?? "");
     setPhase("post");
   }
 
@@ -412,6 +416,7 @@ export default function CopingClient() {
     setPreStress(null);
     setPostStress(null);
     setSessionSec(0);
+    setJournalText("");
     setSaving(false);
   }
 
@@ -419,7 +424,7 @@ export default function CopingClient() {
     if (!tool || preStress === null || postStress === null) return;
     setSaving(true);
     try {
-      await fetch("/api/coping", {
+      const res = await fetch("/api/coping", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -428,8 +433,13 @@ export default function CopingClient() {
           postStress,
           stressDelta: postStress - preStress,
           durationSec: sessionSec,
+          journalText: tool.id === "journal" ? journalText : undefined,
         }),
       });
+      const data = await res.json().catch(() => ({}));
+      if (data.crisisSupport?.signalId) {
+        setCrisisSignalId(data.crisisSupport.signalId);
+      }
       setPhase("done");
     } catch {
       setPhase("done");
@@ -441,6 +451,7 @@ export default function CopingClient() {
   return (
     <div className="toolkit-page">
       <ToolkitStyles />
+      <CrisisSupportBanner signalId={crisisSignalId} />
 
       <header className="toolkit-hero">
         <div>

@@ -14,39 +14,14 @@ import {
   ShieldCheck,
   Wrench,
 } from "lucide-react";
+import { CRISIS_RESOURCES } from "@/lib/crisis-resources";
+import { OfflineSupportBanner } from "./offline-support-banner";
 
 export const metadata: Metadata = {
   title: "Help & Support | Loopless",
   description:
     "Crisis resources, FAQs, privacy pointers, and how to get help using Loopless.",
 };
-
-const CRISIS_LINES = [
-  {
-    name: "Lifeline",
-    tel: "13 11 14",
-    telHref: "131114",
-    desc: "24/7 crisis support in Australia",
-  },
-  {
-    name: "Beyond Blue",
-    tel: "1300 22 4636",
-    telHref: "1300224636",
-    desc: "Mental health support and advice",
-  },
-  {
-    name: "headspace",
-    tel: "1800 650 890",
-    telHref: "1800650890",
-    desc: "Support for young people aged 12-25",
-  },
-  {
-    name: "Quitline",
-    tel: "13 7848",
-    telHref: "137848",
-    desc: "Nicotine quit support",
-  },
-];
 
 const FAQ = [
   {
@@ -108,6 +83,7 @@ export default function SupportPage() {
   return (
     <div className="support-page">
       <SupportStyles />
+      <OfflineSupportBanner />
 
       <header className="support-hero">
         <div>
@@ -139,20 +115,25 @@ export default function SupportPage() {
             confidential and built for moments that feel too heavy to hold alone.
           </p>
           <div className="support-crisis-list">
-            {CRISIS_LINES.map((line) => (
+            {CRISIS_RESOURCES.map((line) => (
               <a
                 key={line.name}
-                className="support-crisis-card"
+                className={`support-crisis-card${line.emergency ? " emergency" : ""}`}
                 href={`tel:${line.telHref}`}
+                aria-label={`Call ${line.name} on ${line.phone}`}
               >
                 <span className="support-phone-icon">
-                  <Phone size={18} strokeWidth={2.5} />
+                  {line.emergency ? (
+                    <AlertTriangle size={18} strokeWidth={2.5} />
+                  ) : (
+                    <Phone size={18} strokeWidth={2.5} />
+                  )}
                 </span>
                 <span>
                   <strong>{line.name}</strong>
-                  <small>{line.desc}</small>
+                  <small>{line.description}</small>
                 </span>
-                <em>{line.tel}</em>
+                <em>{line.phone}</em>
               </a>
             ))}
           </div>
@@ -251,6 +232,19 @@ function SupportStyles() {
         gap: 24px;
         padding: 24px 0 22px;
         border-bottom: 1px solid var(--border);
+      }
+      .support-offline-banner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 14px;
+        border: 1px solid rgba(201, 152, 42, 0.42);
+        border-radius: 14px;
+        background: rgba(201, 152, 42, 0.13);
+        color: #4f3412;
+        padding: 12px 14px;
+        font-size: 13px;
+        font-weight: 900;
       }
       .support-kicker {
         color: var(--text3);
@@ -367,6 +361,22 @@ function SupportStyles() {
       }
       .support-crisis-card:hover {
         border-color: rgba(224, 123, 90, 0.45);
+      }
+      .support-crisis-card.emergency {
+        min-height: 92px;
+        border: 2px solid #9b2c2c;
+        background: linear-gradient(135deg, rgba(155, 44, 44, 0.16), var(--bg0));
+      }
+      .support-crisis-card.emergency .support-phone-icon {
+        background: #9b2c2c;
+        color: #fff;
+      }
+      .support-crisis-card.emergency strong {
+        font-size: 18px;
+      }
+      .support-crisis-card.emergency em {
+        color: #9b2c2c;
+        font-size: 27px;
       }
       .support-phone-icon {
         display: inline-flex;

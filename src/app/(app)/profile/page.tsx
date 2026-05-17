@@ -43,6 +43,7 @@ interface ProfileData {
     id: string;
     email: string | null;
     guestName: string | null;
+    profileImage: string | null;
     ageGroup: string | null;
     copingStyle: string | null;
     isGuest: boolean;
@@ -110,7 +111,10 @@ function Styles() {
       .profile-orbit.a{right:35%;top:17%;}
       .profile-orbit.b{right:9%;bottom:18%;background:#e07b5a;box-shadow:0 0 22px #e07b5a;}
       .profile-identity{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;min-width:0;}
-      .profile-avatar{width:92px;height:92px;border-radius:26px;background:linear-gradient(145deg,rgba(120,229,184,.98),rgba(255,255,255,.9));color:#102018;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:31px;font-weight:950;flex:0 0 auto;border:1px solid rgba(255,255,255,.42);box-shadow:0 18px 44px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.5);}
+      .profile-avatar{width:92px;height:92px;border-radius:26px;background:linear-gradient(145deg,rgba(120,229,184,.98),rgba(255,255,255,.9));color:#102018;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:31px;font-weight:950;flex:0 0 auto;border:1px solid rgba(255,255,255,.42);box-shadow:0 18px 44px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.5);overflow:hidden;}
+      .profile-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+      .profile-photo-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+      .profile-photo-input{display:none;}
       .profile-kicker{display:inline-flex;align-items:center;gap:8px;min-height:31px;padding:0 12px;border-radius:999px;background:rgba(120,229,184,.12);border:1px solid rgba(120,229,184,.28);color:#bdf8df;font-size:12px;font-weight:950;}
       .profile-title{margin-top:12px;color:#fff;font-family:var(--font-display);font-size:clamp(40px,5vw,64px);font-weight:650;line-height:.94;letter-spacing:0;text-shadow:0 10px 32px rgba(0,0,0,.24);}
       .profile-sub{margin-top:11px;color:rgba(255,255,255,.7);font-size:14px;font-weight:750;line-height:1.6;max-width:570px;overflow-wrap:anywhere;}
@@ -259,6 +263,8 @@ export default function ProfilePage() {
   const [editAge, setEditAge] = useState("");
   const [editCoping, setEditCoping] = useState("");
   const [editTriggers, setEditTriggers] = useState<string[]>([]);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [photoSaving, setPhotoSaving] = useState(false);
   const [testProgress, setTestProgress] = useState<LocalTestProgress | null>(null);
 
   useEffect(() => {
@@ -278,6 +284,7 @@ export default function ProfilePage() {
         setEditAge(next.user.ageGroup ?? "");
         setEditCoping(next.user.copingStyle ?? "");
         setEditTriggers(next.triggers.map((trigger) => trigger.triggerType));
+        setProfileImage(next.user.profileImage ?? null);
       } catch {
         setError("Could not load profile data.");
       } finally {
@@ -319,6 +326,74 @@ export default function ProfilePage() {
       setError("Failed to save. Check your connection and try again.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function saveProfileImage(nextImage: string | null) {
+    setPhotoSaving(true);
+    setError("");
+    setSaved(false);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...getGuestHeaders() },
+        body: JSON.stringify({ profileImage: nextImage }),
+      });
+      if (!res.ok) throw new Error("photo save failed");
+      setProfileImage(nextImage);
+      setData((prev) =>
+        prev ? { ...prev, user: { ...prev.user, profileImage: nextImage } } : prev,
+      );
+      window.dispatchEvent(new CustomEvent("loopless:profile-image", { detail: nextImage }));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2600);
+    } catch {
+      setError("Failed to save profile picture. Try a smaller image.");
+    } finally {
+      setPhotoSaving(false);
+    }
+  }
+
+  function imageToDataUrl(file: File) {
+    return new Promise<string>((resolve, reject) => {
+      if (!file.type.startsWith("image/")) {
+        reject(new Error("Invalid file"));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Could not read image"));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Could not load image"));
+        img.onload = () => {
+          const size = 256;
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Could not process image"));
+            return;
+          }
+          const sourceSize = Math.min(img.width, img.height);
+          const sourceX = (img.width - sourceSize) / 2;
+          const sourceY = (img.height - sourceSize) / 2;
+          ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size);
+          resolve(canvas.toDataURL("image/jpeg", 0.82));
+        };
+        img.src = String(reader.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handlePhotoUpload(file: File | undefined) {
+    if (!file) return;
+    try {
+      const nextImage = await imageToDataUrl(file);
+      await saveProfileImage(nextImage);
+    } catch {
+      setError("Could not use that image. Choose a PNG, JPG, or WebP file.");
     }
   }
 
@@ -452,7 +527,9 @@ export default function ProfilePage() {
             </>
           )}
           <div className="profile-identity">
-            <div className="profile-avatar">{initials}</div>
+            <div className="profile-avatar">
+              {profileImage ? <img src={profileImage} alt="" /> : initials}
+            </div>
             <div>
               <div className="profile-kicker">
                 <ShieldCheck size={14} />
@@ -482,6 +559,30 @@ export default function ProfilePage() {
                 <Link className="profile-hero-btn" href="/checkin">
                   <Check size={16} /> Check in
                 </Link>
+                <label className="profile-hero-btn secondary">
+                  {photoSaving ? <Loader2 className="animate-spin" size={16} /> : <Edit3 size={16} />}
+                  {profileImage ? "Change photo" : "Upload photo"}
+                  <input
+                    className="profile-photo-input"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    disabled={photoSaving}
+                    onChange={(event) => {
+                      void handlePhotoUpload(event.target.files?.[0]);
+                      event.currentTarget.value = "";
+                    }}
+                  />
+                </label>
+                {profileImage ? (
+                  <button
+                    className="profile-hero-btn secondary"
+                    type="button"
+                    disabled={photoSaving}
+                    onClick={() => void saveProfileImage(null)}
+                  >
+                    <X size={16} /> Remove photo
+                  </button>
+                ) : null}
                 <button
                   className="profile-hero-btn secondary"
                   type="button"

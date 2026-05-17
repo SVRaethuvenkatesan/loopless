@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { withDb } from "@/lib/db/with-db";
 import { invalidateInsightsCache } from "@/lib/insights-engine";
+import { detectCrisisSignal } from "@/lib/crisis-classifier";
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +15,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { stressLevel, mood, triggerType, sleepQuality, energyLevel, timezoneOffset } = body;
+    const { stressLevel, mood, triggerType, note, sleepQuality, energyLevel, timezoneOffset } = body;
+    const safeNote = typeof note === "string" ? note.slice(0, 2000) : null;
+    const crisisSignal = detectCrisisSignal(safeNote, "checkin");
 
     if (typeof stressLevel !== "number" || stressLevel < 1 || stressLevel > 10)
       return NextResponse.json({ error: "stress must be 1–10" }, { status: 422 });
@@ -44,6 +47,7 @@ export async function POST(req: Request) {
             stressLevel, 
             mood, 
             triggerType: triggerType ?? null, 
+            note: safeNote,
             sleepQuality: sleepQuality ?? null,
             energyLevel: energyLevel ?? null,
             timezoneOffset: timezoneOffset ?? null 
@@ -63,6 +67,7 @@ export async function POST(req: Request) {
           stressLevel, 
           mood, 
           triggerType: triggerType ?? null, 
+          note: safeNote,
           sleepQuality: sleepQuality ?? null,
           energyLevel: energyLevel ?? null,
           timezoneOffset: timezoneOffset ?? null, 
@@ -135,6 +140,12 @@ export async function POST(req: Request) {
       streak: result.streak,
       newBadges: result.newBadges ?? [],
       xpEarned: result.updated ? 0 : 20 + (stressLevel >= 7 ? 10 : 0) + bonusXp,
+      crisisSupport: crisisSignal.highSignal
+        ? {
+            signalId: `checkin:${result.id}:${Date.now()}`,
+            confidence: crisisSignal.confidence,
+          }
+        : null,
     });
   } catch (err: any) {
     console.error("Checkin POST:", err?.message);
