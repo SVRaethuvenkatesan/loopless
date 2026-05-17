@@ -72,6 +72,7 @@ async function getLeaderboard(userId: string) {
             isCurrentUser: user.id === userId,
           };
         })
+        .filter((entry) => entry.xp > 0)
         .sort((a, b) => b.xp - a.xp || b.streak - a.streak || b.badgeCount - a.badgeCount || a.name.localeCompare(b.name))
         .map((entry, index) => ({ ...entry, rank: index + 1 }));
 

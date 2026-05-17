@@ -24,6 +24,15 @@ import { createLocalTestProgress, getLocalTestProgress, type LocalTestProgress }
 
 const SakuraLottie = dynamic(() => import("./sakura-lottie"), { ssr: false });
 
+function getRankTitle(level: number): string {
+  if (level >= 10) return "Recovery Legend";
+  if (level >= 7) return "Lung Champion";
+  if (level >= 5) return "Recovery Pro";
+  if (level >= 3) return "Loop Breaker";
+  if (level >= 2) return "Deep Breather";
+  return "New Breather";
+}
+
 interface Checkin {
   id: string;
   stressLevel: number;
@@ -57,34 +66,14 @@ interface Props {
 }
 
 const MOODS = [
-  {
-    v: "rough",
-    l: "Rough",
-    c: "#e07b5a",
-    sub: "Heavy load",
-    bars: [1, 0, 0],
-  },
-  {
-    v: "meh",
-    l: "Meh",
-    c: "#c9982a",
-    sub: "Low signal",
-    bars: [1, 1, 0],
-  },
-  {
-    v: "okay",
-    l: "Okay",
-    c: "#5bb8f5",
-    sub: "Stable",
-    bars: [1, 1, 1],
-  },
-  {
-    v: "good",
-    l: "Good",
-    c: "#5a8f6a",
-    sub: "Clear run",
-    bars: [1, 1, 1],
-  },
+  { v: "overwhelmed", l: "Overwhelmed", c: "#e07b5a", sub: "Too much", bars: [1, 0, 0] },
+  { v: "anxious", l: "Anxious", c: "#c9982a", sub: "On edge", bars: [1, 0, 0] },
+  { v: "flat", l: "Flat", c: "#7b6fa0", sub: "Low signal", bars: [1, 1, 0] },
+  { v: "okay", l: "Okay", c: "#5bb8f5", sub: "Steady", bars: [1, 1, 1] },
+  { v: "good", l: "Good", c: "#5a8f6a", sub: "Settled", bars: [1, 1, 1] },
+  { v: "energised", l: "Energised", c: "#3DC98E", sub: "Activated", bars: [1, 1, 1] },
+  { v: "grateful", l: "Grateful", c: "#e07b5a", sub: "Grounded", bars: [1, 1, 1] },
+  { v: "proud", l: "Proud", c: "#c9982a", sub: "Progress", bars: [1, 1, 1] },
 ];
 
 function stressTone(stress: number) {
@@ -105,12 +94,17 @@ function MoodFace({
   size?: number;
 }) {
   const face = {
-    rough: {
+    overwhelmed: {
       leftEye: "M19 25 L25 28",
       rightEye: "M39 28 L45 25",
       mouth: "M25 43 C30 38 36 38 41 43",
     },
-    meh: {
+    anxious: {
+      leftEye: "M19 26 L25 24",
+      rightEye: "M39 24 L45 26",
+      mouth: "M25 42 Q33 39 41 42",
+    },
+    flat: {
       leftEye: "M20 27 H26",
       rightEye: "M38 27 H44",
       mouth: "M25 42 H41",
@@ -124,6 +118,21 @@ function MoodFace({
       leftEye: "M20 27 C22 24 25 24 27 27",
       rightEye: "M37 27 C39 24 42 24 44 27",
       mouth: "M24 38 C29 47 38 47 43 38",
+    },
+    energised: {
+      leftEye: "M20 25 C22 22 25 22 27 25",
+      rightEye: "M37 25 C39 22 42 22 44 25",
+      mouth: "M23 37 C28 48 37 48 42 37",
+    },
+    grateful: {
+      leftEye: "M21 27 Q23 24 25 27",
+      rightEye: "M39 27 Q41 24 43 27",
+      mouth: "M24 39 C29 46 38 46 43 39",
+    },
+    proud: {
+      leftEye: "M20 26 C22 23 25 23 27 26",
+      rightEye: "M37 26 C39 23 42 23 44 26",
+      mouth: "M24 38 C29 46 38 46 43 38",
     },
   }[mood] ?? {
     leftEye: "M20 27 H26",
@@ -606,7 +615,7 @@ export default function DashboardClient({
               <div>
                 <div className="player-level">
                   <div>
-                    <span>Loop breaker</span>
+                    <span>{getRankTitle(level)}</span>
                     <strong>Lv.{level}</strong>
                   </div>
                   <motion.div

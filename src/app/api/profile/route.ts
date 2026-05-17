@@ -90,7 +90,12 @@ export async function GET(req: Request) {
 
       const [triggers, earnedBadges, userStreaks, recentCheckins] = await Promise.all([
         db.select().from(stressTriggers).where(eq(stressTriggers.userId, user.id)),
-        testMode ? Promise.resolve([]) : db.select().from(badges).where(eq(badges.userId, user.id)),
+        testMode
+          ? Promise.resolve(
+              ["first_checkin", "streak_7", "streak_12", "streak_30", "urge_blocker", "journaller", "loop_buster"]
+                .map((badgeType) => ({ id: `demo-${badgeType}`, badgeType, userId: user.id, earnedAt: new Date() })),
+            )
+          : db.select().from(badges).where(eq(badges.userId, user.id)),
         testMode ? Promise.resolve([]) : db.select().from(streaks).where(eq(streaks.userId, user.id)),
         db.select().from(checkins)
           .where(
