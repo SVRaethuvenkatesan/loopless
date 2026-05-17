@@ -72,8 +72,8 @@ const MOODS = [
   { v: "okay", l: "Okay", c: "#5bb8f5", sub: "Steady", bars: [1, 1, 1] },
   { v: "good", l: "Good", c: "#5a8f6a", sub: "Settled", bars: [1, 1, 1] },
   { v: "energised", l: "Energised", c: "#3DC98E", sub: "Activated", bars: [1, 1, 1] },
-  { v: "grateful", l: "Grateful", c: "#e07b5a", sub: "Grounded", bars: [1, 1, 1] },
-  { v: "proud", l: "Proud", c: "#c9982a", sub: "Progress", bars: [1, 1, 1] },
+  { v: "grateful", l: "Grateful", c: "#3b82f6", sub: "Grounded", bars: [1, 1, 1] },
+  { v: "proud", l: "Proud", c: "#a78bfa", sub: "Progress", bars: [1, 1, 1] },
 ];
 
 function stressTone(stress: number) {

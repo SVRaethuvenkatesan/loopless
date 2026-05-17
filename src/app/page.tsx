@@ -31,7 +31,7 @@ import {
   Wind,
   Zap,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
+
 import LottiePlayer from "@/components/lottie-player";
 
 type DemoKey = "urge" | "checkin" | "insights";
@@ -256,7 +256,7 @@ export default function LandingPage() {
         </div>
 
         <div className="lp-nav-actions">
-          <ThemeToggle />
+
           <Link href="/login" className="lp-nav-login">Log in</Link>
           <Link href="/register" className="lp-nav-cta">
             Get started <ArrowRight size={14} strokeWidth={2.5} />

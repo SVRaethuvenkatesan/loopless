@@ -5,7 +5,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Check, Eye, EyeOff, KeyRound, Loader2, LockKeyhole, ShieldCheck, Sparkles, X } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
+
 
 const ORBITS = [
   { size: 260, top: "12%", left: "10%", delay: 0, color: "rgba(93,219,168,.13)" },
@@ -287,7 +287,7 @@ export default function AccessPage() {
               <small>Break the cycle</small>
             </div>
           </div>
-          <ThemeToggle />
+
         </header>
 
         <section className="access-main">

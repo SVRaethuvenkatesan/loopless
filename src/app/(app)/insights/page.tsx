@@ -338,7 +338,6 @@ export default async function InsightsPage() {
           risk={risk}
           canSendNudge={canSendNudge}
           primaryInsight={primaryInsight}
-          top3HighStress={top3HighStress}
           relapseInsight={relapseInsight}
           chartData={chartData}
           triggerCounts={triggerCounts}

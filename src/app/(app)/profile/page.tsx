@@ -256,6 +256,16 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
   const [tab, setTab] = useState<Tab>("overview");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get("tab");
+      if (urlTab === "badges" || urlTab === "overview") {
+        setTab(urlTab as Tab);
+      }
+    }
+  }, []);
   const [statsDetailsOpen, setStatsDetailsOpen] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [guestName, setGuestName] = useState("");

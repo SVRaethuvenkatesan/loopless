@@ -154,8 +154,8 @@ const LOCAL_STATES: Record<string, Omit<PaResponse, "lastUserMessage">> = {
   profile: {
     message: "Here is your profile and recovery timeline.",
     actionCard: {
-      route: "/profile",
-      buttonLabel: "View Profile",
+      route: "/profile?tab=badges",
+      buttonLabel: "View Badges",
       description: "See your earned badges and total XP."
     },
     inlineWidget: "none",

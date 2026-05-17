@@ -294,8 +294,13 @@ export default function SettingsPage() {
               <div className="settings-card-head">
                 <div>
                   <h3>Privacy and help</h3>
-                  <p>Policy, support, and previous iterations.</p>
+                  <p>Your data, our promise, and where to find support.</p>
                 </div>
+              </div>
+              <div style={{ display: "grid", gap: 6, marginBottom: 14, padding: "12px 14px", background: "var(--bg0)", borderRadius: 14, border: "1px solid var(--border2)", fontSize: 12.5, fontWeight: 700, color: "var(--text2)", lineHeight: 1.6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}><Lock size={14} color="var(--amber)" /> Your data is never sold, shared, or used to train other models.</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}><ShieldCheck size={14} color="var(--mint2)" /> All insights come from your own check-ins — not assumptions.</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}><HelpCircle size={14} color="var(--text3)" /> These insights are not medical advice. Reach out if you need support.</div>
               </div>
               <div className="link-list">
                 <Link className="settings-link" href="/privacy"><Lock size={17} />Privacy Policy<ChevronRight size={16} /></Link>

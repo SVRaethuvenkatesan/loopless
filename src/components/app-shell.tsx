@@ -6,7 +6,6 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import type { Session } from "next-auth";
-import { ThemeToggle } from "@/components/theme-toggle";
 import OnboardingTour from "@/components/onboarding-tour";
 import { computeLevel, computeXP } from "@/lib/xp";
 import { clearLocalTestProgress, createLocalTestProgress, getLocalTestProgress, setLocalTestProgress } from "@/lib/local-test-progress";
@@ -1219,7 +1218,7 @@ export default function AppShell({
                     <span>Guide</span>
                   </button>
                 ) : null}
-                <ThemeToggle />
+
                 <div ref={profileRef} style={{ position: "relative" }}>
                   <button
                     className="profile-btn"

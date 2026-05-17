@@ -59,7 +59,7 @@ function timeAgo(iso: string): string {
 function strengthLabel(rho: number | null) {
   if (rho === null) return { label: "Waiting", tone: "muted" as const };
   const abs = Math.abs(rho);
-  const direction = rho >= 0 ? "positive" : "inverse";
+  const direction = rho >= 0 ? "link" : "opposite pattern";
   if (abs >= 0.7) return { label: `Strong ${direction}`, tone: "hot" as const };
   if (abs >= 0.4) return { label: `Moderate ${direction}`, tone: "warm" as const };
   return { label: `Weak ${direction}`, tone: "muted" as const };
@@ -153,7 +153,7 @@ function StressDetail({ data }: { data: CorrelationInsightData }) {
           <Zap size={19} strokeWidth={2.5} />
           <div>
             <h3>Stress link</h3>
-            <p>Checks whether high-stress days line up with urge frequency.</p>
+            <p>Checks whether high-stress days line up with more urges.</p>
           </div>
         </div>
 
@@ -167,9 +167,9 @@ function StressDetail({ data }: { data: CorrelationInsightData }) {
           <>
             <div className="corr-meter">
               <div className="corr-meter-labels">
-                <span>Inverse</span>
+                <span>Opposite</span>
                 <span>No clear link</span>
-                <span>Positive</span>
+                <span>Direct link</span>
               </div>
               <div className="corr-meter-track">
                 <motion.span
@@ -180,8 +180,7 @@ function StressDetail({ data }: { data: CorrelationInsightData }) {
                 />
               </div>
               <div className="corr-meter-readout">
-                <strong>rho {data.spearmanCoef?.toFixed(2) ?? "0.00"}</strong>
-                <span>{strength.label}</span>
+                <strong>{strength.label}</strong>
               </div>
             </div>
 
@@ -191,14 +190,14 @@ function StressDetail({ data }: { data: CorrelationInsightData }) {
                   <Sparkles size={17} strokeWidth={2.5} />
                   <p>
                     {data.stressUrgeSentence ??
-                      "Your stress and urge logs show a statistically useful pattern."}
+                      "Your stress levels and urges show a clear pattern."}
                   </p>
                 </>
               ) : (
                 <>
                   <ShieldCheck size={17} strokeWidth={2.5} />
                   <p>
-                    There is not enough variation yet for a statistically reliable stress-urge signal.
+                    We don't have enough data yet to spot a clear pattern between your stress and urges.
                   </p>
                 </>
               )}
@@ -213,7 +212,7 @@ function StressDetail({ data }: { data: CorrelationInsightData }) {
           style={{ "--pct": `${highStressPct}%` } as React.CSSProperties}
         >
           <strong>{data.highStressUrgePct ?? "--"}%</strong>
-          <span>high-stress match</span>
+          <span>high-stress days had urges</span>
         </div>
         <div className="corr-mini-list">
           <span>
@@ -221,8 +220,8 @@ function StressDetail({ data }: { data: CorrelationInsightData }) {
             check-in days
           </span>
           <span>
-            <strong>{data.pValue !== null ? data.pValue.toFixed(3) : "--"}</strong>
-            p-value
+            <strong>{data.pValue !== null ? (data.pValue <= 0.05 ? "High" : "Low") : "--"}</strong>
+            confidence
           </span>
         </div>
       </div>
@@ -429,11 +428,11 @@ export default function InsightsClient({
 
       <div className="corr-toolbar">
         <div>
-          <p className="corr-kicker">Correlation engine</p>
+          <p className="corr-kicker">Pattern scanner</p>
           <h2>How your patterns connect</h2>
           <p>
-            Switch between the three signals to see what is unlocked, what is
-            still learning, and what the data says.
+            Switch between the three views to see what's ready, what's
+            still learning, and what your data says.
           </p>
         </div>
         <button type="button" onClick={handleRefresh} disabled={refreshing}>
@@ -451,7 +450,7 @@ export default function InsightsClient({
           <CheckCircle2 size={18} strokeWidth={2.5} />
           <span>
             <strong>{unlockedCount}/3</strong>
-            signals unlocked
+            views ready
           </span>
         </div>
         <div className="corr-summary-card">
@@ -489,7 +488,7 @@ export default function InsightsClient({
               active={activeSignal === "stress"}
               icon={<Zap size={17} strokeWidth={2.5} />}
               title="Stress link"
-              value={data.spearmanCoef !== null ? data.spearmanCoef.toFixed(2) : "--"}
+              value={data.spearmanCoef !== null ? strength.label.split(" ")[0] : "--"}
               status={stressUnlocked ? strength.label : `${data.checkinDays}/14 days`}
               onClick={() => setActiveSignal("stress")}
             />
@@ -506,7 +505,7 @@ export default function InsightsClient({
               icon={<Clock3 size={17} strokeWidth={2.5} />}
               title="Time windows"
               value={timeUnlocked ? "4" : "--"}
-              status={timeUnlocked ? "Daypart view ready" : "14 days + 10 urges"}
+              status={timeUnlocked ? "Ready" : "14 days + 10 urges"}
               onClick={() => setActiveSignal("time")}
             />
           </div>
@@ -526,9 +525,7 @@ export default function InsightsClient({
       </div>
 
       <p className="corr-footnote">
-        Refresh recomputes the engine from your latest check-ins and urge logs.
-        Stress correlation uses Spearman rank correlation with p-value {"<= "}
-        0.05.
+        Refresh re-scans your latest check-ins and urge logs for updated patterns.
       </p>
     </div>
   );
