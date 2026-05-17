@@ -10,7 +10,6 @@ import InsightsTabBar, {
 } from "@/components/insights/tabs/InsightsTabBar";
 import TabToday from "@/components/insights/tabs/TabToday";
 import TabTrends from "@/components/insights/tabs/TabTrends";
-import TabDeepScan from "@/components/insights/tabs/TabDeepScan";
 
 // E5 component
 import InsightsClient from "./insights-client";
@@ -22,12 +21,6 @@ interface CheckinPoint {
   mood: string;
   sleepQuality?: number | null;
   energyLevel?: number | null;
-}
-
-interface DataPoint {
-  label: string;
-  value: string;
-  date?: string;
 }
 
 interface NormalisedInsight {
@@ -58,7 +51,6 @@ export interface DashboardProps {
   risk: NormalisedRisk | null;
   canSendNudge: boolean;
   primaryInsight: NormalisedInsight | null;
-  top3HighStress: DataPoint[];
   relapseInsight: NormalisedRelapse | null;
   chartData: CheckinPoint[];
   triggerCounts: Record<string, number>;
@@ -71,23 +63,20 @@ export interface DashboardProps {
 
 const TAB_HINTS: Record<InsightsTab, string> = {
   today:
-    "The one place to see what matters right now - everything else is optional detail.",
+    "The one place to see what matters right now — everything else is optional detail.",
   correlation:
-    "See how stress, urges, and timing line up when you have enough history.",
+    "See how stress, urges, and timing connect when you have enough history.",
   trends:
-    "Charts and habits over the last month - scroll one section at a time.",
-  deepscan: "Extra transparency: model notes and how your data is handled.",
+    "Your stress, mood, and energy over the last 30 days.",
 };
 
 // ── Main dashboard ─────────────────────────────────────────────────────────────
 export default function InsightsDashboard(props: DashboardProps) {
   const { isDemoMode } = props;
   const [tab, setTab] = useState<InsightsTab>("today");
-  const [openInfo, setOpenInfo] = useState<string | null>(null);
 
   const handleTabChange = (newTab: InsightsTab) => {
     setTab(newTab);
-    setOpenInfo(null);
   };
 
   return (
@@ -119,17 +108,10 @@ export default function InsightsDashboard(props: DashboardProps) {
               risk={props.risk}
               canSendNudge={props.canSendNudge}
               primaryInsight={props.primaryInsight}
-              top3HighStress={props.top3HighStress}
               relapseInsight={props.relapseInsight}
               chartData={props.chartData}
               urgeCount={props.urgeCount}
               triggerCounts={props.triggerCounts}
-              avgSleep={props.avgSleep}
-              avgEnergy={props.avgEnergy}
-              sleepTrend={props.sleepTrend}
-              energyTrend={props.energyTrend}
-              openInfo={openInfo}
-              setOpenInfo={setOpenInfo}
             />
           )}
 
@@ -146,22 +128,10 @@ export default function InsightsDashboard(props: DashboardProps) {
               hasEnoughData={props.hasEnoughData}
               checkinCount={props.checkinCount}
               chartData={props.chartData}
-              triggerCounts={props.triggerCounts}
               avgSleep={props.avgSleep}
               avgEnergy={props.avgEnergy}
               sleepTrend={props.sleepTrend}
               energyTrend={props.energyTrend}
-              openInfo={openInfo}
-              setOpenInfo={setOpenInfo}
-            />
-          )}
-
-          {tab === "deepscan" && (
-            <TabDeepScan
-              checkinCount={props.checkinCount}
-              urgeCount={props.urgeCount}
-              openInfo={openInfo}
-              setOpenInfo={setOpenInfo}
             />
           )}
         </motion.div>

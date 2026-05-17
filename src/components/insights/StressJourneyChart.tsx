@@ -19,8 +19,8 @@ interface CheckinPoint {
   date: string;
   stressLevel: number;
   mood: string;
-  sleepQuality?: number;
-  energyLevel?: number;
+  sleepQuality?: number | null;
+  energyLevel?: number | null;
 }
 
 interface StressJourneyChartProps {

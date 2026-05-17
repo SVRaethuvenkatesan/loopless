@@ -61,7 +61,12 @@ async function getDashboardData(userId: string, testMode: boolean) {
             .where(and(eq(checkins.userId, userId), gte(checkins.checkedInAt, thirtyDaysAgo), checkinMode))
             .orderBy(desc(checkins.checkedInAt)).limit(30),
           testMode ? Promise.resolve([]) : db.select().from(streaks).where(eq(streaks.userId, userId)),
-          testMode ? Promise.resolve([]) : db.select().from(badges).where(eq(badges.userId, userId)).orderBy(desc(badges.earnedAt)),
+          testMode
+            ? Promise.resolve(
+                ["first_checkin", "streak_7", "streak_12", "streak_30", "urge_blocker", "journaller", "loop_buster"]
+                  .map((badgeType) => ({ id: `demo-${badgeType}`, badgeType, userId, earnedAt: new Date() })),
+              )
+            : db.select().from(badges).where(eq(badges.userId, userId)).orderBy(desc(badges.earnedAt)),
           db.select().from(stressTriggers).where(eq(stressTriggers.userId, userId)),
           db.select().from(urgeEvents)
             .where(and(eq(urgeEvents.userId, userId), gte(urgeEvents.occurredAt, sevenDaysAgo), urgeMode))

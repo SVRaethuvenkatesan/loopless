@@ -6,7 +6,6 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import type { Session } from "next-auth";
-import { ThemeToggle } from "@/components/theme-toggle";
 import OnboardingTour from "@/components/onboarding-tour";
 import { computeLevel, computeXP } from "@/lib/xp";
 import { clearLocalTestProgress, createLocalTestProgress, getLocalTestProgress, setLocalTestProgress } from "@/lib/local-test-progress";
@@ -273,6 +272,15 @@ const BOTTOM_NAV: NavItem[] = [
 
 const COLLAPSED_KEY = "loopless-sidebar-collapsed";
 const XP_PANEL_KEY = "loopless-sidebar-xp-expanded";
+
+function getRankTitle(level: number): string {
+  if (level >= 10) return "Recovery Legend";
+  if (level >= 7) return "Lung Champion";
+  if (level >= 5) return "Recovery Pro";
+  if (level >= 3) return "Loop Breaker";
+  if (level >= 2) return "Deep Breather";
+  return "New Breather";
+}
 
 /** App favicon from `src/app/icon.tsx` (served at `/icon`) */
 function SidebarAppIcon({ size = 38 }: { size?: number }) {
@@ -957,7 +965,7 @@ export default function AppShell({
                   <div>
                     <span className="sidebar-label">Current rank</span>
                     <strong className="sidebar-level">Lv.{dataReady ? level : "-"}</strong>
-                    <span className="sidebar-rank">Loop Breaker</span>
+                    <span className="sidebar-rank">{dataReady ? getRankTitle(level) : "—"}</span>
                   </div>
                 </div>
                 <span className="sidebar-xp-chevron">
@@ -1210,7 +1218,7 @@ export default function AppShell({
                     <span>Guide</span>
                   </button>
                 ) : null}
-                <ThemeToggle />
+
                 <div ref={profileRef} style={{ position: "relative" }}>
                   <button
                     className="profile-btn"

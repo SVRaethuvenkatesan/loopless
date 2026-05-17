@@ -1,58 +1,34 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
-  CalendarCheck2,
   Flame,
-  Moon,
-  Zap,
   HeartPulse,
   ArrowRight,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   Sparkles,
+  Clock,
+  X,
+  AlertTriangle,
 } from "lucide-react";
 
-/* ── Mood config (mirrors dashboard MOODS) ──────────────────────────────── */
+/* ── Canonical 8-mood config (matches check-in form) ────────────────────── */
 const MOODS: Record<
   string,
   { label: string; color: string; sub: string; bars: number[] }
 > = {
-  rough: {
-    label: "Rough",
-    color: "#e07b5a",
-    sub: "Heavy load",
-    bars: [1, 0, 0],
-  },
-  meh: {
-    label: "Meh",
-    color: "#c9982a",
-    sub: "Low signal",
-    bars: [1, 1, 0],
-  },
-  flat: {
-    label: "Flat",
-    color: "#9e9e9e",
-    sub: "Neutral",
-    bars: [1, 0, 0],
-  },
-  okay: {
-    label: "Okay",
-    color: "#5bb8f5",
-    sub: "Stable",
-    bars: [1, 1, 1],
-  },
-  good: {
-    label: "Good",
-    color: "#5a8f6a",
-    sub: "Clear run",
-    bars: [1, 1, 1],
-  },
+  overwhelmed: { label: "Overwhelmed", color: "#e07b5a", sub: "Too much", bars: [1, 0, 0] },
+  anxious:     { label: "Anxious",     color: "#c9982a", sub: "On edge",   bars: [1, 0, 0] },
+  flat:        { label: "Flat",        color: "#7b6fa0", sub: "Low signal", bars: [1, 1, 0] },
+  okay:        { label: "Okay",        color: "#5bb8f5", sub: "Steady",    bars: [1, 1, 1] },
+  good:        { label: "Good",        color: "#5a8f6a", sub: "Settled",   bars: [1, 1, 1] },
+  energised:   { label: "Energised",   color: "#3bc98e", sub: "Activated", bars: [1, 1, 1] },
+  grateful:    { label: "Grateful",    color: "#3b82f6", sub: "Grounded",  bars: [1, 1, 1] },
+  proud:       { label: "Proud",       color: "#a78bfa", sub: "Progress",  bars: [1, 1, 1] },
 };
 
-/* ── SVG MoodFace (same as dashboard) ───────────────────────────────────── */
+/* ── SVG MoodFace — all 8 canonical moods ───────────────────────────────── */
 function MoodFace({
   mood,
   color,
@@ -66,15 +42,15 @@ function MoodFace({
     string,
     { leftEye: string; rightEye: string; mouth: string }
   > = {
-    rough: {
+    overwhelmed: {
       leftEye: "M19 25 L25 28",
       rightEye: "M39 28 L45 25",
       mouth: "M25 43 C30 38 36 38 41 43",
     },
-    meh: {
-      leftEye: "M20 27 H26",
-      rightEye: "M38 27 H44",
-      mouth: "M25 42 H41",
+    anxious: {
+      leftEye: "M19 26 L25 24",
+      rightEye: "M39 24 L45 26",
+      mouth: "M25 42 Q33 39 41 42",
     },
     flat: {
       leftEye: "M20 27 H26",
@@ -91,8 +67,23 @@ function MoodFace({
       rightEye: "M37 27 C39 24 42 24 44 27",
       mouth: "M24 38 C29 47 38 47 43 38",
     },
+    energised: {
+      leftEye: "M20 25 C22 22 25 22 27 25",
+      rightEye: "M37 25 C39 22 42 22 44 25",
+      mouth: "M23 37 C28 48 37 48 42 37",
+    },
+    grateful: {
+      leftEye: "M21 27 Q23 24 25 27",
+      rightEye: "M39 27 Q41 24 43 27",
+      mouth: "M24 39 C29 46 38 46 43 39",
+    },
+    proud: {
+      leftEye: "M20 26 C22 23 25 23 27 26",
+      rightEye: "M37 26 C39 23 42 23 44 26",
+      mouth: "M24 38 C29 46 38 46 43 38",
+    },
   };
-  const f = face[mood] ?? face.meh!;
+  const f = face[mood] ?? face.flat!;
   const gradId = `mood-ts-${mood}-${color.replace("#", "")}`;
 
   return (
@@ -147,7 +138,7 @@ function MoodFace({
   );
 }
 
-/* ── Signal bars (same as dashboard mood-signal) ────────────────────────── */
+/* ── Signal bars ────────────────────────────────────────────────────────── */
 function SignalBars({ bars, color }: { bars: number[]; color: string }) {
   return (
     <span style={{ display: "inline-flex", alignItems: "flex-end", gap: 2 }}>
@@ -186,12 +177,8 @@ export interface TodaySummaryCardProps {
   chartData: CheckinPoint[];
   checkinCount: number;
   urgeCount: number;
-  avgSleep: number;
-  avgEnergy: number;
-  sleepTrend: "improving" | "declining" | "stable";
-  energyTrend: "improving" | "declining" | "stable";
   triggerCounts: Record<string, number>;
-  risk: { confidence?: number | null; predictedWindowEnd?: string } | null;
+  risk: { id?: string; confidence?: number | null; predictedWindowEnd?: string } | null;
   canSendNudge: boolean;
   primaryInsight: { insightText: string } | null;
   relapseInsight: { patternText: string } | null;
@@ -202,28 +189,22 @@ export interface TodaySummaryCardProps {
 const stressColor = (s: number) =>
   s <= 3 ? "var(--mint2)" : s <= 6 ? "var(--amber)" : "var(--coral)";
 
-const trendIcon = (t: "improving" | "declining" | "stable") =>
-  t === "improving"
-    ? { Icon: TrendingUp, color: "var(--mint2)", label: "↑" }
-    : t === "declining"
-      ? { Icon: TrendingDown, color: "var(--coral)", label: "↓" }
-      : { Icon: Minus, color: "var(--text3)", label: "—" };
-
 /* ── Component ─────────────────────────────────────────────────────────── */
 export default function TodaySummaryCard({
   chartData,
   checkinCount,
   urgeCount,
-  avgSleep,
-  avgEnergy,
-  sleepTrend,
-  energyTrend,
   triggerCounts,
   risk,
   canSendNudge,
   primaryInsight,
   relapseInsight,
+  hasEnoughData,
 }: TodaySummaryCardProps) {
+  const [riskDismissed, setRiskDismissed] = useState(false);
+  const [riskSnoozed, setRiskSnoozed] = useState(false);
+  const [dismissLoading, setDismissLoading] = useState(false);
+
   const todayPoint = chartData[0] ?? null;
   const recent7 = chartData.slice(0, 7);
   const avgStress7 =
@@ -235,8 +216,8 @@ export default function TodaySummaryCard({
       ? Math.round(((todayPoint.stressLevel - avgStress7) / avgStress7) * 100)
       : 0;
 
-  const moodKey = todayPoint?.mood ?? "meh";
-  const moodData = MOODS[moodKey] ?? MOODS.meh!;
+  const moodKey = todayPoint?.mood ?? "flat";
+  const moodData = MOODS[moodKey] ?? MOODS.flat!;
 
   const topTrigger = Object.entries(triggerCounts).sort(
     (a, b) => b[1] - a[1],
@@ -248,7 +229,30 @@ export default function TodaySummaryCard({
     day: "numeric",
   });
 
-  /* ── Signal logic (replaces OneThingCallout) ──────────────────────────── */
+  /* ── Dismiss/snooze handlers ─────────────────────────────────────────── */
+  const handleRiskAction = async (action: "dismiss" | "snooze") => {
+    if (!risk?.id) return;
+    setDismissLoading(true);
+    try {
+      await fetch("/api/insights/dismiss-risk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ riskId: risk.id, action }),
+      });
+      if (action === "dismiss") {
+        setRiskDismissed(true);
+      } else {
+        setRiskSnoozed(true);
+        setTimeout(() => setRiskSnoozed(false), 15 * 60 * 1000);
+      }
+    } finally {
+      setDismissLoading(false);
+    }
+  };
+
+  /* ── Signal logic ────────────────────────────────────────────────────── */
+  const riskActive = risk && canSendNudge && !riskDismissed && !riskSnoozed;
+
   let signal: {
     label: string;
     text: string;
@@ -257,7 +261,7 @@ export default function TodaySummaryCard({
     tone: "risk" | "pattern" | "insight";
   };
 
-  if (risk && canSendNudge) {
+  if (riskActive) {
     const conf = Math.round((risk.confidence ?? 0) * 100);
     const end = risk.predictedWindowEnd
       ? new Date(risk.predictedWindowEnd)
@@ -291,7 +295,6 @@ export default function TodaySummaryCard({
       tone: "insight",
     };
   } else {
-    // Fallback: always show a stress-based signal
     const stressLevel = todayPoint?.stressLevel ?? 0;
     const stressDesc =
       stressLevel <= 3
@@ -324,38 +327,22 @@ export default function TodaySummaryCard({
     insight: "var(--mint2)",
   };
 
-  /* ── Vitals ───────────────────────────────────────────────────────────── */
-  const sleepT = trendIcon(sleepTrend);
-  const energyT = trendIcon(energyTrend);
-
+  /* ── Vitals (trimmed to 2: Urges + Top Trigger) ──────────────────────── */
   const vitals = [
-    {
-      label: "Check-ins",
-      value: `${checkinCount}`,
-      sub: "days",
-      Icon: CalendarCheck2,
-      color: "var(--mint2)",
-    },
     {
       label: "Urges",
       value: `${urgeCount}`,
-      sub: "urges",
+      sub: "this week",
       Icon: Flame,
       color: "var(--coral)",
     },
     {
-      label: "Avg Sleep",
-      value: avgSleep.toFixed(1),
-      sub: `/ 5 ${sleepT.label}`,
-      Icon: Moon,
-      color: sleepT.color,
-    },
-    {
-      label: "Avg Energy",
-      value: avgEnergy.toFixed(1),
-      sub: `/ 5 ${energyT.label}`,
-      Icon: Zap,
-      color: energyT.color,
+      label: "Top Trigger",
+      value: topTrigger ? topTrigger[0] : "—",
+      sub: topTrigger ? `${topTrigger[1]}×` : "none yet",
+      Icon: AlertTriangle,
+      color: "var(--amber)",
+      isText: true,
     },
   ];
 
@@ -402,7 +389,7 @@ export default function TodaySummaryCard({
                 marginBottom: 3,
               }}
             >
-              Daily Snapshot
+              {hasEnoughData ? "Daily Snapshot" : "Early Preview"}
             </div>
             <div
               style={{
@@ -500,12 +487,12 @@ export default function TodaySummaryCard({
         }}
       />
 
-      {/* ── Section 2: Vitals Row ───────────────────────────────────────── */}
+      {/* ── Section 2: Vitals Row (2 items) ─────────────────────────────── */}
       <div
         className="today-summary-vitals"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateColumns: "1fr 1fr",
           gap: 10,
           padding: "16px 24px",
         }}
@@ -518,7 +505,7 @@ export default function TodaySummaryCard({
               flexDirection: "column",
               alignItems: "center",
               gap: 4,
-              padding: "12px 6px",
+              padding: "14px 10px",
               borderRadius: 14,
               background: "var(--bg0)",
               border: "1px solid var(--border2)",
@@ -531,11 +518,13 @@ export default function TodaySummaryCard({
             />
             <span
               style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 20,
+                fontFamily: v.isText ? "var(--font-sans)" : "var(--font-display)",
+                fontSize: v.isText ? 14 : 22,
                 fontWeight: 700,
                 color: "var(--text1)",
                 lineHeight: 1,
+                textTransform: v.isText ? "capitalize" : undefined,
+                textAlign: "center",
               }}
             >
               {v.value}
@@ -556,7 +545,7 @@ export default function TodaySummaryCard({
         ))}
       </div>
 
-      {/* ── Section 3: The Signal (always visible) ───────────────────────── */}
+      {/* ── Section 3: The Signal (with dismiss/snooze for risk) ─────────── */}
       <div
         style={{
           height: 1,
@@ -619,69 +608,85 @@ export default function TodaySummaryCard({
         >
           {signal.text}
         </p>
-        <Link
-          href={signal.href}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 7,
-            padding: "8px 14px",
-            borderRadius: 10,
-            background: signalAccent[signal.tone],
-            color: "var(--bg0)",
-            fontSize: 12,
-            fontWeight: 800,
-            textDecoration: "none",
-            fontFamily: "var(--font-sans)",
-          }}
-        >
-          {signal.cta}
-          <ArrowRight size={14} strokeWidth={2.5} />
-        </Link>
-      </div>
-
-      {/* ── Section 4: Quick Context Footer ─────────────────────────────── */}
-      <div
-        className="today-summary-footer"
-        style={{
-          padding: "14px 24px 18px",
-          borderTop: "1px solid var(--border2)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        {topTrigger && (
-          <span
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Link
+            href={signal.href}
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              padding: "8px 14px",
+              borderRadius: 10,
+              background: signalAccent[signal.tone],
+              color: "var(--bg0)",
               fontSize: 12,
-              fontWeight: 700,
-              color: "var(--text2)",
+              fontWeight: 800,
+              textDecoration: "none",
+              fontFamily: "var(--font-sans)",
             }}
           >
-            #1 trigger:{" "}
-            <strong style={{ color: "var(--text1)" }}>{topTrigger[0]}</strong>{" "}
-            ({topTrigger[1]}×)
-          </span>
-        )}
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            color: "var(--text3)",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <Moon size={12} strokeWidth={2.5} style={{ color: sleepT.color }} />
-          Sleep {sleepTrend}
-          <span style={{ margin: "0 2px", color: "var(--border3)" }}>·</span>
-          <Zap size={12} strokeWidth={2.5} style={{ color: energyT.color }} />
-          Energy {energyTrend}
-        </span>
+            {signal.cta}
+            <ArrowRight size={14} strokeWidth={2.5} />
+          </Link>
+
+          {/* ── Dismiss / Snooze (only for risk signal) ──────────────── */}
+          <AnimatePresence>
+            {riskActive && (
+              <>
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleRiskAction("snooze")}
+                  disabled={dismissLoading}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "8px 12px",
+                    borderRadius: 10,
+                    fontWeight: 700,
+                    fontSize: 12,
+                    background: "transparent",
+                    color: "var(--text2)",
+                    border: "1.5px solid var(--border3)",
+                    cursor: "pointer",
+                    fontFamily: "var(--font-sans)",
+                  }}
+                >
+                  <Clock size={13} strokeWidth={2.5} />
+                  Snooze 15m
+                </motion.button>
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleRiskAction("dismiss")}
+                  disabled={dismissLoading}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "8px 12px",
+                    borderRadius: 10,
+                    fontWeight: 700,
+                    fontSize: 12,
+                    background: "transparent",
+                    color: "var(--text3)",
+                    border: "1.5px solid var(--border2)",
+                    cursor: "pointer",
+                    fontFamily: "var(--font-sans)",
+                  }}
+                >
+                  <X size={13} strokeWidth={2.5} />
+                  Dismiss
+                </motion.button>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );

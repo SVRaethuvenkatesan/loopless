@@ -256,6 +256,16 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
   const [tab, setTab] = useState<Tab>("overview");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get("tab");
+      if (urlTab === "badges" || urlTab === "overview") {
+        setTab(urlTab as Tab);
+      }
+    }
+  }, []);
   const [statsDetailsOpen, setStatsDetailsOpen] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [guestName, setGuestName] = useState("");
@@ -465,16 +475,24 @@ export default function ProfilePage() {
     ["Streak", streakXP],
   ] as const;
   const moodLabels: Record<string, string> = {
-    rough: "Rough",
-    meh: "Meh",
+    overwhelmed: "Overwhelmed",
+    anxious: "Anxious",
+    flat: "Flat",
     okay: "Okay",
     good: "Good",
+    energised: "Energised",
+    grateful: "Grateful",
+    proud: "Proud",
   };
   const moodTones: Record<string, string> = {
-    rough: "var(--coral)",
-    meh: "var(--amber)",
+    overwhelmed: "var(--coral)",
+    anxious: "var(--amber)",
+    flat: "var(--purple, #7b6fa0)",
     okay: "#5bb8f5",
     good: "var(--mint2)",
+    energised: "var(--mint)",
+    grateful: "var(--coral)",
+    proud: "var(--amber)",
   };
   const moodCounts = recentCheckins.reduce<Record<string, number>>((acc, entry) => {
     acc[entry.mood] = (acc[entry.mood] ?? 0) + 1;

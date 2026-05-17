@@ -28,10 +28,15 @@ function stripMd(t: string) {
   return t.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1").trim();
 }
 
+const FEMALE_HINTS = /female|samantha|zira|fiona|karen|moira|tessa|victoria|susan|hazel|jenny|aria|sara/i;
+
 function pickVoice(voices: SpeechSynthesisVoice[]) {
+  // Prefer a female English voice for a softer tone
+  const enVoices = voices.filter((v) => v.lang.startsWith("en"));
   return (
-    voices.find((v) => v.lang === "en-GB") ??
-    voices.find((v) => v.lang.startsWith("en")) ??
+    enVoices.find((v) => FEMALE_HINTS.test(v.name)) ??
+    enVoices.find((v) => v.lang === "en-GB") ??
+    enVoices[0] ??
     voices[0] ?? null
   );
 }
@@ -58,7 +63,7 @@ export function useVoice() {
     if (!ttsOk || isMuted) return;
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(stripMd(text));
-    utter.rate = 0.95; utter.pitch = 1.05; utter.volume = 1;
+    utter.rate = 0.88; utter.pitch = 1.15; utter.volume = 0.55;
     const go = () => {
       const v = pickVoice(window.speechSynthesis.getVoices());
       if (v) utter.voice = v;
