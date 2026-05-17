@@ -93,7 +93,7 @@ const LOCAL_STATES: Record<string, Omit<PaResponse, "lastUserMessage">> = {
     ]
   },
   insights_explain: {
-    message: "Insights has 4 tabs: \n• Today: Daily snapshot.\n• Correlation: Stress vs Triggers.\n• Trends: Long-term patterns.\n• Deep Scan: AI behavioral cycles.",
+    message: "Insights has 3 tabs: \n• Today: Your daily snapshot and critical signals.\n• Patterns: How your stress, urges, and timing connect.\n• Trends: Your recovery metrics over the last 30 days.",
     actionCard: null,
     inlineWidget: "none",
     uiState: { allowFreeText: true },
@@ -271,7 +271,7 @@ export function useBotEngine() {
     if (/urge|crav|vape|smoke|nicotine|want|need|hit|puff/i.test(t)) return "urge";
     if (/check|log|today|mood/i.test(t)) return "checkin";
     if (/demo|fake|populate|empty chart|no data|test data/i.test(t)) return "demo_data";
-    if (/how.*insight|explain.*insight|what.*insight|tabs|correlation|nudge|trend|deep scan/i.test(t)) return "insights_explain";
+    if (/how.*insight|explain.*insight|what.*insight|tabs|pattern|correlation|nudge|trend/i.test(t)) return "insights_explain";
     if (/stat|insight|data|pattern/i.test(t)) return "insights";
     if (/aware|health|body|lung|recover|timeline|wheel/i.test(t)) return "awareness";
     if (/badge|xp|profile|level/i.test(t)) return "profile";
