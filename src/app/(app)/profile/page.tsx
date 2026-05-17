@@ -390,16 +390,24 @@ export default function ProfilePage() {
     ["Streak", streakXP],
   ] as const;
   const moodLabels: Record<string, string> = {
-    rough: "Rough",
-    meh: "Meh",
+    overwhelmed: "Overwhelmed",
+    anxious: "Anxious",
+    flat: "Flat",
     okay: "Okay",
     good: "Good",
+    energised: "Energised",
+    grateful: "Grateful",
+    proud: "Proud",
   };
   const moodTones: Record<string, string> = {
-    rough: "var(--coral)",
-    meh: "var(--amber)",
+    overwhelmed: "var(--coral)",
+    anxious: "var(--amber)",
+    flat: "var(--purple, #7b6fa0)",
     okay: "#5bb8f5",
     good: "var(--mint2)",
+    energised: "var(--mint)",
+    grateful: "var(--coral)",
+    proud: "var(--amber)",
   };
   const moodCounts = recentCheckins.reduce<Record<string, number>>((acc, entry) => {
     acc[entry.mood] = (acc[entry.mood] ?? 0) + 1;

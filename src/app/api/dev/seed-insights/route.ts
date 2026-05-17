@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const moods = ["overwhelmed", "anxious", "flat", "okay", "good", "great"];
+    const moods = ["overwhelmed", "anxious", "flat", "okay", "good", "energised", "grateful", "proud"];
     const triggers = [
       "stress",
       "boredom",

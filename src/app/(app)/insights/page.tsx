@@ -101,14 +101,24 @@ export default async function InsightsPage() {
     db
       .select()
       .from(mlInsights)
-      .where(and(eq(mlInsights.userId, userId), or(isNull(mlInsights.source), ne(mlInsights.source, "seed"))))
+      .where(and(
+        eq(mlInsights.userId, userId),
+        isDemoMode
+          ? eq(mlInsights.source, "seed")
+          : or(isNull(mlInsights.source), ne(mlInsights.source, "seed")),
+      ))
       .orderBy(desc(mlInsights.generatedAt))
       .limit(5),
 
     db
       .select()
       .from(dailyInsights)
-      .where(and(eq(dailyInsights.userId, userId), or(isNull(dailyInsights.source), ne(dailyInsights.source, "seed"))))
+      .where(and(
+        eq(dailyInsights.userId, userId),
+        isDemoMode
+          ? eq(dailyInsights.source, "seed")
+          : or(isNull(dailyInsights.source), ne(dailyInsights.source, "seed")),
+      ))
       .orderBy(desc(dailyInsights.insightDate))
       .limit(1),
 
@@ -118,7 +128,7 @@ export default async function InsightsPage() {
       .where(
         and(
           eq(riskPredictions.userId, userId),
-          eq(riskPredictions.status, "pending"),
+          eq(riskPredictions.status, isDemoMode ? "seed" : "pending"),
         ),
       )
       .orderBy(desc(riskPredictions.createdAt))
@@ -141,7 +151,9 @@ export default async function InsightsPage() {
       .where(
         and(
           eq(mlInsights.userId, userId),
-          or(isNull(mlInsights.source), ne(mlInsights.source, "seed")),
+          isDemoMode
+            ? eq(mlInsights.source, "seed")
+            : or(isNull(mlInsights.source), ne(mlInsights.source, "seed")),
           eq(mlInsights.patternType, "relapse_trigger"),
         ),
       )
