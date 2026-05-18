@@ -3,12 +3,12 @@
  * Module: Conversational AI Widget (src/components/guide-bot/GuideBotWidget.tsx)
  * 
  * Purpose:
- *   This is the presentation layer for "LoopBot". It renders the floating action
+ *   This is the presentation layer for "AuraBot". It renders the floating action
  *   button (FAB) and the chat interface. It acts as a State Machine UI, responding 
  *   to state updates from `useBotEngine`.
  * 
  * Security & Navigation:
- *   LoopBot never constructs its own URL paths; it only routes the user to 
+ *   AuraBot never constructs its own URL paths; it only routes the user to 
  *   pre-defined secure endpoints via `next/navigation` to prevent XSS or 
  *   hallucinated deep-link attacks.
  */
@@ -22,7 +22,7 @@ import { useVoice } from "./useVoice";
 import "./guide-bot.css";
 
 /* ── SVG Icons ──────────────────────────────────────────────────────────── */
-const LoopBotSVG = ({ size = 18 }: { size?: number }) => (
+const AuraBotSVG = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
     <defs>
       <linearGradient id="loop-grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -185,8 +185,8 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
         whileTap={{ scale: 0.96 }}
         style={{ position: "fixed" }}
       >
-        <span className="gb-fab-bot"><LoopBotSVG size={18} /></span>
-        <span className="gb-fab-label">loopbot</span>
+        <span className="gb-fab-bot"><AuraBotSVG size={18} /></span>
+        <span className="gb-fab-label">aurabot</span>
       </motion.button>
 
       {/* ── Panel ─────────────────────────────────────────────────────── */}
@@ -206,9 +206,9 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
             >
               {/* Header */}
               <div className="gb-header">
-                <div className="gb-avatar" aria-hidden><LoopBotSVG size={22} /></div>
+                <div className="gb-avatar" aria-hidden><AuraBotSVG size={22} /></div>
                 <div className="gb-title">
-                  <strong>loopbot</strong>
+                  <strong>aurabot</strong>
                   <span><span className="gb-online-dot" aria-hidden />{loading ? "Thinking..." : "Always here"}</span>
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
@@ -245,7 +245,7 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
 
                     {/* Bot Message */}
                     <div className="gb-bot-message">
-                      <div className="gb-mini-av" aria-hidden><LoopBotSVG size={14} /></div>
+                      <div className="gb-mini-av" aria-hidden><AuraBotSVG size={14} /></div>
                       <div className="gb-bubble bot">
                         {currentState.message}
                       </div>

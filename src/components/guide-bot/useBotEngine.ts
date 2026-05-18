@@ -3,7 +3,7 @@
  * Module: Conversational AI Engine (src/components/guide-bot/useBotEngine.ts)
  * 
  * Purpose:
- *   This custom React hook powers the `GuideBotWidget` (LoopBot). 
+ *   This custom React hook powers the `GuideBotWidget` (AuraBot). 
  *   It handles Natural Language Processing (NLP) intent routing, translating 
  *   user queries into exact application navigation states.
  * 
@@ -44,7 +44,7 @@ export interface PaResponse {
 
 const LOCAL_STATES: Record<string, Omit<PaResponse, "lastUserMessage">> = {
   welcome: {
-    message: "Hi there! I'm loopBot. What can I help you with right now?",
+    message: "Hi there! I'm auraBot. What can I help you with right now?",
     actionCard: null,
     inlineWidget: "none",
     uiState: { allowFreeText: true },
@@ -306,7 +306,7 @@ export function useBotEngine() {
     if (text === "SYS_INIT") {
       setCurrentState({
         ...LOCAL_STATES.welcome,
-        message: `Hi ${userName || "there"}! I'm loopBot. What can I help you with right now?`,
+        message: `Hi ${userName || "there"}! I'm auraBot. What can I help you with right now?`,
       });
       return;
     }
