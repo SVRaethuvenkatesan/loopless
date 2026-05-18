@@ -1,3 +1,19 @@
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Relational Database Schema (src/lib/db/schema.ts)
+ * 
+ * Purpose:
+ *   This file defines the exact 14-table PostgreSQL schema via Drizzle ORM.
+ *   During the transition to Iteration 3, tables like `urge_events` and 
+ *   `risk_predictions` were heavily normalized to remove data redundancy.
+ * 
+ * Data Governance & Privacy (APP 11):
+ *   To comply with the Privacy Act 1988 (Data Destruction/De-identification),
+ *   we implement the Soft-Delete pattern via the `deletedAt` timestamptz column
+ *   on the `users` table. This satisfies erasure mandates without breaking 
+ *   Drizzle ORM's relational cascading limits, preserving anonymized statistical integrity.
+ */
+
 import {
   pgTable, uuid, text, integer, real, boolean,
   timestamp, jsonb

@@ -1,3 +1,21 @@
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Insights Correlation Engine (src/lib/insights-engine.ts)
+ * 
+ * Purpose:
+ *   This file handles the heavy lifting of the Epic 5: Nicotine-Stress Correlation Engine.
+ *   It calculates the Spearman Rank Correlation Coefficient (rho) between daily stress
+ *   levels and urge frequencies to mathematically prove behavioral patterns.
+ * 
+ * Data Gating Rule:
+ *   To ensure statistical validity, correlation algorithms are gated behind a 14-day
+ *   rule internally, though partial UI elements may render at 7 days.
+ * 
+ * LLM Integration:
+ *   After calculating the math, we use the Google Gemini API to translate the 
+ *   Spearman output and p-value into a plain-English, empathetic insight sentence.
+ */
+
 import { spearmanCorrelation } from "./stats/spearman";
 import { withDb } from "./db/with-db";
 

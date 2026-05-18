@@ -1,3 +1,17 @@
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Dashboard Server Component (src/app/(app)/dashboard/page.tsx)
+ * 
+ * Purpose:
+ *   This is the Next.js Server Component for the primary user dashboard.
+ *   It handles secure, server-side data fetching directly from the PostgreSQL 
+ *   database using Drizzle ORM before sending any HTML to the client browser.
+ * 
+ * Performance & Security:
+ *   - Uses `Promise.all` for concurrent database querying, significantly reducing TTFB (Time to First Byte).
+ *   - Server-Side Rendering (SSR) ensures no raw database credentials or un-anonymized PII 
+ *     is ever exposed to the client-side JavaScript bundle.
+ */
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";

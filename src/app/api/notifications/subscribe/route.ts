@@ -1,3 +1,17 @@
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Web Push Notification API (src/app/api/notifications/subscribe/route.ts)
+ * 
+ * Purpose:
+ *   This API Route manages the registration (POST) and deregistration (DELETE)
+ *   of browser-level Push Subscriptions via the Service Worker.
+ * 
+ * Architecture:
+ *   Subscribes users to the VAPID-secured Web Push protocol. The endpoint,
+ *   p256dh, and auth keys are securely stored in the PostgreSQL database,
+ *   allowing backend cron jobs (like `daily-reminder`) to dispatch nudges
+ *   even when the PWA is closed.
+ */
 export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";

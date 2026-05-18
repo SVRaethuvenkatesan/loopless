@@ -1,3 +1,16 @@
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Emotional Awareness UI (src/components/awareness/DataWheel.tsx)
+ * 
+ * Purpose:
+ *   This interactive component powers the "Coping Wheel" in the Awareness tab.
+ *   It engages users who are actively experiencing cravings by gamifying the 
+ *   selection of coping strategies.
+ * 
+ * UX Engineering:
+ *   Utilizes `framer-motion` for complex SVG segment rotations and physics-based
+ *   spring animations, ensuring a high-end "native app" feel within the PWA.
+ */
 "use client";
 
 import React, { useState } from "react";

@@ -1,3 +1,17 @@
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Conversational AI Widget (src/components/guide-bot/GuideBotWidget.tsx)
+ * 
+ * Purpose:
+ *   This is the presentation layer for "LoopBot". It renders the floating action
+ *   button (FAB) and the chat interface. It acts as a State Machine UI, responding 
+ *   to state updates from `useBotEngine`.
+ * 
+ * Security & Navigation:
+ *   LoopBot never constructs its own URL paths; it only routes the user to 
+ *   pre-defined secure endpoints via `next/navigation` to prevent XSS or 
+ *   hallucinated deep-link attacks.
+ */
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";

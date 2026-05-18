@@ -1,4 +1,18 @@
-// AC 7.1.1 + AC 7.1.3 - Daily insight: rule-based pattern detection + Gemini text generation
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Generative AI Daily Insight Engine (src/lib/daily-insight-engine.ts)
+ * 
+ * Purpose:
+ *   This file fulfills Epic 7 (Adaptive AI), specifically AC 7.1.1 and AC 7.1.3.
+ *   It detects rigid statistical patterns in the user's daily check-ins 
+ *   (e.g., weekend stress drops, poor sleep correlations) and then delegates 
+ *   to the Google Gemini LLM to generate empathetic, plain-English advice.
+ * 
+ * Architecture:
+ *   By combining deterministic rule-based pattern detection with Generative AI, 
+ *   we ensure the LLM never hallucinates the math, but still delivers 
+ *   a conversational, human-like UI experience (The Signal).
+ */
 import { withDb } from "./db/with-db";
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;

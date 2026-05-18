@@ -1,3 +1,17 @@
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Generative AI Check-in Coach (src/app/api/ai/checkin-insight/route.ts)
+ * 
+ * Purpose:
+ *   This Next.js API Route powers the "AI Coach" feedback seen immediately 
+ *   after a user completes a Daily Check-in. It aggregates the user's recent
+ *   history (stress, sleep, triggers) and uses Google Gemini to generate a 
+ *   warm, personalised insight.
+ * 
+ * Data Minimisation (APP 3):
+ *   No PII (names, emails) is sent to the LLM. Only anonymous arrays of 
+ *   integers (stress levels) and strings (triggers) are included in the prompt.
+ */
 // src/app/api/ai/checkin-insight/route.ts
 export const runtime = "nodejs";
 

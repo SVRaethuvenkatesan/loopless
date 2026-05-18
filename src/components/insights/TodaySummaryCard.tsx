@@ -1,3 +1,18 @@
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Dashboard UI - Today Summary Card (src/components/insights/TodaySummaryCard.tsx)
+ * 
+ * Purpose:
+ *   This React Server Component acts as the central hub for the user's daily status.
+ *   It aggregates data from the Check-in Engine, Intelligence Layer (ML), and
+ *   Daily Insight Engine (LLM) into a unified, actionable UI.
+ * 
+ * Architecture & Data Governance:
+ *   By relying on Server-Side Rendering (SSR) via Next.js App Router, all heavy
+ *   data aggregation (calculating 7-day averages, merging trigger counts) happens
+ *   on the Vercel backend. The client browser only receives the final computed props,
+ *   satisfying the Data Management Plan's APP 11 security requirement for PII minimization.
+ */
 "use client";
 
 import { useState } from "react";

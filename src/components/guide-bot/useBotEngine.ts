@@ -1,3 +1,22 @@
+/**
+ * Loopless Vaping Cessation Platform - Iteration 3
+ * Module: Conversational AI Engine (src/components/guide-bot/useBotEngine.ts)
+ * 
+ * Purpose:
+ *   This custom React hook powers the `GuideBotWidget` (LoopBot). 
+ *   It handles Natural Language Processing (NLP) intent routing, translating 
+ *   user queries into exact application navigation states.
+ * 
+ * Data Governance & Privacy (Data Minimisation):
+ *   To comply with APP 3, this bot runs entirely on Ephemeral React State.
+ *   Transcripts are intentionally NOT saved to the database. This guarantees
+ *   that behavioral crises discussed with the bot cannot be scraped or breached.
+ * 
+ * Architecture:
+ *   Instead of allowing a 3rd party LLM to hallucinate UI changes, the `processInput` 
+ *   function acts as a deterministic algorithmic router, maintaining strict App Router access controls.
+ */
+
 import { useCallback, useState } from "react";
 import { usePathname } from "next/navigation";
 
