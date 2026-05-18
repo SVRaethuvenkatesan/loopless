@@ -39,7 +39,6 @@ The app is designed around repeated daily use rather than a marketing-style land
 ## Visual System
 
 Loopless uses warm recovery-game visuals without making the interface feel childish:
-
 - `src/app/icon.tsx` and `src/app/icon-large/route.tsx` generate app icons.
 - Dashboard illustrations are code-native SVG/React where they need to stay crisp and dynamic.
 - Motion is used inside the product, while the README stays lightweight and GitHub-friendly.
