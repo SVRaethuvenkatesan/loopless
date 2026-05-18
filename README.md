@@ -5,7 +5,6 @@ Loopless is a recovery-first web app for breaking nicotine and vaping loops. It 
 <p align="center">
   <strong>Dashboard quests</strong> · <strong>AI insights</strong> · <strong>Urge support</strong> · <strong>Guided onboarding</strong>
 </p>
-
 <p align="center">
   <a href="./src/app/(app)/dashboard/dashboard-client.tsx">Dashboard</a>
   &nbsp;|&nbsp;
