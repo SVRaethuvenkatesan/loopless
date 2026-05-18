@@ -16,7 +16,6 @@ Loopless is a recovery-first web app for breaking nicotine and vaping loops. It 
 ## What It Does
 
 Loopless helps users build a cleaner feedback loop:
-
 - **Dashboard:** streaks, XP, recovery progress, daily quests, badges, weekly stress rhythm, and quick actions.
 - **Check-ins:** stress, mood, triggers, sleep, and energy signals that power the rest of the app.
 - **Urge logging:** capture cravings before they become a relapse pattern.
