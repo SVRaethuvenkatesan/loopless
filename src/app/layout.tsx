@@ -1,4 +1,5 @@
 // src/app/layout.tsx
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SessionProviderWrapper from "@/components/session-provider";
@@ -42,7 +43,9 @@ export default function RootLayout({
           <SessionProviderWrapper>{children}</SessionProviderWrapper>
           <ServiceWorkerRegistration />
           <PwaInstallPrompt />
-          <GlobalLoader />
+          <Suspense fallback={null}>
+            <GlobalLoader />
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
