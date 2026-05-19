@@ -10,6 +10,7 @@ import OnboardingTour from "@/components/onboarding-tour";
 import { computeLevel, computeXP } from "@/lib/xp";
 import { clearLocalTestProgress, createLocalTestProgress, getLocalTestProgress, setLocalTestProgress } from "@/lib/local-test-progress";
 import GuideBotWidget from "@/components/guide-bot/GuideBotWidget";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 // SVG nav icons as inline components
 const HomeIcon = () => (
@@ -1218,6 +1219,8 @@ export default function AppShell({
                     <span>Guide</span>
                   </button>
                 ) : null}
+
+                <ThemeToggle />
 
                 <div ref={profileRef} style={{ position: "relative" }}>
                   <button

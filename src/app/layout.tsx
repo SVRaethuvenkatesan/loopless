@@ -39,7 +39,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light">
+        <ThemeProvider attribute="class" defaultTheme="light">
           <SessionProviderWrapper>{children}</SessionProviderWrapper>
           <ServiceWorkerRegistration />
           <PwaInstallPrompt />
