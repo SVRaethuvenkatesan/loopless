@@ -1,4 +1,4 @@
-# Loopless Sakura
+# Sakura Loopless
 
 Loopless is a recovery-first web app for breaking nicotine and vaping loops. It combines daily check-ins, urge logging, coping tools, risk-aware insights, and a gamified dashboard so users can see progress without turning recovery into another stressful task.
 
