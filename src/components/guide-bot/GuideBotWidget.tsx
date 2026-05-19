@@ -180,7 +180,7 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
       <motion.button
         className={`gb-fab${pulsing ? " gb-pulse" : ""}`}
         onClick={() => { if (open) stopSpeaking(); setOpen((p) => !p); }}
-        aria-label="Open Loopless Guide Bot"
+        aria-label="Open AuraBot"
         aria-expanded={open}
         whileTap={{ scale: 0.96 }}
         style={{ position: "fixed" }}
@@ -198,7 +198,7 @@ export default function GuideBotWidget({ userName = "" }: { userName?: string })
               transition={{ duration: 0.16 }} onClick={() => setOpen(false)} aria-hidden
             />
             <motion.div
-              className="gb-panel" role="dialog" aria-label="Loopless Guide Bot" aria-modal
+              className="gb-panel" role="dialog" aria-label="AuraBot" aria-modal
               initial={{ opacity: 0, y: 30, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.97 }}

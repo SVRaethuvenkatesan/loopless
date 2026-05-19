@@ -358,23 +358,10 @@ export default function DashboardClient({
     const testMode = document.cookie.split(";").some((part) => part.trim() === "loopless_data_mode=test");
     setTestProgress(testMode ? getLocalTestProgress() ?? createLocalTestProgress() : null);
 
-    // One-time voice greeting per session
-    if (typeof window !== "undefined" && "speechSynthesis" in window && !sessionStorage.getItem("ll_greeted")) {
+    // One-time visual greeting per session (pulses the bot)
+    if (typeof window !== "undefined" && !sessionStorage.getItem("ll_greeted")) {
       sessionStorage.setItem("ll_greeted", "1");
-      const fn = (userName || gn || "").split(" ")[0];
-      const msg = fn
-        ? `Hi ${fn}! I'm your Loopless guide — I'm here to help you through your recovery journey.`
-        : "Hi! I'm your Loopless guide — I'm here to help you through your recovery journey.";
       const tid = setTimeout(() => {
-        try {
-          window.speechSynthesis.cancel();
-          const u = new SpeechSynthesisUtterance(msg);
-          u.rate = 0.95; u.pitch = 1.05; u.volume = 1;
-          const vv = window.speechSynthesis.getVoices();
-          const v = vv.find((x) => x.lang === "en-GB") ?? vv.find((x) => x.lang.startsWith("en")) ?? vv[0];
-          if (v) u.voice = v;
-          window.speechSynthesis.speak(u);
-        } catch { /* TTS not available */ }
         window.dispatchEvent(new CustomEvent("loopless:greet"));
       }, 1000);
       return () => clearTimeout(tid);
