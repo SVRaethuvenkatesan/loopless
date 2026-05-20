@@ -519,7 +519,7 @@ export default function LandingPage() {
             <span>Previous iterations</span>
             <a href="https://iteration1.loopless.tech" target="_blank" rel="noreferrer">Iteration 1</a>
             <a href="https://iteration2.loopless.tech" target="_blank" rel="noreferrer">Iteration 2</a>
-            <a href="https://iteration3.loopless.tech" target="_blank" rel="noreferrer">Iteration 3</a>
+            <a href="https://sakura.loopless.tech" target="_blank" rel="noreferrer">Iteration 3</a>
           </div>
         </motion.div>
 
