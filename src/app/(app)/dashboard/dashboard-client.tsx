@@ -475,7 +475,12 @@ export default function DashboardClient({
         .orbit.a{right:34%;top:18%;}.orbit.b{right:10%;bottom:18%;background:#e07b5a;box-shadow:0 0 22px #e07b5a;}
         .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
         .section-head h2{font-size:21px;letter-spacing:0;}
-        .section-head a,.section-head button{font-size:12px;font-weight:900;color:var(--mint2);background:none;border:0;cursor:pointer;}
+        .section-action{min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid color-mix(in srgb,var(--mint2) 34%,var(--border2));border-radius:12px;background:color-mix(in srgb,var(--mint) 9%,var(--bg0));color:var(--mint2);font-family:var(--font-sans);font-size:12px;font-weight:950;text-decoration:none;cursor:pointer;box-shadow:0 8px 22px rgba(21,31,26,.06);transition:transform .14s,border-color .14s,background .14s,box-shadow .14s;}
+        .section-action:hover{transform:translateY(-1px);background:color-mix(in srgb,var(--mint) 15%,var(--bg0));border-color:color-mix(in srgb,var(--mint2) 54%,var(--border2));box-shadow:0 12px 28px rgba(21,31,26,.1);}
+        .section-action:focus-visible{outline:3px solid color-mix(in srgb,var(--mint2) 28%,transparent);outline-offset:2px;}
+        .section-action svg{width:15px;height:15px;flex:0 0 auto;}
+        .section-action.is-active{background:var(--mint2);border-color:var(--mint2);color:var(--bg0);}
+        .dark .section-action{box-shadow:none;background:color-mix(in srgb,var(--mint) 10%,var(--bg2));}
         .checkin-panel{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:16px;align-items:stretch;}
         .stress-box{border:1px solid var(--border2);border-radius:16px;background:var(--bg0);padding:16px;}
         .stress-read{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px;}
@@ -829,7 +834,10 @@ export default function DashboardClient({
                     <p className="dash-eyebrow">Week map</p>
                     <h2>Stress rhythm</h2>
                   </div>
-                  <Link href="/checkin">History</Link>
+                  <Link className="section-action" href="/checkin" aria-label="View check-in history">
+                    <IcoClipboard />
+                    History
+                  </Link>
                 </div>
                 <div data-tour="tour-week-map">
                   <WeekChart checkins={recentCheckins} />
@@ -842,7 +850,13 @@ export default function DashboardClient({
                     <p className="dash-eyebrow">Recovery game</p>
                     <h2>Lung recovery</h2>
                   </div>
-                  <button type="button" onClick={() => setShowMilestones((v) => !v)}>
+                  <button
+                    type="button"
+                    className={`section-action ${showMilestones ? "is-active" : ""}`}
+                    aria-expanded={showMilestones}
+                    onClick={() => setShowMilestones((v) => !v)}
+                  >
+                    <IcoStar />
                     {showMilestones ? "Hide" : "Milestones"}
                   </button>
                 </div>
@@ -937,5 +951,3 @@ export default function DashboardClient({
     </>
   );
 }
-
-

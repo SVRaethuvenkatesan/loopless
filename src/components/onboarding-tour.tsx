@@ -426,25 +426,31 @@ export default function OnboardingTour({
           <style>{`
             .tour-layer{position:fixed;inset:0;z-index:10000;pointer-events:auto;touch-action:none;}
             .tour-spotlight{position:fixed;border-radius:18px;border:2px solid var(--mint2);box-shadow:0 0 0 9999px rgba(13,20,16,.68),0 0 0 7px color-mix(in srgb,var(--mint2) 18%,transparent),0 18px 60px rgba(0,0,0,.18);pointer-events:none;transition:top .22s ease,left .22s ease,width .22s ease,height .22s ease;}
-            .tour-card{position:fixed;background:var(--bg2);border:1px solid var(--border2);border-radius:18px;box-shadow:0 22px 70px rgba(0,0,0,.26);pointer-events:auto;overflow:hidden;color:var(--text1);}
-            .tour-card-head{display:flex;align-items:center;gap:12px;padding:13px 14px 0;}
-            .tour-monster{width:74px;height:74px;flex:0 0 auto;margin:-6px 0 -8px;}
+            .tour-card{position:fixed;background:var(--bg2);border:1px solid var(--border2);border-radius:22px;box-shadow:0 22px 70px rgba(0,0,0,.26);pointer-events:auto;color:var(--text1);overflow:visible;}
+            .tour-card:before{content:"";position:absolute;left:60px;top:-12px;width:24px;height:24px;background:var(--bg2);border-left:1px solid var(--border2);border-top:1px solid var(--border2);transform:rotate(45deg);border-radius:5px 0 0 0;}
+            .tour-card-head{position:relative;display:grid;grid-template-columns:86px minmax(0,1fr) 38px;align-items:center;gap:12px;padding:16px 16px 4px;}
+            .tour-monster{width:86px;height:86px;flex:0 0 auto;margin:-42px 0 -2px;border-radius:22px;background:linear-gradient(180deg,#f5fffb,#e9f8f1);border:1px solid var(--border2);box-shadow:0 14px 34px rgba(0,0,0,.14);overflow:hidden;}
+            .dark .tour-monster{background:linear-gradient(180deg,#17231d,#101713);}
+            .tour-speaker{display:grid;gap:3px;min-width:0;}
             .tour-kicker{font-size:11px;font-weight:950;color:var(--mint2);text-transform:uppercase;letter-spacing:.08em;}
-            .tour-close{margin-left:auto;width:34px;height:34px;border-radius:11px;border:1px solid var(--border2);background:var(--bg0);color:var(--text2);display:grid;place-items:center;cursor:pointer;}
-            .tour-body{padding:8px 18px 16px;}
-            .tour-body h2{font-family:var(--font-display);font-size:22px;line-height:1.08;font-weight:850;color:var(--text1);margin:0 0 8px;}
-            .tour-body p{font-size:13px;line-height:1.55;font-weight:750;color:var(--text2);margin:0;}
+            .tour-speaker strong{font-size:16px;line-height:1.1;color:var(--text1);font-weight:950;}
+            .tour-close{width:38px;height:38px;border-radius:13px;border:1px solid var(--border2);background:var(--bg0);color:var(--text2);display:grid;place-items:center;cursor:pointer;}
+            .tour-body{padding:12px 20px 16px;}
+            .tour-body h2{font-family:var(--font-display);font-size:24px;line-height:1.06;font-weight:850;color:var(--text1);margin:0 0 9px;}
+            .tour-body p{font-size:14px;line-height:1.55;font-weight:800;color:var(--text2);margin:0;}
             .tour-progress{display:flex;gap:5px;margin-top:15px;}
             .tour-progress span{height:6px;flex:1;border-radius:999px;background:var(--bg0);border:1px solid var(--border2);overflow:hidden;}
             .tour-progress i{display:block;height:100%;border-radius:999px;background:var(--mint2);}
-            .tour-actions{display:flex;align-items:center;gap:8px;padding:0 18px 18px;}
+            .tour-actions{display:flex;align-items:center;gap:8px;padding:0 20px 20px;}
             .tour-actions button{min-height:42px;border-radius:13px;font-family:var(--font-sans);font-weight:950;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
             .tour-actions button:disabled{opacity:.45;cursor:not-allowed;}
             .tour-secondary{padding:0 13px;border:1px solid var(--border2);background:var(--bg0);color:var(--text2);}
             .tour-primary{flex:1;border:0;background:var(--text1);color:var(--bg0);padding:0 14px;}
             @media(max-width:560px){
               .tour-card{left:12px!important;right:12px!important;top:auto!important;bottom:calc(90px + env(safe-area-inset-bottom));width:auto!important;}
-              .tour-monster{width:66px;height:66px;}
+              .tour-card:before{left:44px;}
+              .tour-card-head{grid-template-columns:70px minmax(0,1fr) 38px;padding:14px 14px 2px;}
+              .tour-monster{width:70px;height:70px;margin-top:-34px;border-radius:18px;}
               .tour-body h2{font-size:20px;}
             }
           `}</style>
@@ -477,10 +483,11 @@ export default function OnboardingTour({
               <div className="tour-monster" aria-hidden>
                 <LottiePlayer src="/lottie/monster.lottie" />
               </div>
-              <div>
+              <div className="tour-speaker">
                 <div className="tour-kicker">
                   Guide {index + 1} of {STEPS.length}
                 </div>
+                <strong>Loop is guiding you</strong>
               </div>
               <button className="tour-close" type="button" onClick={closeTour} aria-label="Close tutorial">
                 <X size={17} />
