@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import {
   Activity,
   ArrowRight,
@@ -18,6 +19,7 @@ import {
   Lock,
   LucideIcon,
   MessageCircle,
+  Moon,
   PenLine,
   Play,
   ShieldCheck,
@@ -25,6 +27,7 @@ import {
   Sparkles,
   Sprout,
   Star,
+  Sun,
   Timer,
   Trophy,
   Users,
@@ -47,35 +50,35 @@ type DemoPanel = {
 };
 
 const HERO_METRICS = [
-  { label: "Urge tools", value: "4", detail: "breath, walk, cold, journal" },
-  { label: "AI moments", value: "3", detail: "coach, insight, battle" },
-  { label: "Focus", value: "24/7", detail: "works when urges show up" },
+  { label: "Craving tools", value: "4", detail: "breath, cold, walk, journal" },
+  { label: "Nicotine loops", value: "3", detail: "trigger, urge, reset" },
+  { label: "Focus", value: "24/7", detail: "ready when cravings hit" },
 ];
 
 const DEMOS: DemoPanel[] = [
   {
     key: "urge",
-    label: "Urge SOS",
-    title: "Turn a craving into a live battle.",
-    copy: "Pick the trigger, set intensity, and fight back with short coping tools that visibly weaken the boss.",
+    label: "Vape SOS",
+    title: "Turn a smoke or vape craving into a live battle.",
+    copy: "Pick the nicotine trigger, set intensity, and fight back with short coping tools that visibly weaken the urge.",
     Icon: Zap,
     accent: "#e07b5a",
-    stats: ["Stress 8/10", "Boss HP 42%", "2 hit combo"],
+    stats: ["Craving 8/10", "Urge HP 42%", "2 reset combo"],
   },
   {
     key: "checkin",
-    label: "Daily Check-in",
-    title: "Capture the day without making it feel clinical.",
-    copy: "Mood, sleep, urge context, and quick reflection become a useful pattern map instead of another boring form.",
+    label: "Quit Check-in",
+    title: "Track what makes nicotine feel tempting.",
+    copy: "Stress, sleep, mood, smoke/vape cues, and quick reflection become a useful pattern map instead of another boring form.",
     Icon: HeartPulse,
     accent: "#5bb8f5",
-    stats: ["Mood steady", "Sleep 7h", "Risk lower"],
+    stats: ["Stress steady", "Sleep 7h", "Risk lower"],
   },
   {
     key: "insights",
-    label: "Pattern AI",
-    title: "Spot the loop before it gets loud.",
-    copy: "Loopless connects stress, timing, social context, and history so the next intervention feels personal.",
+    label: "Trigger AI",
+    title: "Spot the nicotine loop before it gets loud.",
+    copy: "Loopless connects stress, timing, social context, and past cravings so the next reset feels personal.",
     Icon: Brain,
     accent: "#7b6fa0",
     stats: ["Top trigger", "Peak hour", "Coach note"],
@@ -83,25 +86,25 @@ const DEMOS: DemoPanel[] = [
 ];
 
 const FLOW = [
-  { Icon: Gauge, title: "Name the urge", text: "Intensity, trigger, context, and timing in seconds." },
-  { Icon: Wind, title: "Interrupt the body", text: "Breathing and cold-shock tools calm the physical spike." },
-  { Icon: PenLine, title: "Externalise the thought", text: "Journaling gets the craving out of your head and onto the screen." },
-  { Icon: LineChart, title: "Learn the pattern", text: "Check-ins and urges build your personal risk map." },
+  { Icon: Gauge, title: "Name the craving", text: "Intensity, nicotine trigger, context, and timing in seconds." },
+  { Icon: Wind, title: "Interrupt the urge", text: "Breathing, cold-shock, and short action tools calm the physical spike." },
+  { Icon: PenLine, title: "Get it out", text: "Journaling gets the smoke or vape thought out of your head and onto the screen." },
+  { Icon: LineChart, title: "Learn the loop", text: "Check-ins and cravings build your personal quit-risk map." },
 ];
 
 const FEATURES = [
-  { Icon: BellRing, title: "Smart nudges", text: "Follow-ups after risky windows without feeling spammy.", tone: "rose" },
-  { Icon: Trophy, title: "XP and ranks", text: "Progress is visible, compact, and tied to real protective actions.", tone: "amber" },
-  { Icon: ShieldCheck, title: "Crisis support", text: "High-intensity moments surface real support options quickly.", tone: "blue" },
+  { Icon: BellRing, title: "Craving nudges", text: "Follow-ups after risky smoke or vape windows without feeling spammy.", tone: "rose" },
+  { Icon: Trophy, title: "Quit XP", text: "Progress is visible, compact, and tied to real protective actions.", tone: "amber" },
+  { Icon: ShieldCheck, title: "High-urge support", text: "Intense nicotine moments surface real support options quickly.", tone: "blue" },
   { Icon: Lock, title: "Privacy-first", text: "Built around personal logs and transparent AI fallbacks.", tone: "green" },
-  { Icon: Users, title: "Young-adult tone", text: "No shame, no lecture, no medical waiting-room energy.", tone: "violet" },
+  { Icon: Users, title: "No-shame tone", text: "No lecture, no scare tactics, no medical waiting-room energy.", tone: "violet" },
   { Icon: Activity, title: "Offline-ready feel", text: "Core interactions stay fast and app-like under pressure.", tone: "teal" },
 ];
 
 const PROOF = [
   { value: "Under 2 min", label: "to complete setup" },
-  { value: "One tap", label: "to open Urge SOS" },
-  { value: "Live", label: "pattern updates after logs" },
+  { value: "One tap", label: "to open Vape SOS" },
+  { value: "Live", label: "nicotine pattern updates" },
   { value: "Clear", label: "AI or preset labels" },
 ];
 
@@ -114,6 +117,30 @@ function PetalBackground() {
     <div className="lp-petal-bg" aria-hidden>
       <LottiePlayer src="/lottie/Sakura fall.lottie" />
     </div>
+  );
+}
+
+function LandingThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === "dark";
+  const Icon = isDark ? Sun : Moon;
+
+  return (
+    <button
+      type="button"
+      className="lp-theme-toggle"
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+    >
+      <Icon size={17} strokeWidth={2.5} />
+    </button>
   );
 }
 
@@ -256,7 +283,7 @@ export default function LandingPage() {
         </div>
 
         <div className="lp-nav-actions">
-
+          <LandingThemeToggle />
           <Link href="/login" className="lp-nav-login">Log in</Link>
           <Link href="/register" className="lp-nav-cta">
             Get started <ArrowRight size={14} strokeWidth={2.5} />
@@ -274,16 +301,17 @@ export default function LandingPage() {
           >
             <div className="lp-eyebrow">
               <HeartPulse size={16} strokeWidth={2.5} />
-              Stress-first quit support
+              Quit support for smoking and vaping
             </div>
-            <h1>Reset the urge before it becomes a loop.</h1>
+            <h1>Beat the smoke or vape urge before it becomes a loop.</h1>
             <p>
-              Loopless helps you catch the stress spike, pick a short reset,
-              and turn each craving into useful data for the next hard minute.
+              Loopless helps you catch the stress spike behind nicotine cravings,
+              pick a short reset, and turn each smoke or vape urge into useful
+              data for the next hard minute.
             </p>
             <div className="lp-hero-actions">
               <Link href="/register" className="lp-primary">
-                Start stress reset <ArrowRight size={18} strokeWidth={2.5} />
+                Start quitting smarter <ArrowRight size={18} strokeWidth={2.5} />
               </Link>
               <Link href="/guest" className="lp-secondary">
                 <Play size={17} strokeWidth={2.5} /> Try as guest
@@ -330,8 +358,8 @@ export default function LandingPage() {
       <section id="demo" className="lp-section lp-demo">
         <div className="lp-section-head">
           <span>Interactive preview</span>
-          <h2>One app, three moments where cravings usually win.</h2>
-          <p>Switch between the core experiences. The interface changes because the user state changes.</p>
+          <h2>One app, three moments where nicotine cravings usually win.</h2>
+          <p>Switch between the core experiences for smoke and vape triggers, quick resets, and pattern learning.</p>
         </div>
 
         <div className="lp-demo-grid">
@@ -392,7 +420,7 @@ export default function LandingPage() {
       <section id="flow" className="lp-section lp-flow">
         <div className="lp-section-head">
           <span>How it works</span>
-          <h2>Fast enough for a craving, structured enough to learn from.</h2>
+          <h2>Fast enough for a nicotine craving, structured enough to learn from.</h2>
         </div>
         <div className="lp-flow-track">
           {FLOW.map(({ Icon, title, text }, i) => (
@@ -416,7 +444,7 @@ export default function LandingPage() {
       <section id="insights" className="lp-section lp-feature-zone">
         <div className="lp-section-head">
           <span>Built for repeat use</span>
-          <h2>Beautiful, but still operational when someone is stressed.</h2>
+          <h2>Friendly when quitting feels tense, practical when the urge is loud.</h2>
           <p>Every surface is designed to be quick to scan, quick to act on, and clear about what is AI-generated.</p>
         </div>
 
@@ -448,9 +476,9 @@ export default function LandingPage() {
           </span>
           <h2>The app gets calmer as the loop gets clearer.</h2>
           <p>
-            Log urges, protect streaks, and let the dashboard surface the small
-            patterns: sleep dips, social context, peak craving windows, and the
-            tools that actually helped.
+            Log smoke and vape urges, protect streaks, and let the dashboard
+            surface the small patterns: sleep dips, social context, peak craving
+            windows, and the tools that actually helped.
           </p>
           <Link href="/register" className="lp-primary">
             Start tracking <ArrowRight size={18} strokeWidth={2.5} />
@@ -480,9 +508,9 @@ export default function LandingPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <span className="lp-eyebrow"><Sparkles size={14} strokeWidth={2.5} /> Ready when the urge is not polite</span>
+          <span className="lp-eyebrow"><Sparkles size={14} strokeWidth={2.5} /> Ready when nicotine is not polite</span>
           <h2>Build a quit system you can actually open in the hard minute.</h2>
-          <p>Log the craving, run a reset, see the pattern. Free to start.</p>
+          <p>Log the smoke or vape craving, run a reset, see the pattern. Free to start.</p>
           <div className="lp-final-actions">
             <Link href="/register" className="lp-primary">Create account <ArrowRight size={18} /></Link>
             <Link href="/guest" className="lp-secondary"><Play size={15} strokeWidth={2.5} /> Try as guest</Link>
@@ -503,11 +531,12 @@ export default function LandingPage() {
 function LandingStyles() {
   return (
     <style>{`
+      .lp-page,.lp-page *,.lp-page *:before,.lp-page *:after{box-sizing:border-box;}
       .lp-page{position:relative;min-height:100vh;background:
         radial-gradient(circle at 82% 18%,rgba(120,229,184,.2),transparent 30%),
         radial-gradient(circle at 12% 86%,rgba(91,184,245,.14),transparent 34%),
         linear-gradient(135deg,#f4faf6 0%,#edf8f4 52%,#f7fbff 100%);
-        color:#101713;overflow:hidden;}
+        color:#101713;width:100%;max-width:100vw;overflow-x:clip;overflow-y:visible;}
       .dark .lp-page{background:
         radial-gradient(circle at 82% 18%,rgba(120,229,184,.14),transparent 32%),
         radial-gradient(circle at 12% 86%,rgba(91,184,245,.1),transparent 34%),
@@ -588,6 +617,20 @@ function LandingStyles() {
 
       /* actions */
       .lp-nav-actions{display:flex;align-items:center;gap:6px;}
+      .lp-theme-toggle{
+        display:grid;place-items:center;
+        width:38px;height:38px;
+        border:1px solid rgba(16,23,19,.1);
+        border-radius:12px;
+        background:rgba(255,255,255,.56);
+        color:#102018;
+        cursor:pointer;
+        transition:transform .14s,background .14s,color .14s,border-color .14s;
+        flex-shrink:0;
+      }
+      .lp-theme-toggle:hover{transform:translateY(-1px);background:rgba(255,255,255,.86);border-color:rgba(16,23,19,.18);}
+      .dark .lp-theme-toggle{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:#f4fff9;}
+      .dark .lp-theme-toggle:hover{background:rgba(120,229,184,.14);border-color:rgba(120,229,184,.28);color:#78e5b8;}
       .lp-nav-login{
         padding:8px 13px;border-radius:12px;
         color:#3d4d44;text-decoration:none;
@@ -613,10 +656,60 @@ function LandingStyles() {
       .dark .lp-nav-cta{background:linear-gradient(135deg,#2d6245,#3bc98e)!important;color:#071a0f!important;border-color:rgba(59,201,142,.35)!important;}
 
       .lp-hero{position:relative;min-height:100svh;padding:40px 0 20px;background:transparent;overflow:hidden;display:flex;align-items:flex-start;box-sizing:border-box;}
-      .lp-hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(16,32,24,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(16,32,24,.055) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(180deg,#000,transparent 82%);pointer-events:none;}
-      .lp-hero:after{content:"";position:absolute;left:-12%;top:18%;width:52%;height:58%;border-radius:50%;background:rgba(255,255,255,.42);filter:blur(60px);pointer-events:none;}
-      .dark .lp-hero:before{background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);}
-      .dark .lp-hero:after{background:rgba(120,229,184,.08);}
+      .lp-hero:before{
+        content:"";position:absolute;left:0;right:0;bottom:-180px;height:720px;
+        background:
+          radial-gradient(circle at center,rgba(255,255,255,.74) 0 34%,rgba(255,255,255,.28) 48%,transparent 72%),
+          radial-gradient(circle at center,rgba(120,229,184,.22),transparent 64%);
+        width:96px;height:96px;border-radius:999px;
+        filter:blur(.2px);
+        opacity:.66;
+        box-shadow:
+          9vw -20px 0 18px rgba(255,255,255,.26),
+          19vw -80px 0 5px rgba(120,229,184,.18),
+          31vw -26px 0 26px rgba(255,255,255,.2),
+          45vw -118px 0 10px rgba(91,184,245,.14),
+          58vw -48px 0 21px rgba(255,255,255,.22),
+          71vw -96px 0 7px rgba(120,229,184,.16),
+          84vw -28px 0 24px rgba(255,255,255,.2),
+          94vw -146px 0 9px rgba(91,184,245,.13);
+        animation:lp-smoke-rise 24s linear infinite;
+        pointer-events:none;
+      }
+      .lp-hero:after{
+        content:"";position:absolute;left:-12%;top:18%;width:52%;height:58%;border-radius:50%;
+        background:
+          radial-gradient(circle at 40% 50%,rgba(255,255,255,.44),transparent 62%),
+          radial-gradient(circle at 70% 40%,rgba(120,229,184,.13),transparent 68%);
+        filter:blur(60px);
+        pointer-events:none;
+        animation:lp-smoke-drift 14s ease-in-out infinite;
+      }
+      .dark .lp-hero:before{
+        background:
+          radial-gradient(circle at center,rgba(244,255,249,.2) 0 34%,rgba(244,255,249,.1) 48%,transparent 72%),
+          radial-gradient(circle at center,rgba(120,229,184,.18),transparent 64%);
+        box-shadow:
+          9vw -20px 0 18px rgba(244,255,249,.09),
+          19vw -80px 0 5px rgba(120,229,184,.13),
+          31vw -26px 0 26px rgba(244,255,249,.08),
+          45vw -118px 0 10px rgba(91,184,245,.1),
+          58vw -48px 0 21px rgba(244,255,249,.08),
+          71vw -96px 0 7px rgba(120,229,184,.12),
+          84vw -28px 0 24px rgba(244,255,249,.08),
+          94vw -146px 0 9px rgba(91,184,245,.1);
+      }
+      .dark .lp-hero:after{background:radial-gradient(circle at 40% 50%,rgba(120,229,184,.09),transparent 62%),radial-gradient(circle at 70% 40%,rgba(91,184,245,.07),transparent 68%);}
+      @keyframes lp-smoke-rise{
+        0%{transform:translate3d(0,160px,0) scale(.88);opacity:0;}
+        12%{opacity:.66;}
+        70%{opacity:.5;}
+        100%{transform:translate3d(26px,-620px,0) scale(1.28);opacity:0;}
+      }
+      @keyframes lp-smoke-drift{
+        0%,100%{transform:translate3d(0,0,0) scale(1);}
+        50%{transform:translate3d(28px,-18px,0) scale(1.08);}
+      }
       .lp-hero-grid{position:relative;z-index:2;width:min(1180px,calc(100vw - 32px));margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(350px,460px);gap:36px;align-items:center;}
       .lp-hero-copy{position:relative;max-width:650px;}
       .lp-eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;color:#2d7d59;font-size:12px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;}
@@ -763,6 +856,7 @@ function LandingStyles() {
       /* ── Footer ── */
       .lp-final{
         position:relative;overflow:hidden;
+        width:100%;
         margin-top:0;
         padding:80px 18px 80px;
         text-align:center;color:white;
@@ -833,7 +927,7 @@ function LandingStyles() {
         .lp-brand-badge,.lp-nav-login{display:none!important;}
         .lp-brand strong{font-size:16px;}
         .lp-hero{padding-top:40px;min-height:100svh}
-        .lp-hero h1{font-size:48px}
+        .lp-hero h1{font-size:clamp(40px,12vw,48px)}
         .lp-stress-visual{height:340px;border-radius:0}
         .lp-float-card{display:none}
         .lp-stress-lottie{width:96%;height:66%}

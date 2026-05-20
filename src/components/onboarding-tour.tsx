@@ -184,6 +184,7 @@ export default function OnboardingTour({
   const measureTimerRef = useRef<number | null>(null);
   const frameRef = useRef<number | null>(null);
   const step = STEPS[index];
+  const hasMeasuredTarget = rect !== null;
 
   const markSeen = useCallback(() => {
     try {
@@ -447,28 +448,31 @@ export default function OnboardingTour({
               .tour-body h2{font-size:20px;}
             }
           `}</style>
-          <motion.div
-            className="tour-spotlight"
-            animate={{
-              top: spotlight.top,
-              left: spotlight.left,
-              width: spotlight.width,
-              height: spotlight.height,
-            }}
-            style={{
-              top: spotlight.top,
-              left: spotlight.left,
-              width: spotlight.width,
-              height: spotlight.height,
-            }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-          />
-          <motion.section
-            className="tour-card"
-            style={{ width: cardPos.width, left: cardPos.left, top: cardPos.top }}
-            animate={{ left: cardPos.left, top: cardPos.top }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-          >
+          {hasMeasuredTarget ? (
+            <motion.div
+              className="tour-spotlight"
+              animate={{
+                top: spotlight.top,
+                left: spotlight.left,
+                width: spotlight.width,
+                height: spotlight.height,
+              }}
+              style={{
+                top: spotlight.top,
+                left: spotlight.left,
+                width: spotlight.width,
+                height: spotlight.height,
+              }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            />
+          ) : null}
+          {hasMeasuredTarget ? (
+            <motion.section
+              className="tour-card"
+              style={{ width: cardPos.width, left: cardPos.left, top: cardPos.top }}
+              animate={{ left: cardPos.left, top: cardPos.top }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
             <div className="tour-card-head">
               <div className="tour-monster" aria-hidden>
                 <LottiePlayer src="/lottie/monster.lottie" />
@@ -512,7 +516,8 @@ export default function OnboardingTour({
                 {index === STEPS.length - 1 ? null : <ChevronRight size={16} />}
               </button>
             </div>
-          </motion.section>
+            </motion.section>
+          ) : null}
         </motion.div>
       ) : null}
     </AnimatePresence>

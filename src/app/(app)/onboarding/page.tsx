@@ -117,7 +117,7 @@ function Styles() {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [ageGroup, setAgeGroup] = useState("");
@@ -175,6 +175,7 @@ export default function OnboardingPage() {
       }
       if (guestId) setStoredGuest({ id: guestId, name: guestName || "Guest", age: ageGroup, triggers });
       localStorage.setItem("loopless_onboarding_done", "1");
+      await update({ needsOnboarding: false });
       router.push("/dashboard");
     } catch (err: any) {
       setError(err?.message ?? "Could not save onboarding.");

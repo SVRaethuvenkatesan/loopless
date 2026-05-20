@@ -8,6 +8,7 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl, cookies } }) {
       const isLoggedIn = !!auth?.user;
+      const needsOnboarding = !!auth?.user?.needsOnboarding;
       const path = nextUrl.pathname;
 
       // Project access gate — runs before any auth logic
@@ -45,9 +46,13 @@ export const authConfig = {
         return Response.redirect(new URL("/login", nextUrl));
       }
 
+      if (isLoggedIn && needsOnboarding && path !== "/onboarding") {
+        return Response.redirect(new URL("/onboarding", nextUrl));
+      }
+
       // Redirect authenticated users away from auth pages
       if (isLoggedIn && isAuthPage) {
-        return Response.redirect(new URL("/dashboard", nextUrl));
+        return Response.redirect(new URL(needsOnboarding ? "/onboarding" : "/dashboard", nextUrl));
       }
 
       return true;

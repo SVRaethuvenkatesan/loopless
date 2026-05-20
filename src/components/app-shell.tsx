@@ -409,12 +409,15 @@ export default function AppShell({
     if (typeof window === "undefined" || !session?.user?.id || tourAutoChecked)
       return;
 
+    if (session.user.needsOnboarding) {
+      if (pathname !== "/onboarding") router.replace("/onboarding");
+      return;
+    }
+
+    if (pathname !== "/dashboard") return;
+
     setTourAutoChecked(true);
     if (localStorage.getItem(tourStorageKey) === "1") return;
-
-    if (pathname !== "/dashboard") {
-      router.push("/dashboard");
-    }
 
     const timer = window.setTimeout(() => setTourOpen(true), 650);
     return () => window.clearTimeout(timer);

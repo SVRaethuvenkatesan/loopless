@@ -34,6 +34,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               email:   user.email ?? "",
               name:    user.guestName ?? "Guest",
               isGuest: true,
+              needsOnboarding: !user.ageGroup,
             } as any;
           } catch (err) {
             console.error("[auth] Guest authorize error:", err);
@@ -57,6 +58,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             id:    user.id,
             email: user.email ?? "",
             name:  user.guestName ?? "",
+            needsOnboarding: !user.ageGroup,
           };
         } catch (err) {
           console.error("[auth] Credentials error:", err);
@@ -93,6 +95,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
 
           if (dbUser?.id) user.id = dbUser.id;
+          (user as any).needsOnboarding = !dbUser?.ageGroup;
         } catch (err: any) {
           console.error("[auth] Google sign-in error:", err?.message ?? err);
         }
@@ -101,11 +104,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     // Store user ID and flags in JWT token
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update" && typeof (session as any)?.needsOnboarding === "boolean") {
+        token.needsOnboarding = (session as any).needsOnboarding;
+      }
       if (user) {
         token.id            = user.id;
         token.isGuest       = (user as any).isGuest       ?? false;
         token.isNewGoogleUser = (user as any).isNewGoogleUser ?? false;
+        token.needsOnboarding = (user as any).needsOnboarding ?? false;
       }
       return token;
     },
@@ -115,6 +122,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.id)      session.user.id      = token.id as string;
       if (token.isGuest) (session.user as any).isGuest = token.isGuest;
       if (token.isNewGoogleUser) (session.user as any).isNewGoogleUser = token.isNewGoogleUser;
+      (session.user as any).needsOnboarding = token.needsOnboarding ?? false;
       return session;
     },
   },
