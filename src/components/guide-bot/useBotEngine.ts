@@ -278,8 +278,9 @@ const LOCAL_STATES: Record<string, Omit<PaResponse, "lastUserMessage">> = {
 
 export function useBotEngine() {
   const [currentState, setCurrentState] = useState<PaResponse | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const processInput = (text: string): keyof typeof LOCAL_STATES => {
+  const processInput = (text: string): keyof typeof LOCAL_STATES | null => {
     const t = text.toLowerCase();
 
     // Direct Payload Matching (from chips)
@@ -298,10 +299,10 @@ export function useBotEngine() {
     if (/home|dash|start/i.test(t)) return "dashboard";
     if (/crisis|quitline|support|suicide/i.test(t)) return "support";
 
-    return "fallback";
+    return null; // unmatched — delegate to Gemini
   };
 
-  const send = useCallback((text: string, userName = "") => {
+  const send = useCallback(async (text: string, userName = "") => {
     // If it's a SYS_INIT call, we just show the welcome message
     if (text === "SYS_INIT") {
       setCurrentState({
@@ -312,17 +313,42 @@ export function useBotEngine() {
     }
 
     const stateKey = processInput(text);
-    const newState = LOCAL_STATES[stateKey];
 
-    setCurrentState({
-      ...newState,
-      // If the user clicked a chip, the text usually perfectly matches the chip label.
-      // If it's a chip payload (e.g. they clicked "coping" chip, payload is "coping"), 
-      // the 'text' argument to send() is actually the chip *label* in the GuideBotWidget...
-      // Wait! I need to ensure GuideBotWidget sends the text, or we pass payload.
-      // In GuideBotWidget, chip clicks usually do `send(chip.label)`. We should change it to `send(chip.payload)`.
-      lastUserMessage: text !== "SYS_INIT" && !LOCAL_STATES[text] ? text : undefined
-    });
+    if (stateKey !== null) {
+      setCurrentState({
+        ...LOCAL_STATES[stateKey],
+        lastUserMessage: !LOCAL_STATES[text] ? text : undefined,
+      });
+      return;
+    }
+
+    // Free-text with no regex match → ask Gemini
+    setLoading(true);
+    setCurrentState((prev) => ({
+      ...(prev ?? LOCAL_STATES.fallback),
+      lastUserMessage: text,
+    }));
+
+    try {
+      const res = await fetch("/api/ai/bot-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      setCurrentState({
+        ...LOCAL_STATES.fallback,
+        message: data.reply || LOCAL_STATES.fallback.message,
+        lastUserMessage: text,
+      });
+    } catch {
+      setCurrentState({
+        ...LOCAL_STATES.fallback,
+        lastUserMessage: text,
+      });
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const init = useCallback((userName = "") => {
@@ -333,5 +359,5 @@ export function useBotEngine() {
 
   const clear = useCallback(() => setCurrentState(null), []);
 
-  return { currentState, loading: false, send, init, clear };
+  return { currentState, loading, send, init, clear };
 }

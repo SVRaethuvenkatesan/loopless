@@ -45,12 +45,21 @@ Loopless uses warm recovery-game visuals without making the interface feel child
 ## Tech Stack
 
 - **Framework:** Next.js 16 App Router, React 19, TypeScript
+- **Machine Learning:** Scikit-Learn RandomForestClassifier (via Python Serverless Functions for relapse risk prediction)
 - **Auth:** NextAuth v5 with Google, credentials, and guest flow
 - **Database:** Drizzle ORM with Postgres
 - **Animation:** Framer Motion and DotLottie
 - **Charts/UI:** Recharts, custom dashboard SVGs, Lucide icons
 - **PWA:** service worker, manifest, install prompt
 - **Tooling:** ESLint, TypeScript, Drizzle Kit
+
+## Technical Architecture & Mechanics
+
+Loopless relies on an isolated mathematical Intelligence Layer for predicting and preventing relapses.
+
+- **Predictive Risk Modeling (`api/predict.py`)**: Uses a Scikit-Learn `RandomForestClassifier` as a deterministic mathematical engine. It calculates the relapse risk probability based on features such as average stress, recent urge counts, and days since the last coping session. This model is decoupled from the client and LLM layers to ensure zero "AI Hallucinations" when generating clinical risk predictions.
+- **Insight Explainability**: Instead of simply returning a "high risk" boolean, the architecture uses decision tree `feature_importances_` to explain *why* a risk flag was triggered (e.g., identifying that "Recent Urges" is the strongest contributing factor).
+- **Pattern Detection (`api/relapse.py`)**: A secondary model analyzes 30-day historical features (stress spikes, urges after stress, sleep quality) to detect overarching relapse patterns, automatically suggesting specific toolkit actions (like 'Box Breathing') when familiar risky patterns emerge.
 
 ## Getting Started
 
